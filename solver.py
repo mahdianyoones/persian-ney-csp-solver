@@ -1,6 +1,6 @@
 from domain import init_domain
 from csp import CSP
-from consistency import make_arc_consistent, make_node_consistent
+from consistency import make_arc_consistent, make_A_node_consistent
 from select_variable import select_var
 
 # Specification of the desired Ney
@@ -23,8 +23,5 @@ desired_ney = {
 }
 
 init_domain(CSP, desired_ney)
+make_A_node_consistent(CSP, desired_ney)
 
-# There is no binary constraint between two required variables
-make_node_consistent(CSP, "A")
-
-def find(CSP, assignments)

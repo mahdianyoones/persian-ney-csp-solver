@@ -13,7 +13,7 @@
 #
 # - In a partial solution, at least all requried variables must be assigned.
 
-CSP = {
+csp = {
 	"X": [
 					"A",					# n1
 					"B1", "B2", "B3", "B4",	# n2

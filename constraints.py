@@ -1,83 +1,23 @@
-TOP_NODE_MIN_LENGTH		36.5
-THIRD_NODE_MIN_LENGTH	72
-FOURTH_NODE_MIN_LENGTH	71
-FIFTH_NODE_MIN_LENGTH	70
-SIXTH_NODE_MIN_LENGTH	30
-DIAMETER_DIFF_LOWER		0.5 # mm
-DIAMETER_DIFF_UPPER		1.5 # mm
+from ney_spec 		import desired_ney
+from utils		import *
 
-# Utility functions
-
-def A_length(A, desired_ney):
-	return A["length"] + desired_ney["mp_lenght"]
-
-def N2_length(B1, B2, B3, B4):
-	length = 0
-	if B1 != None:
-		length += B1["length"]
-	if B2 != None:
-		length += B2["length"]
-	if B3 != None:
-		length += B3["length"]
-	if B4 != None:
-		length += B4["length"]
-	return length
-	
-def N3_length(C1, C2, C3, C4):
-	length = 0
-	if C1 != None:
-		length += C1["length"]
-	if C2 != None:
-		length += C2["length"]
-	if C3 != None:
-		length += C3["length"]
-	if C4 != None:
-		length += C4["length"]
-	return length
-
-def N4_length(D1, D2, D3):
-	length = 0
-	if D1 != None:
-		length += D1["length"]
-	if D2 != None:
-		length += D2["length"]
-	if D3 != None:
-		length += D3["length"]
-	return length
-
-def N5_length(E1, E2):
-	length = 0
-	if E1 != None:
-		length += E1["length"]
-	if E2 != None:
-		length += E2["length"]
-	return length
-	
-def N6_length(F1, F2):
-	length = 0
-	if F1 != None:
-		length += F1["length"]
-	if F2 != None:
-		length += F2["length"]
-	return length
-	
 # Unary constraints
 
 # Top node diameter
-def top_diameter(A, desired_ney):
-	if A["diameter"] != desired_ney["min_top_diam"]:
+def top_diameter(value):
+	if value[4] != desired_ney["n1_diameter"]:
 		return False
 	return True
 
 # Top node length lower bound
-def top_llower(A, desired_ney):
-	if A_length(A, desired_ney) < TOP_NODE_MIN_LENGTH:
+def top_llower(value):
+	if A_length(value) < desired_ney["n1_llower"]:
 		return False
 	return True
 
 # Top node length upper bound
-def top_lupper(A, desired_ney):
-	if A_length(A, desired_ney) > desired_ney["h1"] - 263) / 3:
+def top_lupper(value):
+	if A_length(value) > :
 		return False
 	return True
 
@@ -111,13 +51,13 @@ def n6_chunks_sim(F1, F2):
 	if F2 == None:
 		return True
 		
-	if F1["diameter"] != F2["diameter"]
+	if F1["diameter"] != F2["diameter"]:
 		return False
 		
-	if F1["roundness"] != F2["roundness"]
+	if F1["roundness"] != F2["roundness"]:
 		return False
 
-	if F1["thickness"] != F2["thickness"]
+	if F1["thickness"] != F2["thickness"]:
 		return False
 	return True
 
@@ -126,13 +66,13 @@ def n5_chunks_sim(E1, E2):
 	if E2 == None:
 		return True
 		
-	if E1["diameter"] != E2["diameter"]
+	if E1["diameter"] != E2["diameter"]:
 		return False
 		
-	if E1["roundness"] != E2["roundness"]
+	if E1["roundness"] != E2["roundness"]:
 		return False
 
-	if E1["thickness"] != E2["thickness"]
+	if E1["thickness"] != E2["thickness"]:
 		return False
 	return True
 
@@ -265,7 +205,7 @@ def h2_startof_n6(A, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, E1, E2, desired
 def len_decrement(B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, E1, E2, F1, F2):
 	if N2_length(B1, B2, B3, B4) <= N3_length(C1, C2, C3, C4):
 		return False
-	if N3_length(C1, C2, C3, C4 <= N4_length(D1, D2, D3)
+	if N3_length(C1, C2, C3, C4) <= N4_length(D1, D2, D3):
 		return False
 	if N4_length(D1, D2, D3) <= N5_length(E1, E2):
 		return False	
@@ -357,4 +297,8 @@ def h1_length(A, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, E1, E2, \
 	chunks_length += N5_length(E1, E2)
 	chunks_length += N6_length(F1, F2)
 	chunks_length += G["length"]
-	return chunks_length == desired_ney["h1"] ? True : False
+	return True if chunks_length == desired_ney["h1"] else False
+	
+#def no_overlap(A, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, E1, E2, \
+#			F1, F2, G):
+#			

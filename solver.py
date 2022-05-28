@@ -1,27 +1,42 @@
-from domain import init_domain
-from csp import CSP
-from consistency import make_arc_consistent, make_A_node_consistent
-from select_variable import select_var
+from domain 		import init_domain
+from csp 			import csp
+from consistency 	import make_A_consistent
 
-# Specification of the desired Ney
-desired_ney = {
-	"h1":			round(524.4),
-	"h2":			round(467.2),
-	"h3":			round(428.4),
-	"h4":			round(392.9),
-	"h5":			round(370.8),
-	"h6":			round(350.0),
-	"h7":			round(311.8),
-	"mp_lenght":		10,			# mouthpiece length
-	"h_diameter":		10,			# holes diameter
-	"min_top_diam":	18,			# minimum diamter at top
-	"min_chunk_l":		20,			# minimum chunk length
-	"min_hj_dist":		10,			# minimum distance between holes and junctions
-	"min_hh_dist":		10,			# minimum distance between holes
-	"diam_diff_lower":	0.5,			# lower bound for diameter diff between adjacent nodes
-	"diam_diff_upper":	1.3,			# upper bound for that!
-}
 
-init_domain(CSP, desired_ney)
-make_A_node_consistent(CSP, desired_ney)
 
+# Returns True if all variables are assigned
+#def is_complete(csp, assignment):
+#	for var in csp["X"]:
+#		if not var in assignment:
+#			return False
+#	return True
+
+## implements dfs search
+#def backtrack(csp, assignment):
+#	if is_complete(csp, assignment):
+#		return assignment # solution
+#	var = select_unassigned_var(csp, assignment)
+#	for value in order_domain_values(csp, var, assignment):
+#		if is_consistent(var, value, assignment):
+#			assignment[var] = value
+#			inferences = inference(csp, var, assignment)
+#			if inferences != False:
+#				csp["inferences"].append(inferences)
+#				result = backtrack(csp, assignment)
+#				if result != False:
+#					return result
+#				# TODO: remove inferences here
+#			del assignment["var"]
+#	return False
+#	
+#def backtrack_search(CSP, desired_ney):
+#	return backtrack(CSP, {})
+	
+init_domain(csp)
+make_A_consistent(csp)
+
+print(csp["D"]["A"])
+
+#print(backtrack_search(csp, desired_ney))
+
+#print (dfs_search(CSP, desired_ney))

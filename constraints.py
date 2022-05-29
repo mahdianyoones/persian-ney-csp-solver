@@ -296,126 +296,162 @@ def h2_startof_n6(assignments):
 	return False
 
 def len_decrement(assignments):
-	if 	not ("B1" in assignments and "B2" in assignments and \
-			"B3" in assignments and "B4" in assignments and \
-			"C1" in assignments) \
-		and not ("C1" in assignments and "C2" in assignments and \
-			"C3" in assignments and "C4" in assignments and \
-			"D1" in assignments) \
-		and not ("D1" in assignments and "D2" in assignments and \
-			"D3" in assignments and "E1" in assignments) \
-		and not ("E1" in assignments and "E2" in assignments and \
-			"F1" in assignments):
-			return True
-	if	"B1" in assignments and "B2" in assignments and \
+	# asserting n2 > n3
+	if "B1" in assignments and "B2" in assignments and \
 		"B3" in assignments and "B4" in assignments and \
-		"C1" in assignments:
-		# TODO: finishd this callback
-	n2_length = N2_length(assignments["B1"], assignments["B2"], \
-				assignments["B3"], assignments["B4"])
-	n3_length = N3_length(assignments["C1"], assignments["C2"], \
-				assignments["C3"], assignments["C4"])
-	n4_length = N4_length(assignments["D1"], assignments["D2"], \
+		"C1" in assignments and "C2" in assignments and \
+		"C3" in assignments and "C4" in assignments:
+			n2_length = N2_length(assignments["B1"], assignments["B2"], \
+						assignments["B3"], assignments["B4"])
+			n3_length = N3_length(assignments["C1"], assignments["C2"], \
+						assignments["C3"], assignments["C4"])				
+			if n2_length <= n3_length:
+				return False
+	# asserting n3 > n4
+	if "C1" in assignments and "C2" in assignments and \
+		"C3" in assignments and "C4" in assignments and \
+		"D1" in assignments and "D2" in assignments and \
+		"D3" in assignments:
+			n3_length = N3_length(assignments["C1"], assignments["C2"], \
+						assignments["C3"], assignments["C4"])				
+			n4_length = N4_length(assignments["D1"], assignments["D2"], \
 				assignments["D3"])
-	n5_length = N5_length(assignments["E1"], assignments["E2"])
-	n6_length = N6_length(assignments["F1"], assignments["F2"])
-	
-	if n2_length <= n3_length:
-		return False
-	if n3_length <= n4_length:
-		return False
-	if n4_length <= n5_length:
-		return False	
-	if n5_length <= n6_length:
-		return False
+			if n3_length <= n4_length:
+				return False
+	# asserting n4 > n5		
+	if "D1" in assignments and "D2" in assignments and \
+		"D3" in assignments and "E1" in assignments) and \
+		"E2" in assignments:
+			n4_length = N4_length(assignments["D1"], assignments["D2"], \
+				assignments["D3"])
+			n5_length = N5_length(assignments["E1"], assignments["E2"])
+			if n4_length <= n5_length:
+				return False
+	# asserting n5 > n6
+	if "E1" in assignments and "E2" in assignments and \
+		"F1" in assignments and "F2" in assignments:
+			n5_length = N5_length(assignments["E1"], assignments["E2"])
+			n6_length = N6_length(assignments["F1"], assignments["F2"])
+			if n5_length <= n6_length:
+				return False
 	return True
 
-# The diameter difference between adjacent nodes are similar
-def ddiff_similar(A, B1, C1, D1, E1, assignments["F1"], G):
-	A_B_diff = A["diameter"] - B1["diameter"]
-	B_C_diff = B1["diameter"] - C1["diameter"]
-	C_D_diff = C1["diameter"] - D1["diameter"]
-	D_E_diff = D1["diameter"] - E1["diameter"]
-	E_F_diff = E1["diameter"] - assignments["F1"]["diameter"]
-	F_G_diff = assignments["F1"]["diameter"] - G["diameter"]
+def ddiff_similar(assignments):
+	A_B_diff = B_C_diff = C_D_diff = D_E_diff = E_F_diff = F_G_diff = 0
+	if "A" in assignments and "B1" in assignments:
+		A_B_diff = assignments["A"]["D"] - assignments["B1"]["D"]
+	if "B1" in assignments and "C1" in assignments:
+		B_C_diff = assignments["B1"]["D"] - assignments["C1"]["D"]
+	if "C1" in assignments and "D1" in assignments:
+		C_D_diff = assignments["C1"]["D"] - assignments["D1"]["D"]
+	if "D1" in assignments and "E1" in assignments:
+		D_E_diff = assignments["D1"]["D"] - assignments["E1"]["D"]
+	if "E1" in assignments and "F1" in assignments:
+		E_F_diff = assignments["E1"]["D"] - assignments["F1"]["D"]
+	if "F1" in assignments and "g" in assignments:
+		F_G_diff = assignments["F1"]["D"] - assignments["G"]["D"]
 	if A_B_diff == B_C_diff == C_D_diff == D_E_diff == E_F_diff == F_G_diff:
-			return True
+		return True
 	return False
 
-# The diameter difference between two adjacent nodes must be within a range
-def diam_diff(A, B1, C1, D1, E1, assignments["F1"], G):
-	A_B_diff = A["diameter"] - B1["diameter"]	
-	if DIAMETER_DIFF_LOWER > A_B_diff or DIAMETER_DIFF_UPPER < A_B_diff:
-		return False
-		
-	B_C_diff = B1["diameter"] - C1["diameter"]
-	if DIAMETER_DIFF_LOWER > B_C_diff or DIAMETER_DIFF_UPPER < B_C_diff:
-		return False
-		
-	C_D_diff = C1["diameter"] - D1["diameter"]
-	if DIAMETER_DIFF_LOWER > C_D_diff or DIAMETER_DIFF_UPPER < C_D_diff:
-		return False	
-		
-	D_E_diff = D1["diameter"] - E1["diameter"]
-	if DIAMETER_DIFF_LOWER > D_E_diff or DIAMETER_DIFF_UPPER < D_E_diff:
-		return False	
-		
-	E_F_diff = E1["diameter"] - assignments["F1"]["diameter"]
-	if DIAMETER_DIFF_LOWER > E_F_diff or DIAMETER_DIFF_UPPER < E_F_diff:
-		return False	
-		
-	F_G_diff = assignments["F1"]["diameter"] - G["diameter"]
-	if DIAMETER_DIFF_LOWER > F_G_diff or DIAMETER_DIFF_UPPER < F_G_diff:
-		return False
-	
+def diam_diff(assignments):
+	A_B_diff = B_C_diff = C_D_diff = D_E_diff = \
+	E_F_diff = F_G_diff = desired_ney["diam_diff_upper"] + \
+		desired_ney["diam_diff_lower"]) / 2
+	if "A" in assignments and "B1" in assignments:
+		A_B_diff = assignments["A"]["D"] - assignments["B1"]["D"]
+	if "B1" in assignments and "C1" in assignments:
+		B_C_diff = assignments["B1"]["D"] - assignments["C1"]["D"]
+	if "C1" in assignments and "D1" in assignments:
+		C_D_diff = assignments["C1"]["D"] - assignments["D1"]["D"]
+	if "D1" in assignments and "E1" in assignments:
+		D_E_diff = assignments["D1"]["D"] - assignments["E1"]["D"]
+	if "E1" in assignments and "F1" in assignments:
+		E_F_diff = assignments["E1"]["D"] - assignments["F1"]["D"]
+	if "F1" in assignments and "G" in assignments:
+		F_G_diff = assignments["F1"]["D"] - assignments["G"]["D"]
+	ddiflower = desired_ney["diam_diff_lower"]
+	ddifupper = desired_ney["diam_diff_upper"]
+	if ddiflower > A_B_diff or A_B_diff > ddifupper or \
+		ddiflower > B_C_diff or B_C_diff > ddifupper or \
+		ddiflower > C_D_diff or C_D_diff > ddifupper or \
+		ddiflower > D_E_diff or D_E_diff > ddifupper or \
+		ddiflower > E_F_diff or E_F_diff > ddifupper or \
+		ddiflower > F_G_diff or F_G_diff > ddifupper:
+			return False		
 	return True
 
-# Similarity between nodes
-def nodes_similar(A, B1, C1, D1, E1, assignments["F1"], G):
-	if A != None and B1 != None:
-		if A["thickness"] != B1["thickness"] or \
-		   A["roundness"] != B1["roundness"] or \
-		   A["diameter"] != B1["diameter"]:
+def nodes_similar(assignments):
+	if "A" in assignments and "B1" in assignments:
+		if assignments["A"]["TH"] != assignments["B1"]["TH"] or \
+		   assignments["A"]["R"] != assignments["B1"]["R"] or \
+		   assignments["A"]["D"] != assignments["B1"]["D"]:
 		   	return False
-	if B1 != None and C1 != None:
-		if B1["thickness"] != C1["thickness"] or \
-		   B1["roundness"] != C1["roundness"] or \
-		   B1["diameter"] != C1["diameter"]:
+	if "B1" in assignments and "C1" in assignments:
+		if assignments["B1"]["TH"] != assignments["C1"]["TH"] or \
+		   assignments["B1"]["R"] != assignments["C1"]["R"] or \
+		   assignments["B1"]["D"] != assignments["C1"]["D"]:
 		   	return False
-	if C1 != None and D1 != None:
-		if C1["thickness"] != D1["thickness"] or \
-		   C1["roundness"] != D1["roundness"] or \
-		   C1["diameter"] != D1["diameter"]:
+		B_C_diff = assignments["B1"]["D"] - assignments["C1"]["D"]
+	if "C1" in assignments and "D1" in assignments:
+		if assignments["C1"]["TH"] != assignments["D1"]["TH"] or \
+		   assignments["C1"]["R"] != assignments["D1"]["R"] or \
+		   assignments["C1"]["D"] != assignments["D1"]["D"]:
 		   	return False
-	if D1 != None and E1 != None:
-		if D1["thickness"] != E1["thickness"] or \
-		   D1["roundness"] != E1["roundness"] or \
-		   D1["diameter"] != E1["diameter"]:
+	if "D1" in assignments and "E1" in assignments:
+		if assignments["D1"]["TH"] != assignments["E1"]["TH"] or \
+		   assignments["D1"]["R"] != assignments["E1"]["R"] or \
+		   assignments["D1"]["D"] != assignments["E1"]["D"]:
 		   	return False
-	if E1 != None and assignments["F1"] != None:
-		if E1["thickness"] != assignments["F1"]["thickness"] or \
-		   E1["roundness"] != assignments["F1"]["roundness"] or \
-		   E1["diameter"] != assignments["F1"]["diameter"]:
+	if "E1" in assignments and "F1" in assignments:
+		if assignments["E1"]["TH"] != assignments["F1"]["TH"] or \
+		   assignments["E1"]["R"] != assignments["F1"]["R"] or \
+		   assignments["E1"]["D"] != assignments["F1"]["D"]:
 		   	return False
-	if assignments["F1"] != None and G != None:
-		if assignments["F1"]["thickness"] != G["thickness"] or \
-		   assignments["F1"]["roundness"] != G["roundness"] or \
-		   assignments["F1"]["diameter"] != G["diameter"]:
+	if "F1" in assignments and "G" in assignments:
+		if assignments["F1"]["TH"] != assignments["G"]["TH"] or \
+		   assignments["F1"]["R"] != assignments["G"]["R"] or \
+		   assignments["F1"]["D"] != assignments["G"]["D"]:
 		   	return False
 	return True
 
-# Hole 1 must be equal to the length of all chunks	
-def h1_length(A, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, E1, E2, \
-			assignments["F1"], F2, G, desired_ney):
-	chunks_length = A_length(A, desired_ney)
-	chunks_length += N2_length(B1, B2, B3, B4)
-	chunks_length += N3_length(C1, C2, C3, C4)
-	chunks_length += N4_length(D1, D2, D3)
-	chunks_length += N5_length(E1, E2)
-	chunks_length += N6_length(assignments["F1"], F2)
-	chunks_length += G["length"]
+def h1_length(assignments):
+	if "A" not in assignments or \
+		"B1" not in assignments or \
+		"B2" not in assignments or \
+		"B3" not in assignments or \
+		"B4" not in assignments or \
+		"C1" not in assignments or \
+		"C2" not in assignments or \
+		"C3" not in assignments or \
+		"C4" not in assignments or ]
+		"D1" not in assignments or \
+		"D2" not in assignments or \
+		"D3" not in assignments or \
+		"E1" not in assignments or \
+		"E2" not in assignments or \
+		"F1" not in assignments or \
+		"F2" not in assignments or \
+		"G" not in assignments:
+			return True	
+	chunks_length = A_length(assignments["A"])
+	chunks_length += N2_length(assignments["B1"], assignments["B2"], \
+		assignments["B3"], assignments["B4"])
+	chunks_length += N3_length(assignments["C1"], assignments["C2"], \
+				assignments["C3"], assignments["C4"])
+	chunks_length += N4_length(assignments["D1"], assignments["D2"], \
+				assignments["D3"])
+	chunks_length += N5_length(assignments["E1"], assignments["E2"])
+	chunks_length += N6_length(assignments["F1"], assignments["F2"])
+	chunks_length += assignments["G"]["L"]
 	return True if chunks_length == desired_ney["h1"] else False
-	
-#def no_overlap(A, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, E1, E2, \
-#			assignments["F1"], F2, G):
-#			
+
+def no_overlap(assignments):
+	if len(assignments) < 2:
+		return True
+	piece_number = 0
+	for var, value in assignments.items():
+		if piece_number == value["NO"]:
+			return False
+		piece_number = value["NO"]
+	return True

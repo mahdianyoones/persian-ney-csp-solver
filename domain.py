@@ -6,7 +6,7 @@ VAR_NOT_USED None
 def init_domain(csp):
 	f = open("measures_of_drained_pieces.csv")
 	reader = csv.reader(f)
-	domain = set()
+	domain = []
 	for piece in reader:
 		piece_length_mm = float(piece[1]) * 10 # mm -> cm
 		# Making all variables consistent with hrespect to
@@ -21,11 +21,11 @@ def init_domain(csp):
 				"R":		float(piece[3]),
 				"D":		float(piece[4])) 
 			}
-			domain.add(chunk)
+			domain.append(chunk)
 	for var in csp["X"]:
 		csp["D"][var] = domain
 		if var in csp["optional_vars"]:
-			csp["D"][var].add(VAR_NOT_USED)
+			csp["D"][var].append(VAR_NOT_USED)
 
 
 #def update_piece(CSP, piece_number, assigned_chunk, desired_ney):

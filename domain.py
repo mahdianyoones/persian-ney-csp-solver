@@ -1,6 +1,8 @@
 import csv
 from ney_spec import desired_ney
 
+VAR_NOT_USED None
+
 def init_domain(csp):
 	f = open("measures_of_drained_pieces.csv")
 	reader = csv.reader(f)
@@ -12,11 +14,18 @@ def init_domain(csp):
 		if piece_length_mm < desired_ney["min_chunk_l"]:
 			continue
 		for length in range(20, int(piece_length_mm) + 1):
-			chunk = (piece[0], length, float(piece[2]), float(piece[3]), \
-				float(piece[4])) 
+			chunk = {
+				"NO": 	piece[0], 
+				"L": 	length,
+				"TH": 	float(piece[2]),
+				"R":		float(piece[3]),
+				"D":		float(piece[4])) 
+			}
 			domain.add(chunk)
 	for var in csp["X"]:
 		csp["D"][var] = domain
+		if var in csp["optional_vars"]:
+			csp["D"][var].add(VAR_NOT_USED)
 
 
 #def update_piece(CSP, piece_number, assigned_chunk, desired_ney):

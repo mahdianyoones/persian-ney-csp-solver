@@ -1,18 +1,3 @@
-# Notes:
-#
-# - Contrary nodes, holes are numbered from bottom to top.
-# - Length of h1 = the entire length of Ney.
-# - The 7th node is allowed to be equal or larger than the 6th one.
-# - The 7th node is free to have any size.
-# - Enforcing lower bound on the length of chunks (e.g. 20mm) is done 
-#		during value assignment.
-#		Intially all chunks are taller than this bound.
-#		Alternatively, it could be done via constraints. However,
-#		that require one new unary constraint on each variable. This may
-#		not incur extra computation, but it does make the design a bit messy.
-#
-# - In a partial solution, at least all requried variables must be assigned.
-
 csp = {
 	"X": [
 					"A",					# n1
@@ -23,7 +8,6 @@ csp = {
 					"F1", "F2",			# n6
 					"G"					# n7
 	],
-	"optional_vars": ["B2", "B3", "B4", "C2", "C3", "C4", "D2", "D3", "E2", "F2"],
 	"C": {
 		"h1_length": [ "A", "B1", "B2", "B3", 
 				  	"B4", "C1", "C2", "C3", "C4",
@@ -356,3 +340,5 @@ csp = {
 		]
 	}
 }
+
+print(csp)

@@ -1,4 +1,4 @@
-from ney_spec 		import desired_ney
+from ney_spec import desired_ney
 
 VAR_NOT_USED = None
 
@@ -7,43 +7,43 @@ def A_length(A):
 
 def N2_length(B1, B2, B3, B4):
 	length = B1["L"]
-	if B2 != VAR_NOT_USED:
+	if B2["NO"] != VAR_NOT_USED:
 		length += B2["L"]
-	if B3 != VAR_NOT_USED:
+	if B3["NO"] != VAR_NOT_USED:
 		length += B3["L"]
-	if B4 != VAR_NOT_USED:
+	if B4["NO"] != VAR_NOT_USED:
 		length += B4["L"]
 	return length
 	
 def N3_length(C1, C2, C3, C4):
-	length += C1["L"]
-	if C2 != VAR_NOT_USED:
+	length = C1["L"]
+	if C2["NO"] != VAR_NOT_USED:
 		length += C2["L"]
-	if C3 != VAR_NOT_USED:
+	if C3["NO"] != VAR_NOT_USED:
 		length += C3["L"]
-	if C4 != VAR_NOT_USED:
+	if C4["NO"] != VAR_NOT_USED:
 		length += C4["L"]
 	return length
 
 def N4_length(D1, D2, D3):
 	length = D1["L"]
-	if D2 != VAR_NOT_USED:
+	if D2["NO"] != VAR_NOT_USED:
 		length += D2["L"]
-	if D3 != VAR_NOT_USED:
+	if D3["NO"] != VAR_NOT_USED:
 		length += D3["L"]
 	return length
 
 def N5_length(E1, E2):
 	length = E1["L"]
-	if E2 != VAR_NOT_USED:
+	if E2["NO"] != VAR_NOT_USED:
 		length += E2["L"]
 	return length
 	
 def N6_length(F1, F2):
 	length = F1["L"]
-	if F2 != VAR_NOT_USED:
+	if F2["NO"] != VAR_NOT_USED:
 		length += F2["L"]
-	return lengths
+	return length
 	
 # Unary constraints
 
@@ -69,7 +69,7 @@ def n5_llower(assignments):
 	if "E1" not in assignments or "E2" not in assignments:
 		return True
 	n5_length = assignments["E1"]["L"] + assignments["E2"]["L"]
-	if n5_length < desied_ney["n5_llower"]:
+	if n5_length < desired_ney["n5_llower"]:
 		return False
 	return True
 
@@ -77,7 +77,7 @@ def n6_llower(assignments):
 	if "F1" not in assignments or "F2" not in assignments:
 		return True
 	n5_length = assignments["F1"]["L"] + assignments["F2"]["L"]
-	if n5_length < desied_ney["n6_llower"]:
+	if n5_length < desired_ney["n6_llower"]:
 		return False
 	return True
 
@@ -85,7 +85,7 @@ def n6_chunks_sim(assignments):
 	if "F1" not in assignments or "F2" not in assignments:
 		return True	
 	if assignments["F1"]["D"] != assignments["F2"]["D"] or \
-		assignments["F1"]["R"] != assignments["F2"["R"] or \
+		assignments["F1"]["R"] != assignments["F2"]["R"] or \
 		assignments["F1"]["TH"] != assignments["F2"]["TH"]:
 			return False
 	return True
@@ -94,7 +94,7 @@ def n5_chunks_sim(E1, E2):
 	if "E1" not in assignments or "E2" not in assignments:
 		return True	
 	if assignments["E1"]["D"] != assignments["E2"]["D"] or \
-		assignments["E1"]["R"] != assignments["E2"["R"] or \
+		assignments["E1"]["R"] != assignments["E2"]["R"] or \
 		assignments["E1"]["TH"] != assignments["E2"]["TH"]:
 			return False
 	return True
@@ -115,19 +115,16 @@ def n1_half_n2(assignments):
 	return False
 
 def n3n4_llower(assignments):
-	if not ("C1" in assignmnts and "C2" in assignment \
-			"C3" in assignment and "C4" in assignment) and \
-	 	not ("D1" in assignmnts and "D2" in assignment \
-			"D3" in assignment):
-			return True
-	n3_length = N3_length(assignments["C1"], assignments["C2"], \
-				assignments["C3"], assignments["C4"])
-	n4_length = N4_length(assignments["D1"], assignments["D2"], \
-				assignments["D3"])
-	if n3_length < desired_ney["n3_llower"]:
-		return False
-	if n4_length < desired_ney["n4_llower"]:
-		return False
+	if "C1" in assignments and "C2" in assignments and \
+			"C3" in assignments and "C4" in assignments:
+			n3_length = N3_length(assignments["C1"], assignments["C2"], \
+						assignments["C3"], assignments["C4"])
+			if n3_length < desired_ney["n3_llower"]:
+				return False
+	if "D1" in assignments and "D2" in assignments and "D3" in assignments:
+	 	n4_length = N4_length(assignments["D1"], assignments["D2"], assignments["D3"])
+	 	if n4_length < desired_ney["n4_llower"]:
+	 		return False
 	return True
 
 def h7_on_n4(assignments):
@@ -153,6 +150,9 @@ def h7_on_n4(assignments):
 
 def chunks_similar(assignments):
 	#n2
+	if not "TH" in assignments["B1"]:
+		print("asfasd")
+		print(assignments)
 	if "B1" in assignments and "B2" in assignments:
 		if assignments["B1"]["TH"] != assignments["B2"]["TH"] or \
 		   assignments["B1"]["R"] != assignments["B2"]["R"] or \
@@ -169,12 +169,12 @@ def chunks_similar(assignments):
 		   assignments["B3"]["D"] != assignments["B4"]["D"]:
 		   	return False
 	#n3
-	if "C1" in assignments and "C2" in assignment:
+	if "C1" in assignments and "C2" in assignments:
 		if assignments["C1"]["TH"] != assignments["C2"]["TH"] or \
 		   assignments["C1"]["R"] != assignments["C2"]["R"] or \
 		   assignments["C1"]["D"] != assignments["C2"]["D"]:
 		   	return False
-	if "C2" in assignments and "C3" in assignment:
+	if "C2" in assignments and "C3" in assignments:
 		if assignments["C2"]["TH"] != assignments["C3"]["TH"] or \
 		   assignments["C2"]["R"] != assignments["C3"]["R"] or \
 		   assignments["C2"]["D"] != assignments["C3"]["D"]:
@@ -185,12 +185,12 @@ def chunks_similar(assignments):
 		   assignments["C3"]["D"] != assignments["C4"]["D"]:
 		   	return False
 	#n4
-	if "D1" in assignments and "D2" in assignment:
+	if "D1" in assignments and "D2" in assignments:
 		if assignments["D1"]["TH"] != assignments["D2"]["TH"] or \
 		   assignments["D1"]["R"] != assignments["D2"]["R"] or \
 		   assignments["D1"]["D"] != assignments["D2"]["D"]:
 		   	return False
-	if "D2" in assignments and "D3" in assignment:
+	if "D2" in assignments and "D3" in assignments:
 		if assignments["D2"]["TH"] != assignments["D3"]["TH"] or \
 		   assignments["D2"]["R"] != assignments["D3"]["R"] or \
 		   assignments["D2"]["D"] != assignments["D3"]["D"]:
@@ -209,7 +209,7 @@ def h6_end_n4(assignments):
 		"C1" not in assignments or \
 		"C2" not in assignments or \
 		"C3" not in assignments or \
-		"C4" not in assignments or ]
+		"C4" not in assignments or \
 		"D1" not in assignments or \
 		"D2" not in assignments or \
 		"D3" not in assignments :
@@ -235,7 +235,7 @@ def h5_on_n5(assignments):
 		"C1" not in assignments or \
 		"C2" not in assignments or \
 		"C3" not in assignments or \
-		"C4" not in assignments or ]
+		"C4" not in assignments or \
 		"D1" not in assignments or \
 		"D2" not in assignments or \
 		"D3" not in assignments :
@@ -261,7 +261,7 @@ def h4_on_n5(assignments):
 		"C1" not in assignments or \
 		"C2" not in assignments or \
 		"C3" not in assignments or \
-		"C4" not in assignments or ]
+		"C4" not in assignments or \
 		"D1" not in assignments or \
 		"D2" not in assignments or \
 		"D3" not in assignments :
@@ -290,7 +290,7 @@ def h3_endof_n5(assignments):
 		"C1" not in assignments or \
 		"C2" not in assignments or \
 		"C3" not in assignments or \
-		"C4" not in assignments or ]
+		"C4" not in assignments or \
 		"D1" not in assignments or \
 		"D2" not in assignments or \
 		"D3" not in assignments or \
@@ -319,7 +319,7 @@ def h2_startof_n6(assignments):
 		"C1" not in assignments or \
 		"C2" not in assignments or \
 		"C3" not in assignments or \
-		"C4" not in assignments or ]
+		"C4" not in assignments or \
 		"D1" not in assignments or \
 		"D2" not in assignments or \
 		"D3" not in assignments or \
@@ -364,7 +364,7 @@ def len_decrement(assignments):
 				return False
 	# asserting n4 > n5		
 	if "D1" in assignments and "D2" in assignments and \
-		"D3" in assignments and "E1" in assignments) and \
+		"D3" in assignments and "E1" in assignments and \
 		"E2" in assignments:
 			n4_length = N4_length(assignments["D1"], assignments["D2"], \
 				assignments["D3"])
@@ -400,7 +400,7 @@ def ddiff_similar(assignments):
 
 def diam_diff(assignments):
 	A_B_diff = B_C_diff = C_D_diff = D_E_diff = \
-	E_F_diff = F_G_diff = desired_ney["diam_diff_upper"] + \
+	E_F_diff = F_G_diff = (desired_ney["diam_diff_upper"] + \
 		desired_ney["diam_diff_lower"]) / 2
 	if "A" in assignments and "B1" in assignments:
 		A_B_diff = assignments["A"]["D"] - assignments["B1"]["D"]
@@ -468,7 +468,7 @@ def h1_length(assignments):
 		"C1" not in assignments or \
 		"C2" not in assignments or \
 		"C3" not in assignments or \
-		"C4" not in assignments or ]
+		"C4" not in assignments or \
 		"D1" not in assignments or \
 		"D2" not in assignments or \
 		"D3" not in assignments or \

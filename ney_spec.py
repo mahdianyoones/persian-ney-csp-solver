@@ -29,7 +29,7 @@ desired_ney = {
 	
 	"n1_llower":		36.5,		# lower bound for the length of the top node
 								# without considering the length of the mouthpiece
-	"n1_lupper":		round(524.4) - 263) / 3, # = 87mm
+	"n1_lupper":		(round(524.4) - 263) / 3, # = 87mm
 	
 	"n3_llower":		72,			# third node
 	"n4_llower":		71,			# fourth node

@@ -30,15 +30,15 @@ def order_domain_values(csp, var, assignments):
 		for var in csp["X"]:
 			if var in csp["C"][constraint] and not var in assignments:
 				imc.add(constraint)
-	for value in csp["D"][var]:
-		if value == VAR_NOT_USED:
+	for index, value in enumerate(csp["D"][var]):
+		if value["NO"] == VAR_NOT_USED:
 			# trying to discard optional variables for now
-			csp["D"][var]["V"] = float("-inf")
+			csp["D"][var][index]["V"] = float("-inf")
 			continue
-		csp["D"][var]["V"] = 0
+		csp["D"][var][index]["V"] = 0
 		for constraint in imc:
-			if not is_consistent(assignment, var, value):
-				csp["D"][var]["V"] += 1
+			if not is_consistent(csp, assignments, var, value):
+				csp["D"][var][index]["V"] += 1
 	csp["D"][var] = sorted(csp["D"][var], key=lambda value: value["V"], \
 		reverse=True)
 
@@ -60,8 +60,8 @@ def inference(csp, var, assignments):
 	for un in uns:
 		inferences[un] = []
 		for index, value in enumerate(csp["D"][un]):
-			if not is_consistent(assignments, var, value):
-				csp["D"][un].remove(index)
+			if not is_consistent(csp, assignments, un, value):
+				del csp["D"][un][index]
 				inferences[un].append(value)
 		if len(csp["D"][un]) == 0:
 			csp["D"][un].extend(inferences[un]) # undoing domain reduction
@@ -76,12 +76,14 @@ def remove_inferences(csp, inferences):
 
 # dfs search
 def backtrack(csp, assignments):
+
 	if is_complete(csp, assignments):
+		print("A solution has been found: ")
 		return assignments # solution
-	var = select_unassigned_var(csp, assignments)
+	var = select_unassigned_variable(csp, assignments)
 	order_domain_values(csp, var, assignments)
 	for value in csp["D"][var]:
-		if is_consistent(var, value, assignments):
+		if is_consistent(csp, assignments, var, value):
 			assignments[var] = value
 			inferences = inference(csp, var, assignments)
 			if inferences != FAILURE:
@@ -95,7 +97,7 @@ def backtrack(csp, assignments):
 
 def backtrack_search(csp):
 	return backtrack(csp, {})
-	
+
 csp = init_csp()
 make_A_consistent(csp)
 print(backtrack_search(csp))

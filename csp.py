@@ -113,16 +113,16 @@ def init_domain(csp):
 				"L": 	length,
 				"TH": 	float(piece[2]),
 				"R":		float(piece[3]),
-				"D":		float(piece[4])) 
+				"D":		float(piece[4]) 
 			}
 			domain.append(chunk)
 	for var in csp["X"]:
-		csp["D"][var] = domain
+		csp["D"][var] = domain.copy()
 		if var in csp["optional_vars"]:
-			csp["D"][var].append(VAR_NOT_USED)
+			csp["D"][var].append({"NO": VAR_NOT_USED})
 
 def init_csp():
-	init_domain(_csp)
+	init_domain(csp)
 	for var in csp["X"]:
 		csp["X_C"][var] = set([])
 		for constraint, variables in csp["C"].items(): 

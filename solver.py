@@ -2,19 +2,16 @@ from domain 		import init_domain
 from csp 			import csp
 from consistency 	import make_A_consistent
 from constraints 	import satisfies
-
-def neighborhoods(csp, assignment, var):
-	neighborhoods = set([])
+	
+def is_consistent(assignments, var, value):
+	common_constraints = set([])
 	for constraint in csp["X_C"][var]:
 		for assigned_var in assignment.keys():
 			if assigned_var in csp["C"][constraint]:
-				neighborhoods.add(constraint)
-	return neighborhoods
-	
-def is_consistent(assignments, var, value):
+				common_constraints.add(constraint)
 	_assignments = assignments
 	_assignments[var] = value
-	for constraint in neighborhoods:
+	for constraint in common_constraints:
 		if not satisfies(constraint, assignments):
 			return False
 	return False

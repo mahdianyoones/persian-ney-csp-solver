@@ -1,3 +1,5 @@
+VAR_NOT_USED None
+
 def select_unassigned_variable(CSP, assignments):
 	# Degree sorted
 	degree_sorted = ["A", "B1", "C1", "D1", "E1", "F1", "G",
@@ -10,7 +12,6 @@ def select_unassigned_variable(CSP, assignments):
 			unassigned_vars.append(var)
 	# MRV (minimum remaining values) heuristic
 	mrv = float("inf")
-	_var = unassigned_vars[0]
 	for var in unassigned_vars:
 		if len(csp["D"][var]) < mrv:
 			_var = var
@@ -18,6 +19,7 @@ def select_unassigned_variable(CSP, assignments):
 	return _var
 
 def order_domain_values(csp, var, assignments):
+	# value["V"] : the number of constraints violated due to this value
 	# Impacting constraints: a set of constraints with unassigned neighbors
 	imc = set([])
 	for constraint in csp["X_C"][var]:
@@ -25,9 +27,13 @@ def order_domain_values(csp, var, assignments):
 			if var in csp["C"][constraint] and not var in assignments:
 				imc.add(constraint)
 	for value in csp["D"][var]:
+		if value == VAR_NOT_USED:
+			# trying to discard optional variables for now
+			csp["D"][var]["V"] = float("-inf")
+			continue
 		csp["D"][var]["V"] = 0
 		for constraint in imc:
 			if not is_consistent(assignment, var, value):
-				csp["D"][var]["V"]
+				csp["D"][var]["V"] += 1
 	csp["D"][var] = sorted(csp["D"][var], key=lambda value: value["V"], \
 		reverse=True)

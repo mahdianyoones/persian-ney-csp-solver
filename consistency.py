@@ -42,9 +42,9 @@ def is_consistent(assignments, var, value):
 			return False
 	return False
 
-# Makes A node consistent
+# node consistency
 def make_A_consistent(csp):
-	csp["D"]["A"] = set(filter(lambda chunk: top_diameter(chunk) and \
-		top_llower(chunk) and \
-		top_lupper(chunk),
-	csp["D"]["A"]))
+	csp["D"]["A"] = filter(lambda chunk: top_diameter(chunk) and \
+			top_llower(chunk) and \
+			top_lupper(chunk),
+		csp["D"]["A"])

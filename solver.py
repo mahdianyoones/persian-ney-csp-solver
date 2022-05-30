@@ -1,12 +1,11 @@
-from domain 		import init_domain
-from csp 			import csp
+from csp 			import init_csp
 from consistency 	import is_consistent, make_A_consistent
 
 FAILURE	False
 
-def is_complete(csp, assignment):
+def is_complete(csp, assignments):
 	for var in csp["X"]:
-		if not var in assignment:
+		if not var in assignments:
 			return False
 	return True
 
@@ -41,7 +40,8 @@ def backtrack(csp, assignments):
 	if is_complete(csp, assignments):
 		return assignments # solution
 	var = select_unassigned_var(csp, assignments)
-	for value in order_domain_values(csp, var, assignments):
+	order_domain_values(csp, var, assignments)
+	for value in csp["D"][var]:
 		if is_consistent(var, value, assignments):
 			assignments[var] = value
 			inferences = inference(csp, var, assignments)
@@ -57,6 +57,6 @@ def backtrack(csp, assignments):
 def backtrack_search(csp):
 	return backtrack(csp, {})
 	
-init_domain(csp)
+csp = init_csp()
 make_A_consistent(csp)
 print(backtrack_search(csp))

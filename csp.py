@@ -1,7 +1,13 @@
 import csv
 from ney_spec import desired_ney
 
-VAR_NOT_USED = None
+EMPTY_VALUE = {
+	"NO": 	0, 
+	"L": 	0,
+	"TH": 	0,
+	"R":		0,
+	"D":		0 
+}
 
 csp = {
 	"X": [
@@ -119,7 +125,7 @@ def init_domain(csp):
 	for var in csp["X"]:
 		csp["D"][var] = domain.copy()
 		if var in csp["optional_vars"]:
-			csp["D"][var].append({"NO": VAR_NOT_USED})
+			csp["D"][var].append(EMPTY_VALUE)
 
 def init_csp():
 	init_domain(csp)

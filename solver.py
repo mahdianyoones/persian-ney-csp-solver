@@ -2,7 +2,14 @@ from csp 			import init_csp
 from consistency 	import is_consistent, make_A_consistent
 
 FAILURE = False
-VAR_NOT_USED = None
+
+EMPTY_VALUE = {
+	"NO": 	0, 
+	"L": 	0,
+	"TH": 	0,
+	"R":		0,
+	"D":		0 
+}
 
 def select_unassigned_variable(CSP, assignments):
 	# Degree sorted
@@ -31,7 +38,7 @@ def order_domain_values(csp, var, assignments):
 			if var in csp["C"][constraint] and not var in assignments:
 				imc.add(constraint)
 	for index, value in enumerate(csp["D"][var]):
-		if value["NO"] == VAR_NOT_USED:
+		if value == EMPTY_VALUE:
 			# trying to discard optional variables for now
 			csp["D"][var][index]["V"] = float("-inf")
 			continue

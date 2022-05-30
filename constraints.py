@@ -1,47 +1,53 @@
 from ney_spec import desired_ney
 
-VAR_NOT_USED = None
+EMPTY_VALUE = {
+	"NO": 	0, 
+	"L": 	0,
+	"TH": 	0,
+	"R":		0,
+	"D":		0 
+}
 
 def A_length(A):
 	return A["L"] + desired_ney["mp_lenght"]
 
 def N2_length(B1, B2, B3, B4):
 	length = B1["L"]
-	if B2["NO"] != VAR_NOT_USED:
+	if B2 != EMPTY_VALUE:
 		length += B2["L"]
-	if B3["NO"] != VAR_NOT_USED:
+	if B3 != EMPTY_VALUE:
 		length += B3["L"]
-	if B4["NO"] != VAR_NOT_USED:
+	if B4 != EMPTY_VALUE:
 		length += B4["L"]
 	return length
 	
 def N3_length(C1, C2, C3, C4):
 	length = C1["L"]
-	if C2["NO"] != VAR_NOT_USED:
+	if C2 != EMPTY_VALUE:
 		length += C2["L"]
-	if C3["NO"] != VAR_NOT_USED:
+	if C3 != EMPTY_VALUE:
 		length += C3["L"]
-	if C4["NO"] != VAR_NOT_USED:
+	if C4 != EMPTY_VALUE:
 		length += C4["L"]
 	return length
 
 def N4_length(D1, D2, D3):
 	length = D1["L"]
-	if D2["NO"] != VAR_NOT_USED:
+	if D2 != EMPTY_VALUE:
 		length += D2["L"]
-	if D3["NO"] != VAR_NOT_USED:
+	if D3 != EMPTY_VALUE:
 		length += D3["L"]
 	return length
 
 def N5_length(E1, E2):
 	length = E1["L"]
-	if E2["NO"] != VAR_NOT_USED:
+	if E2 != EMPTY_VALUE:
 		length += E2["L"]
 	return length
 	
 def N6_length(F1, F2):
 	length = F1["L"]
-	if F2["NO"] != VAR_NOT_USED:
+	if F2 != EMPTY_VALUE:
 		length += F2["L"]
 	return length
 	
@@ -426,37 +432,14 @@ def diam_diff(assignments):
 	return True
 
 def nodes_similar(assignments):
-	if "A" in assignments and "B1" in assignments:
-		if assignments["A"]["TH"] != assignments["B1"]["TH"] or \
-		   assignments["A"]["R"] != assignments["B1"]["R"] or \
-		   assignments["A"]["D"] != assignments["B1"]["D"]:
-		   	return False
-	if "B1" in assignments and "C1" in assignments:
-		if assignments["B1"]["TH"] != assignments["C1"]["TH"] or \
-		   assignments["B1"]["R"] != assignments["C1"]["R"] or \
-		   assignments["B1"]["D"] != assignments["C1"]["D"]:
-		   	return False
-		B_C_diff = assignments["B1"]["D"] - assignments["C1"]["D"]
-	if "C1" in assignments and "D1" in assignments:
-		if assignments["C1"]["TH"] != assignments["D1"]["TH"] or \
-		   assignments["C1"]["R"] != assignments["D1"]["R"] or \
-		   assignments["C1"]["D"] != assignments["D1"]["D"]:
-		   	return False
-	if "D1" in assignments and "E1" in assignments:
-		if assignments["D1"]["TH"] != assignments["E1"]["TH"] or \
-		   assignments["D1"]["R"] != assignments["E1"]["R"] or \
-		   assignments["D1"]["D"] != assignments["E1"]["D"]:
-		   	return False
-	if "E1" in assignments and "F1" in assignments:
-		if assignments["E1"]["TH"] != assignments["F1"]["TH"] or \
-		   assignments["E1"]["R"] != assignments["F1"]["R"] or \
-		   assignments["E1"]["D"] != assignments["F1"]["D"]:
-		   	return False
-	if "F1" in assignments and "G" in assignments:
-		if assignments["F1"]["TH"] != assignments["G"]["TH"] or \
-		   assignments["F1"]["R"] != assignments["G"]["R"] or \
-		   assignments["F1"]["D"] != assignments["G"]["D"]:
-		   	return False
+	THRD = (0, 0, 0)
+	for var, value in assignments.items():
+		if THRD == (0, 0, 0):
+			THRD = (value["TH"], value["R"], value["D"])
+			continue
+		if value != EMPTY_VALUE and THRD != (value["TH"], value["R"], value["D"]):
+			return False
+		THRD = (value["TH"], value["R"], value["D"])
 	return True
 
 def h1_length(assignments):

@@ -8,6 +8,7 @@ def select_unassigned_variable(CSP, assignments):
 	for var in degree_sorted:
 		if not var in assignments:
 			unassigned_vars.append(var)
+	# MRV (minimum remaining values) heuristic
 	mrv = float("inf")
 	_var = unassigned_vars[0]
 	for var in unassigned_vars:

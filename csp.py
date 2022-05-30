@@ -1,7 +1,7 @@
 import csv
 from ney_spec import desired_ney
 
-VAR_NOT_USED None
+VAR_NOT_USED = None
 
 csp = {
 	"X": [

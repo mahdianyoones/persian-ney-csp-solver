@@ -1,6 +1,6 @@
 from ney_spec 		import desired_ney
 
-VAR_NOT_USED None
+VAR_NOT_USED = None
 
 def A_length(A):
 	return A["L"] + desired_ney["mp_lenght"]

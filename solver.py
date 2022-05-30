@@ -1,8 +1,8 @@
 from csp 			import init_csp
 from consistency 	import is_consistent, make_A_consistent
 
-FAILURE	False
-VAR_NOT_USED None
+FAILURE = False
+VAR_NOT_USED = None
 
 def select_unassigned_variable(CSP, assignments):
 	# Degree sorted

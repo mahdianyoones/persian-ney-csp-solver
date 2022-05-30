@@ -35,7 +35,7 @@ def is_consistent(csp, assignments, var, value):
 		for assigned_var in assignments.keys():
 			if var != assigned_var and assigned_var in csp["C"][constraint]:
 				common_constraints.add(constraint)
-	_assignments = assignments
+	_assignments = assignments.copy()
 	_assignments[var] = value
 	for constraint in common_constraints:
 		if not satisfies(constraint, assignments):
@@ -44,7 +44,10 @@ def is_consistent(csp, assignments, var, value):
 
 # node consistency
 def make_A_consistent(csp):
+	b = []
 	for index, value in enumerate(csp["D"]["A"]):
 		if not top_diameter(value) or not top_llower(value) or not \
 			top_lupper(value):
-				del csp["D"]["A"][index]
+				continue
+		b.append(value)
+	csp["D"]["A"] = b

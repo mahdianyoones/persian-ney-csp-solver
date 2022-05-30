@@ -2,7 +2,7 @@ from csp 			import init_csp
 from consistency 	import is_consistent, make_A_consistent
 
 FAILURE = False
-
+nodes = 0
 EMPTY_VALUE = {
 	"NO": 	0, 
 	"L": 	0,
@@ -83,13 +83,14 @@ def remove_inferences(csp, inferences):
 
 # dfs search
 def backtrack(csp, assignments):
-
+	global nodes
 	if is_complete(csp, assignments):
 		print("A solution has been found: ")
 		return assignments # solution
 	var = select_unassigned_variable(csp, assignments)
 	order_domain_values(csp, var, assignments)
 	for value in csp["D"][var]:
+		nodes += 1
 		if is_consistent(csp, assignments, var, value):
 			assignments[var] = value
 			inferences = inference(csp, var, assignments)
@@ -99,7 +100,7 @@ def backtrack(csp, assignments):
 				if result != FAILURE:
 					return result
 				remove_inferences(csp, inferences)
-			del assignments["var"]
+			del assignments[var]
 	return FAILURE
 
 def backtrack_search(csp):
@@ -108,3 +109,4 @@ def backtrack_search(csp):
 csp = init_csp()
 make_A_consistent(csp)
 print(backtrack_search(csp))
+print("Nodes: ", nodes)

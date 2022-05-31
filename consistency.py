@@ -37,8 +37,8 @@ def is_consistent(csp, assignments, var, value):
 				common_constraints.add(constraint)
 	_assignments = assignments.copy()
 	_assignments[var] = value
-	for constraint in common_constraints:
-		if not satisfies(constraint, assignments):
+	for constraint in common_constraints:	
+		if not satisfies(constraint, _assignments):
 			return False
 	return True
 

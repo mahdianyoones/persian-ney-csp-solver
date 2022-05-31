@@ -48,8 +48,6 @@ def N5_length(asmnt):
 	length = asmnt["E1"]["L"]
 	if asmnt["E2"] != EMPTY_VALUE:
 		length += asmnt["E2"]["L"]
-	if asmnt["E3"] != EMPTY_VALUE:
-		length += asmnt["E3"]["L"]
 	return length
 	
 def N6_length(asmnt):
@@ -57,8 +55,6 @@ def N6_length(asmnt):
 	length = asmnt["F1"]["L"]
 	if asmnt["F2"] != EMPTY_VALUE:
 		length += asmnt["F2"]["L"]
-	if asmnt["F3"] != EMPTY_VALUE:
-		length += asmnt["F3"]["L"]
 	return length
 	
 # Unary constraints
@@ -196,10 +192,11 @@ def chunks_similar(asmnt):
 		for var in q:
 			if var not in asmnt or var == EMPTY_VALUE:
 				continue
-			if asmnt[p]["TH"] != asmnt[q]["TH"] or \
-			   	asmnt[p]["R"] != asmnt[q]["R"] or \
-			   	asmnt[p]["D"] != asmnt[q]["D"]:
-			   		return False	
+			try:
+				if asmnt[p]["TH"] != asmnt[var]["TH"] or \
+				   	asmnt[p]["R"] != asmnt[var]["R"] or \
+				   	asmnt[p]["D"] != asmnt[var]["D"]:
+				   		return False
 	return True
 
 # TODO: we can define upper bound for all nodes as well
@@ -324,6 +321,8 @@ def ddiff_similar(asmnt):
 		return True
 	last_diff = 1000 # an arbitrary large number
 	for index, var in enumerate(_vars):
+		if index + 1 == len(_vars):
+			break
 		if set([_vars[index], _vars[index + 1]]).issubset(asmnt_keys):
 			left_diam = asmnt[var]["D"]
 			right_diam = asmnt[_vars[index + 1]]["D"]
@@ -346,7 +345,9 @@ def diam_diff(asmnt):
 	if len(asmnt_keys) < 2:
 		return True
 	for index, var in enumerate(_vars):
-		if set([_vars[index], _vars[index + 1]]).issubset(asmnt_keys):
+		if index + 1 == len(_vars):
+			break
+		if set([var, _vars[index + 1]]).issubset(set(asmnt_keys)):
 			left_diam = asmnt[var]["D"]
 			right_diam = asmnt[_vars[index + 1]]["D"]
 			diff = left_diam - right_diam

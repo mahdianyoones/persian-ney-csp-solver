@@ -1,3 +1,4 @@
+import time
 from csp 			import init_csp
 from consistency 	import is_consistent, make_A_consistent
 
@@ -11,7 +12,13 @@ EMPTY_VALUE = {
 	"D":		0 
 }
 
-def select_unassigned_variable(CSP, assignments):
+def inferences_count(inferences):
+	count = 0
+	for var in inferences:
+		count += len(inferences[var])
+	return count
+	
+def select_unassigned_variable(csp, assignments):
 	# Degree sorted
 	degree_sorted = ["A", "B1", "C1", "D1", "E1", "F1", "G",
 				"B2", "B3", "B4", "C2", "C3", "C4",
@@ -57,12 +64,13 @@ def is_complete(csp, assignments):
 
 # forward checking
 def inference(csp, var, assignments):
-	uns = [] # unassigned neighbors
+	__start = time.time()
+	uns = set([]) # unassigned neighbors
 	for constraint in csp["X_C"][var]:
-		for un in csp["X"]:
-			if un != var and un in csp["C"][constraint] and \
-				not un in assignments:
-				uns.append(un)
+		neighbors = set(csp["X"])
+		for un in csp["C"][constraint]:
+			if un != var and not un in assignments:
+				uns.add(un)
 	inferences = {}
 	for un in uns:
 		inferences[un] = []
@@ -75,6 +83,9 @@ def inference(csp, var, assignments):
 			return FAILURE
 		if len(inferences[un]) == 0:
 			del inferences[un]
+	ic = inferences_count(inferences)
+	it = time.time() - __start
+	print("Inference for ", var, " took: ", it, " seconds, removed: ", ic, " nodes")
 	return inferences
 
 def remove_inferences(csp, inferences):
@@ -88,6 +99,7 @@ def backtrack(csp, assignments):
 		print("A solution has been found: ")
 		return assignments # solution
 	var = select_unassigned_variable(csp, assignments)
+	print(var, " has been selected.")
 	order_domain_values(csp, var, assignments)
 	for value in csp["D"][var]:
 		nodes += 1

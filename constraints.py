@@ -377,7 +377,7 @@ def h1_length(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3",
 			"D1", "D2", "D3", "E1", "E2", "F1", "F2", "E1", "E2"]
-	if not set(required_vars).issubset(asmnt.keys()):
+	if not set(req_vars).issubset(asmnt.keys()):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)

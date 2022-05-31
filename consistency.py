@@ -44,10 +44,11 @@ def is_consistent(csp, assignments, var, value):
 
 # node consistency
 def make_A_consistent(csp):
-	b = []
+	consistent_values = []
 	for index, value in enumerate(csp["D"]["A"]):
-		if not top_diameter(value) or not top_llower(value) or not \
-			top_lupper(value):
-				continue
-		b.append(value)
-	csp["D"]["A"] = b
+		asmnt = {"A": value}
+		if top_diameter(asmnt):
+			if top_llower(asmnt):
+				if top_lupper(asmnt):
+					consistent_values.append(value)
+	csp["D"]["A"] = consistent_values

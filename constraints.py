@@ -48,6 +48,8 @@ def N5_length(asmnt):
 	length = asmnt["E1"]["L"]
 	if asmnt["E2"] != EMPTY_VALUE:
 		length += asmnt["E2"]["L"]
+	if asmnt["E3"] != EMPTY_VALUE:
+		length += asmnt["E3"]["L"]
 	return length
 	
 def N6_length(asmnt):
@@ -55,6 +57,8 @@ def N6_length(asmnt):
 	length = asmnt["F1"]["L"]
 	if asmnt["F2"] != EMPTY_VALUE:
 		length += asmnt["F2"]["L"]
+	if asmnt["F3"] != EMPTY_VALUE:
+		length += asmnt["F3"]["L"]
 	return length
 	
 # Unary constraints
@@ -248,6 +252,7 @@ def h4_on_n5(asmnt):
 		return True
 	return False
 
+# Hole 3 falls at the end of node 5
 def h3_endof_n5(asmnt):
 	'''Takes assignments and checks if hole 3 falls on the end of node 5.
 	
@@ -372,7 +377,7 @@ def h1_length(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3",
 			"D1", "D2", "D3", "E1", "E2", "F1", "F2", "E1", "E2"]
-	if not set(req_vars).issubset(asmnt.keys()):
+	if not set(required_vars).issubset(asmnt.keys()):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)

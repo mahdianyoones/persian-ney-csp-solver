@@ -362,7 +362,8 @@ def nodes_similar(asmnt):
 	if len(present_vars) < 2:
 		return True
 	last_THR = (0, 0) # (thickness, roundness)
-	for var, value in present_vars:
+	for var in present_vars:
+		value = asmnt[var]
 		if last_THR == (0, 0):
 			last_THR = (value["TH"], value["R"])
 		elif last_THR != (value["TH"], value["R"]):

@@ -192,11 +192,10 @@ def chunks_similar(asmnt):
 		for var in q:
 			if var not in asmnt or var == EMPTY_VALUE:
 				continue
-			try:
-				if asmnt[p]["TH"] != asmnt[var]["TH"] or \
-				   	asmnt[p]["R"] != asmnt[var]["R"] or \
-				   	asmnt[p]["D"] != asmnt[var]["D"]:
-				   		return False
+			if asmnt[p]["TH"] != asmnt[var]["TH"] or \
+			   	asmnt[p]["R"] != asmnt[var]["R"] or \
+			   	asmnt[p]["D"] != asmnt[var]["D"]:
+			   		return False
 	return True
 
 # TODO: we can define upper bound for all nodes as well

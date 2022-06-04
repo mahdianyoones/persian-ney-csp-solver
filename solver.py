@@ -54,7 +54,7 @@ def order_domain_values(csp, var, assignments):
 			if not is_consistent(csp, assignments, var, value):
 				csp["D"][var][index]["V"] += 1
 	csp["D"][var] = sorted(csp["D"][var], key=lambda value: value["V"], \
-		reverse=True)
+		reverse=False)
 
 def is_complete(csp, assignments):
 	for var in csp["X"]:
@@ -65,6 +65,7 @@ def is_complete(csp, assignments):
 # forward checking
 def inference(csp, var, assignments):
 	__start = time.time()
+	ico = 0
 	uns = set([]) # unassigned neighbors
 	for constraint in csp["X_C"][var]:
 		neighbors = set(csp["X"])
@@ -76,6 +77,7 @@ def inference(csp, var, assignments):
 		inferences[un] = []
 		for index, value in enumerate(csp["D"][un]):
 			if not is_consistent(csp, assignments, un, value):
+				ico += 1
 				del csp["D"][un][index]
 				inferences[un].append(value)
 		if len(csp["D"][un]) == 0:
@@ -85,7 +87,6 @@ def inference(csp, var, assignments):
 			del inferences[un]
 	ic = inferences_count(inferences)
 	it = time.time() - __start
-	print("Inference for ", var, " took: ", it, " seconds, removed: ", ic, " nodes")
 	return inferences
 
 def remove_inferences(csp, inferences):
@@ -95,16 +96,21 @@ def remove_inferences(csp, inferences):
 # dfs search
 def backtrack(csp, assignments):
 	global nodes
+	inc = 0
+	con = 0
 	if is_complete(csp, assignments):
 		print("A solution has been found: ")
 		return assignments # solution
 	var = select_unassigned_variable(csp, assignments)
-	print(var, " has been selected.")
+	print(assignments)
 	order_domain_values(csp, var, assignments)
+	print("Expanding var: ", var, " domain before inference: ", \
+		len(csp["D"][var]))
 	for value in csp["D"][var]:
 		nodes += 1
+		assignments[var] = value
 		if is_consistent(csp, assignments, var, value):
-			assignments[var] = value
+			con += 1
 			inferences = inference(csp, var, assignments)
 			if inferences != FAILURE:
 				# inferences are already added in the inference callback
@@ -112,7 +118,10 @@ def backtrack(csp, assignments):
 				if result != FAILURE:
 					return result
 				remove_inferences(csp, inferences)
-			del assignments[var]
+		else:
+			inc += 1
+		del assignments[var]
+	print("Backtracking, consistent values: ", con, " inconsistent values: ", inc)
 	return FAILURE
 
 def backtrack_search(csp):

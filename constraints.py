@@ -86,7 +86,7 @@ def n5_llower(asmnt):
 	Returns True if required variables are not all in the assignments, since
 	length might change in the future.
 	'''
-	if not set(["E1", "E2"]).issubset(asmnt.keys()):
+	if not set(["E1", "E2"]).issubset(set(asmnt.keys())):
 		return True
 	if N5_length(asmnt) < desired_ney["n5_llower"]:
 		return False
@@ -99,7 +99,7 @@ def n6_llower(asmnt):
 	Returns True if required variables are not all in the assignments, since
 	length might change in the future.
 	'''
-	if not set(["F1", "F2"]).issubset(asmnt.keys()):
+	if not set(["F1", "F2"]).issubset(set(asmnt.keys())):
 		return True
 	if N6_length(asmnt) < desired_ney["n6_llower"]:
 		return False
@@ -110,7 +110,7 @@ def n6_chunks_sim(asmnt):
 	
 	Roundness, thickness, and dimater of both chunks must be the same.
 	'''
-	if not set(["F1", "F2"]).issubset(asmnt.keys()):
+	if not set(["F1", "F2"]).issubset(set(asmnt.keys())):
 		return True
 	if asmnt["F1"]["D"] == asmnt["F2"]["D"]:
 		if asmnt["F1"]["R"] == asmnt["F2"]["R"]:
@@ -123,7 +123,7 @@ def n5_chunks_sim(E1, E2):
 	
 	Roundness, thickness, and dimater of both chunks must be the same.
 	'''
-	if not set(["E1", "E2"]).issubset(asmnt.keys()):
+	if not set(["E1", "E2"]).issubset(set(asmnt.keys())):
 		return True
 	if asmnt["E1"]["D"] == asmnt["E2"]["D"]:
 		if asmnt["E1"]["R"] == asmnt["E2"]["R"]:
@@ -139,7 +139,7 @@ def n1_half_n2(asmnt):
 	Returns True if required variables are not all in the assignments, since
 	length of each node might change in the future.
 	'''
-	if not set(["A", "B1", "B2", "B3", "B4"]).issubset(asmnt.keys()):
+	if not set(["A", "B1", "B2", "B3", "B4"]).issubset(set(asmnt.keys())):
 		return True
 	if 2 * N1_length(asmnt) == N2_length(asmnt):
 		return True
@@ -153,10 +153,10 @@ def n3n4_llower(asmnt):
 	
 	This constraint could have been two separate constraints.
 	'''
-	if set(["C1", "C2", "C3", "C4"]).issubset(asmnt.keys):
+	if set(["C1", "C2", "C3", "C4"]).issubset(set(asmnt.keys())):
 		if n3_length(asmnt) < desired_ney["n3_llower"]:
 			return False
-	if set(["D1", "D2", "D3"]).issubset(asmnt.keys):
+	if set(["D1", "D2", "D3"]).issubset(set(asmnt.keys())):
 	 	if n4_length(asmnt) < desired_ney["n4_llower"]:
 	 		return False
 	return True
@@ -168,7 +168,7 @@ def h7_on_n4(asmnt):
 	length of the nodes might change in the future.
 	'''
 	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]
-	if not set(required_vars).issubset(asmnt.keys()):
+	if not set(required_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] < desired_ney["h7"]:
@@ -207,7 +207,7 @@ def h6_end_n4(asmnt):
 	length of the nodes might change in the future.
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "D1", "D2", "D3"]
-	if not set(req_vars).issubset(asmnt.keys()):
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt["A"]) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
@@ -222,7 +222,7 @@ def h5_on_n5(asmnt):
 	length of the nodes might change in the future.
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "D1", "D2", "D3"]
-	if not set(req_vars).issubset(asmnt.keys()):
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
@@ -237,7 +237,7 @@ def h4_on_n5(asmnt):
 	length of the nodes might change in the future.
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "D1", "D2", "D3"]
-	if not set(req_vars).issubset(asmnt.keys()):
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt["A"]) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
@@ -257,7 +257,7 @@ def h3_endof_n5(asmnt):
 	'''
 	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
 		"D1", "D2", "D3", "E1", "E2"]
-	if not set(required_vars).issubset(asmnt.keys()):
+	if not set(required_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	chunks_length += N4_length(asmnt) + N5_length(asmnt)
@@ -273,7 +273,7 @@ def h2_startof_n6(asmnt):
 	'''
 	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
 		"D1", "D2", "D3", "E1", "E2"]
-	if not set(required_vars).issubset(asmnt.keys()):
+	if not set(required_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	chunks_length += N4_length(asmnt) + N5_length(asmnt)
@@ -289,22 +289,22 @@ def len_decrement(asmnt):
 	'''
 	# Asserting n2 > n3	
 	req_vars = ["B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]
-	if set(req_vars).issubset(asmnt.keys()):
+	if set(req_vars).issubset(set(asmnt.keys())):
 		if N2_length(asmnt) <= N3_length(asmnt):
 			return False
 	# Asserting n3 > n4
 	req_vars = ["C1", "C2", "C3", "C4", "D1", "D2", "D3"]
-	if set(req_vars).issubset(asmnt.keys()):
+	if set(req_vars).issubset(set(asmnt.keys())):
 		if N3_length(asmnt) <= N4_length(asmnt):
 			return False
 	# Asserting n4 > n5		
 	req_vars = ["D1", "D2", "D3", "E1", "E2"]
-	if set(req_vars).issubset(asmnt.keys()):
+	if set(req_vars).issubset(set(asmnt.keys())):
 		if N4_length(asmnt) <= N5_length(asmnt):
 			return False
 	# Asserting n5 > n6
 	req_vars = ["E1", "E2", "F1", "F2"]
-	if set(req_vars).issubset(asmnt.keys()):
+	if set(req_vars).issubset(set(asmnt.keys())):
 		if N5_length(asmnt) <= N6_length(asmnt):
 			return False
 	return True
@@ -315,7 +315,7 @@ def ddiff_similar(asmnt):
 	Asserts diam("A") - diam("B1") == diam("B1") - diam("C1") == ... til F1 - G
 	'''
 	_vars = ["A", "B1", "C1", "D1", "E1", "F1", "G"]
-	asmnt_keys = asmnt.keys()
+	asmnt_keys = set(asmnt.keys())
 	if len(asmnt_keys) < 3:
 		return True
 	last_diff = 1000 # an arbitrary large number
@@ -340,7 +340,7 @@ def diam_diff(asmnt):
 	lower = desired_ney["diam_diff_lower"]
 	upper = desired_ney["diam_diff_upper"]
 	_vars = ["A", "B1", "C1", "D1", "E1", "F1", "G"]
-	asmnt_keys = asmnt.keys()
+	asmnt_keys = set(asmnt.keys())
 	if len(asmnt_keys) < 2:
 		return True
 	for index, var in enumerate(_vars):
@@ -378,7 +378,7 @@ def h1_length(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3",
 			"D1", "D2", "D3", "E1", "E2", "F1", "F2", "E1", "E2"]
-	if not set(req_vars).issubset(asmnt.keys()):
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)

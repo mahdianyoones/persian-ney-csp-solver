@@ -52,3 +52,10 @@ def make_A_consistent(csp):
 				if top_lupper(asmnt):
 					consistent_values.append(value)
 	csp["D"]["A"] = consistent_values
+
+def make_consistent(csp, assignments, var):
+	consistent_values = []
+	for value in csp["D"][var]:
+		if is_consistent(csp, assignments, var, value):
+			consistent_values.append(value)
+	csp["D"][var] = consistent_values

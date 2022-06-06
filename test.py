@@ -47,47 +47,61 @@ class TestConstraints(unittest.TestCase):
 			"A": {"D": 17.5}
 		}
 		self.assertFalse(diam_diff(asmnt))
+		
 		asmnt = {
 			"B1": {"D": 18},
 			"A": {"D": 18}
 		}
 		self.assertFalse(diam_diff(asmnt))
+		
 		asmnt = {
 			"B1": {"D": 18},
 			"A": {"D": 18.5}
 		}
 		self.assertTrue(diam_diff(asmnt))
+		
 		asmnt = {
 			"B1": {"D": 18},
 			"A": {"D": 18.5},
 			"C1": {"D": 17.5}
 		}
 		self.assertTrue(diam_diff(asmnt))
+		
 		asmnt = {
 			"B1": {"D": 18},
 			"A": {"D": 18.5},
 			"C1": {"D": 18}
 		}
 		self.assertFalse(diam_diff(asmnt))
+		
 		asmnt = {
 			"B1": {"D": 18}
 		}
 		self.assertTrue(diam_diff(asmnt))
+		
 		asmnt = {
 			"B1": {"D": 18},
 			"D1": {"D": 17.5},
 		}
 		self.assertTrue(diam_diff(asmnt))
+		
 		asmnt = {
 			"F1": {"D": 18},
 			"G": {"D": 17.5},
 		}
 		self.assertTrue(diam_diff(asmnt))	
+		
 		asmnt = {
 			"F1": {"D": 18},
 			"G": {"D": 17.5},
 		}
-		self.assertTrue(diam_diff(asmnt))	
+		self.assertTrue(diam_diff(asmnt))
+		
+		asmnt = {
+			'A': {'NO': '175', 'L': 27, 'TH': 2.5, 'R': 0.0, 'D': 18.0},
+			'B1': {'NO': '478', 'L': 20, 'TH': 2.5, 'R': 0.0, 'D': 19.0}
+		}
+		self.assertFalse(diam_diff(asmnt))
 
 
 class TestConsistency(unittest.TestCase):

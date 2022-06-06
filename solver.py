@@ -3,6 +3,7 @@ from csp 			import init_csp
 from consistency 	import is_consistent, make_A_consistent, make_consistent
 
 FAILURE = False
+SUCCESS = True
 nodes = 0
 EMPTY_VALUE = {
 	"NO": 	0, 
@@ -42,19 +43,30 @@ def backtrack(csp, assignments):
 	print(assignments)	
 	if is_complete(csp, assignments):
 		print("A solution has been found: ")
-		return assignments # solution
+		return (SUCCESS, assignments) # solution
 	var = select_unassigned_variable(csp, assignments)
 	domain_backup = csp["D"][var].copy()
 	make_consistent(csp, assignments, var)
+	if len(csp["D"][var]) == 0:
+		csp["css"][var].append(assignments)
+		asmnt_keys = list(assignments.keys())
+		recent_var = asmnt_keys[-1]
+		csp["D"][var] = domain_backup
+		return (FAILURE, recent_var)
 	for value in csp["D"][var]:
 		nodes += 1
 		assignments[var] = value
 		result = backtrack(csp, assignments)
-		if result != FAILURE:
-			return result
+		if result[0] == SUCCESS:
+			csp["D"][var] = domain_backup
+			return (SUCCESS, result)
+		elif result[1] != None:
+			csp["D"][var] = domain_backup
+			del assignments[var]
+			return (FAILURE, None) # backjump
 		del assignments[var]
 	csp["D"][var] = domain_backup
-	return FAILURE
+	return (FAILURE, None)
 
 def backtrack_search(csp):
 	return backtrack(csp, {})

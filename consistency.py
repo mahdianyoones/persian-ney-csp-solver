@@ -38,24 +38,31 @@ def is_consistent(csp, assignments, var, value):
 	_assignments = assignments.copy()
 	_assignments[var] = value
 	for constraint in common_constraints:	
-		if not satisfies(constraint, _assignments):
-			return False
-	return True
+		sat_res = satisfies(constraint, _assignments):
+		if sat_res[0] == False:
+			return sat_res
+	return (True, None)
 
 # node consistency
 def make_A_consistent(csp):
-	consistent_values = []
+	legal_values = []
 	for value in csp["D"]["A"]:
 		asmnt = {"A": value}
 		if top_diameter(asmnt):
 			if top_llower(asmnt):
 				if top_lupper(asmnt):
-					consistent_values.append(value)
-	csp["D"]["A"] = consistent_values
+					legal_values.append(value)
+	csp["D"]["A"] = legal_values
 
-def make_consistent(csp, assignments, var):
-	consistent_values = []
-	for value in csp["D"][var]:
-		if is_consistent(csp, assignments, var, value):
-			consistent_values.append(value)
-	csp["D"][var] = consistent_values
+def make_consistent(csp, asmnt, cvar):
+	legal_values = []
+	for value in csp["D"][cvar]:
+		cons_res = is_consistent(csp, asmnt, cvar, value)
+		if cons_res[0]:
+			legal_values.append(value)
+		else:
+			# add the conflict assignment to the conflict set of cvar
+			confasmnt = {(confvar, asmnt[confvar]) for confvar in cons_res[1]}
+			csp["css"][cvar].add(confval)
+			csp["confvars"][cvar] = csp["confvars"][cvar].union(cons_res[1])
+	csp["D"][cvar] = legal_values

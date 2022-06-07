@@ -89,9 +89,8 @@ def n5_llower(asmnt):
 	if not set(["E1", "E2"]).issubset(set(asmnt.keys())):
 		return True
 	if N5_length(asmnt) < desired_ney["n5_llower"]:
-		return False
-	return True
-
+		return (False, {"E1", "E2"})
+	return (True, None)
 
 def n6_llower(asmnt):
 	'''Takes assignments and checks the length lower bound of node 6.
@@ -100,10 +99,10 @@ def n6_llower(asmnt):
 	length might change in the future.
 	'''
 	if not set(["F1", "F2"]).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	if N6_length(asmnt) < desired_ney["n6_llower"]:
-		return False
-	return True
+		return (False, {"F1", "F2"})
+	return (True, None)
 
 def n6_chunks_sim(asmnt):
 	'''Takes assignments and checks the similarity between the chunks of node 6.
@@ -111,12 +110,12 @@ def n6_chunks_sim(asmnt):
 	Roundness, thickness, and dimater of both chunks must be the same.
 	'''
 	if not set(["F1", "F2"]).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	if asmnt["F1"]["D"] == asmnt["F2"]["D"]:
 		if asmnt["F1"]["R"] == asmnt["F2"]["R"]:
 			if asmnt["F1"]["TH"] == asmnt["F2"]["TH"]:
-				return False
-	return True
+				return (True, None)
+	return (False, {"F1", "F2"})
 
 def n5_chunks_sim(E1, E2):
 	'''Takes assignments and checks the similarity between the chunks of node 5.
@@ -124,12 +123,12 @@ def n5_chunks_sim(E1, E2):
 	Roundness, thickness, and dimater of both chunks must be the same.
 	'''
 	if not set(["E1", "E2"]).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	if asmnt["E1"]["D"] == asmnt["E2"]["D"]:
 		if asmnt["E1"]["R"] == asmnt["E2"]["R"]:
 			if asmnt["E1"]["TH"] == asmnt["E2"]["TH"]:
-				return True
-	return False
+				return (True, None)
+	return (False, {"E1", "E2"})
 
 # Higher order constraints
 
@@ -140,10 +139,10 @@ def n1_half_n2(asmnt):
 	length of each node might change in the future.
 	'''
 	if not set(["A", "B1", "B2", "B3", "B4"]).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	if 2 * N1_length(asmnt) == N2_length(asmnt):
-		return True
-	return False
+		return (True, None)
+	return (False, {"A", "B1", "B2", "B3", "B4"})
 
 def n3n4_llower(asmnt):
 	'''Takes assignments and checks the length lower bound of node 3 and 4.
@@ -155,11 +154,11 @@ def n3n4_llower(asmnt):
 	'''
 	if set(["C1", "C2", "C3", "C4"]).issubset(set(asmnt.keys())):
 		if n3_length(asmnt) < desired_ney["n3_llower"]:
-			return False
+			return (False, {"C1", "C2", "C3", "C4"})
 	if set(["D1", "D2", "D3"]).issubset(set(asmnt.keys())):
 	 	if n4_length(asmnt) < desired_ney["n4_llower"]:
-	 		return False
-	return True
+	 		return (False, {"D1", "D2", "D3"})
+	return (True, None)
 
 def h7_on_n4(asmnt):
 	'''Takes assignments and checks whether hole 7 falls on node 4 or not.
@@ -169,11 +168,11 @@ def h7_on_n4(asmnt):
 	'''
 	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]
 	if not set(required_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] < desired_ney["h7"]:
-		return True
-	return False
+		return (True, None)
+	return (False, set(req_vars))
 
 def chunks_similar(asmnt):
 	'''Takes assignments and checks the similarity between chunks of nodes 2, 3 & 4.
@@ -193,10 +192,10 @@ def chunks_similar(asmnt):
 			if var not in asmnt or var == EMPTY_VALUE:
 				continue
 			if asmnt[p]["TH"] != asmnt[var]["TH"] or \
-			   	asmnt[p]["R"] != asmnt[var]["R"] or \
 			   	asmnt[p]["D"] != asmnt[var]["D"]:
-			   		return False
-	return True
+			   	asmnt[p]["R"] != asmnt[var]["R"] or \
+			   		return (False, {p, var})
+	return (True, None)
 
 # TODO: we can define upper bound for all nodes as well
 
@@ -208,12 +207,12 @@ def h6_end_n4(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "D1", "D2", "D3"]
 	if not set(req_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt["A"]) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
 	if chunks_length == desired_ney["h6"] + desired_ney["min_hj_dist"]:
-		return True
-	return False
+		return (True, None)
+	return (False, set(req_vars))
 
 def h5_on_n5(asmnt):
 	'''Takes assignments and checks if hole 5 falls on node 5 or not.
@@ -223,12 +222,12 @@ def h5_on_n5(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "D1", "D2", "D3"]
 	if not set(req_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] <= desired_ney["h5"]:
-		return True
-	return False
+		return (True, None)
+	return (False, set(req_vars))
 
 def h4_on_n5(asmnt):
 	'''Takes assignments and checks if hole 4 falls on node 5 or not.
@@ -238,15 +237,15 @@ def h4_on_n5(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "D1", "D2", "D3"]
 	if not set(req_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt["A"]) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
 	# hole 5 junction distance + hole 5 diameter + hole 5 hole 6 distance
 	extra_space = desired_ney["min_hj_dist"] + desired_ney["h_diameter"]
 	extra_space += desired_ney["min_hh_dist"]
 	if chunks_length + extra_space <= desired_ney["h4"]:
-		return True
-	return False
+		return (True, None)
+	return (False, set(req_vars))
 
 # Hole 3 falls at the end of node 5
 def h3_endof_n5(asmnt):
@@ -255,15 +254,15 @@ def h3_endof_n5(asmnt):
 	Returns True if required variables are not all in the assignments, since
 	length of the nodes might change in the future.
 	'''
-	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
+	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
 		"D1", "D2", "D3", "E1", "E2"]
-	if not set(required_vars).issubset(set(asmnt.keys())):
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return True
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	chunks_length += N4_length(asmnt) + N5_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] == desired_ney["h3"]:
-		return True
-	return False
+		return (True, None)
+	return (False, set(req_vars))
 
 def h2_startof_n6(asmnt):
 	'''Takes assignments and checks if hole 2 falls on the beginning of node 6.
@@ -271,15 +270,15 @@ def h2_startof_n6(asmnt):
 	Returns True if required variables are not all in the assignments, since
 	length of the nodes might change in the future.
 	'''
-	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
+	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
 		"D1", "D2", "D3", "E1", "E2"]
 	if not set(required_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	chunks_length += N4_length(asmnt) + N5_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] <= desired_ney["h2"]:
-		return True
-	return False
+		return (True, None)
+	return (False, set(req_vars))
 
 def len_decrement(asmnt):
 	'''Takes assignments and checks if nodes decrease in length.
@@ -291,23 +290,23 @@ def len_decrement(asmnt):
 	req_vars = ["B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]
 	if set(req_vars).issubset(set(asmnt.keys())):
 		if N2_length(asmnt) <= N3_length(asmnt):
-			return False
+			return (False, set(req_vars))
 	# Asserting n3 > n4
 	req_vars = ["C1", "C2", "C3", "C4", "D1", "D2", "D3"]
 	if set(req_vars).issubset(set(asmnt.keys())):
 		if N3_length(asmnt) <= N4_length(asmnt):
-			return False
+			return (False, set(req_vars))
 	# Asserting n4 > n5		
 	req_vars = ["D1", "D2", "D3", "E1", "E2"]
 	if set(req_vars).issubset(set(asmnt.keys())):
 		if N4_length(asmnt) <= N5_length(asmnt):
-			return False
+			return (False, set(req_vars))
 	# Asserting n5 > n6
 	req_vars = ["E1", "E2", "F1", "F2"]
 	if set(req_vars).issubset(set(asmnt.keys())):
 		if N5_length(asmnt) <= N6_length(asmnt):
-			return False
-	return True
+			return (False, set(req_vars))
+	return (True, None)
 
 def ddiff_similar(asmnt):
 	'''Takes assignments and checks if nodes diameter decrease consistency.
@@ -317,20 +316,19 @@ def ddiff_similar(asmnt):
 	_vars = ["A", "B1", "C1", "D1", "E1", "F1", "G"]
 	asmnt_keys = set(asmnt.keys())
 	if len(asmnt_keys) < 3:
-		return True
-	last_diff = 1000 # an arbitrary large number
+		return (True, None)
 	for index, var in enumerate(_vars):
 		if index + 1 == len(_vars):
 			break
-		if set([_vars[index], _vars[index + 1]]).issubset(asmnt_keys):
+		if set([var, _vars[index + 1]]).issubset(asmnt_keys):
 			left_diam = asmnt[var]["D"]
 			right_diam = asmnt[_vars[index + 1]]["D"]
-			if last_diff == 1000:
-				last_diff = left_diam - right_diam
+			if index == 0:
+				diff = left_diam - right_diam
 				continue
-			if last_diff != left_diam - right_diam:
-				return False
-	return True
+			if diff != left_diam - right_diam:
+				return (False, {_vars[index - 1], var, _vars[index + 1]})
+	return (True, None)
 
 def diam_diff(asmnt):
 	'''Takes assignments and checks the bounds of diameter differeces.
@@ -342,7 +340,7 @@ def diam_diff(asmnt):
 	_vars = ["A", "B1", "C1", "D1", "E1", "F1", "G"]
 	asmnt_keys = set(asmnt.keys())
 	if len(asmnt_keys) < 2:
-		return True
+		return (True, None)
 	for index, var in enumerate(_vars):
 		if index + 1 == len(_vars):
 			break
@@ -351,8 +349,8 @@ def diam_diff(asmnt):
 			right_diam = asmnt[_vars[index + 1]]["D"]
 			diff = left_diam - right_diam
 			if diff < lower or diff > upper:
-				return False
-	return True
+				return (False, {var, _vars[index + 1]})
+	return (True, None)
 
 def nodes_similar(asmnt):
 	'''Takes assignments and checks whether all nodes are similar or not.'''
@@ -360,15 +358,17 @@ def nodes_similar(asmnt):
 	present_vars = set(asmnt_keys).intersection(["A", "B1", "C1", "D1", "E1", "F1", "G"])
 	# At least two of the above vars must exist
 	if len(present_vars) < 2:
-		return True
+		return (True, None)
 	last_THR = (0, 0) # (thickness, roundness)
+	last_var = None
 	for var in present_vars:
 		value = asmnt[var]
 		if last_THR == (0, 0):
 			last_THR = (value["TH"], value["R"])
+			last_var = var
 		elif last_THR != (value["TH"], value["R"]):
-			return False
-	return True
+			return (False, {last_var, var})
+	return (True, None)
 
 def h1_length(asmnt):
 	'''Takes assignments and checks the length of the whole Ney.
@@ -379,12 +379,14 @@ def h1_length(asmnt):
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3",
 			"D1", "D2", "D3", "E1", "E2", "F1", "F2", "E1", "E2"]
 	if not set(req_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
 	chunks_length += N5_length(asmnt) + N6_length(asmnt)
 	chunks_length += asmnt["G"]["L"]
-	return True if chunks_length == desired_ney["h1"] else False
+	if chunks_length == desired_ney["h1"]:
+		return (True, None)
+	return (False, set(req_vars))
 
 def no_overlap(asmnt):
 	'''Takes assignments and checks whether chunks overlap or not.
@@ -393,10 +395,12 @@ def no_overlap(asmnt):
 	cut from the same piece and share some area with eachother.
 	'''
 	if len(asmnt) < 2:
-		return True
+		return (True, None)
 	piece_number = 0
+	last_var = 0
 	for var, value in asmnt.items():
 		if piece_number == value["NO"]:
-			return False
+			return (False, {last_var, var})
 		piece_number = value["NO"]
-	return True
+		last_var = var
+	return (True, None)

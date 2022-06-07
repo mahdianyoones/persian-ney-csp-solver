@@ -62,20 +62,20 @@ def N6_length(asmnt):
 def top_diameter(asmnt):
 	'''Takes assignments and checks the diameter of node 1.'''
 	if asmnt["A"]["D"] == desired_ney["n1_diameter"]:
-		return True
-	return False
+		return (True, None)
+	return (False, {"A"})
 	
 def top_llower(asmnt):
 	'''Takes assignments and checks the length lower bound of node 1.'''
 	if N1_length(asmnt) < desired_ney["n1_llower"]:
-		return False
-	return True
+		return (False, {"A"})
+	return (True, None)
 
 def top_lupper(asmnt):
 	'''Takes assignments and checks the length upper bound of node 1.'''
 	if N1_length(asmnt) > desired_ney["n1_lupper"]:
-		return False
-	return True
+		return (False, {"A"})
+	return (True, None)
 
 
 # Binary constraints
@@ -87,7 +87,7 @@ def n5_llower(asmnt):
 	length might change in the future.
 	'''
 	if not set(["E1", "E2"]).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	if N5_length(asmnt) < desired_ney["n5_llower"]:
 		return (False, {"E1", "E2"})
 	return (True, None)
@@ -166,8 +166,8 @@ def h7_on_n4(asmnt):
 	Returns True if required variables are not all in the assignments, since
 	length of the nodes might change in the future.
 	'''
-	required_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]
-	if not set(required_vars).issubset(set(asmnt.keys())):
+	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"]
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] < desired_ney["h7"]:
@@ -192,8 +192,8 @@ def chunks_similar(asmnt):
 			if var not in asmnt or var == EMPTY_VALUE:
 				continue
 			if asmnt[p]["TH"] != asmnt[var]["TH"] or \
-			   	asmnt[p]["D"] != asmnt[var]["D"]:
-			   	asmnt[p]["R"] != asmnt[var]["R"] or \
+			   	asmnt[p]["D"] != asmnt[var]["D"] or \
+			   	asmnt[p]["R"] != asmnt[var]["R"]:
 			   		return (False, {p, var})
 	return (True, None)
 
@@ -257,7 +257,7 @@ def h3_endof_n5(asmnt):
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
 		"D1", "D2", "D3", "E1", "E2"]
 	if not set(req_vars).issubset(set(asmnt.keys())):
-		return True
+		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	chunks_length += N4_length(asmnt) + N5_length(asmnt)
 	if chunks_length + desired_ney["min_hj_dist"] == desired_ney["h3"]:
@@ -272,7 +272,7 @@ def h2_startof_n6(asmnt):
 	'''
 	req_vars = ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", \
 		"D1", "D2", "D3", "E1", "E2"]
-	if not set(required_vars).issubset(set(asmnt.keys())):
+	if not set(req_vars).issubset(set(asmnt.keys())):
 		return (True, None)
 	chunks_length = N1_length(asmnt) + N2_length(asmnt) + N3_length(asmnt)
 	chunks_length += N4_length(asmnt) + N5_length(asmnt)

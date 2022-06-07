@@ -30,6 +30,8 @@ def satisfies(constraint, assignments):
 	return ccs[constraint](assignments)
 
 def is_consistent(csp, assignments, var, value):
+	if len(assignments.keys()) == 0:
+		return (True, None)
 	common_constraints = set([])
 	for constraint in csp["X_C"][var]:
 		for assigned_var in assignments.keys():
@@ -38,7 +40,7 @@ def is_consistent(csp, assignments, var, value):
 	_assignments = assignments.copy()
 	_assignments[var] = value
 	for constraint in common_constraints:	
-		sat_res = satisfies(constraint, _assignments):
+		sat_res = satisfies(constraint, _assignments)
 		if sat_res[0] == False:
 			return sat_res
 	return (True, None)
@@ -48,21 +50,32 @@ def make_A_consistent(csp):
 	legal_values = []
 	for value in csp["D"]["A"]:
 		asmnt = {"A": value}
-		if top_diameter(asmnt):
-			if top_llower(asmnt):
-				if top_lupper(asmnt):
-					legal_values.append(value)
+		res1 = top_diameter(asmnt)
+		res2 = top_llower(asmnt)
+		res3 = top_lupper(asmnt)
+		if res1[0] and res2[0] and res3[0]:
+			legal_values.append(value)
 	csp["D"]["A"] = legal_values
 
-def make_consistent(csp, asmnt, cvar):
+def make_consistent(csp, asmnt, curvar):
 	legal_values = []
-	for value in csp["D"][cvar]:
-		cons_res = is_consistent(csp, asmnt, cvar, value)
+	for value in csp["D"][curvar]:
+		cons_res = is_consistent(csp, asmnt, curvar, value)
 		if cons_res[0]:
 			legal_values.append(value)
 		else:
-			# add the conflict assignment to the conflict set of cvar
-			confasmnt = {(confvar, asmnt[confvar]) for confvar in cons_res[1]}
-			csp["css"][cvar].add(confval)
-			csp["confvars"][cvar] = csp["confvars"][cvar].union(cons_res[1])
-	csp["D"][cvar] = legal_values
+			# add the conflict assignment to the conflict set of curvar
+			try:
+				if curvar in cons_res[1]:
+					cons_res[1].remove(curvar)
+				confasmnt = {(confvar, tuple(asmnt[confvar].values())) \
+					for confvar in cons_res[1]}
+				csp["css"][curvar].update(confasmnt)
+				csp["confvars"][curvar].update(cons_res[1])
+			except:
+				print(cons_res)
+				print(asmnt)
+				print(curvar)
+				print(confasmnt)
+#				exit()
+	csp["D"][curvar] = legal_values

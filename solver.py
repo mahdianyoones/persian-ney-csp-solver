@@ -13,7 +13,7 @@ EMPTY_VALUE = {
 	"D":		0 
 }
 
-def select_unassigned_variable(csp, assignments):
+def select_unassigned_variable(csp, asmnt):
 	# Degree sorted
 	degree_sorted = ["A", "B1", "C1", "D1", "E1", "F1", "G",
 				"B2", "B3", "B4", "C2", "C3", "C4",
@@ -21,7 +21,7 @@ def select_unassigned_variable(csp, assignments):
 	]
 	unassigned_vars = []
 	for var in degree_sorted:
-		if not var in assignments:
+		if not var in asmnt:
 			unassigned_vars.append(var)
 	# MRV (minimum remaining values) heuristic
 	mrv = float("inf")
@@ -31,9 +31,9 @@ def select_unassigned_variable(csp, assignments):
 			mrv = len(csp["D"][var])
 	return _var
 
-def is_complete(csp, assignments):
+def is_complete(csp, asmnt):
 	for var in csp["X"]:
-		if not var in assignments:
+		if not var in asmnt:
 			return False
 	return True
 
@@ -44,42 +44,41 @@ def backjump(asmnt, csp, curvar):
 		return (FAILURE, None)
 	asmnt_vars = list(asmnt.keys())
 	# from last to first
-	recent = None
 	for i in range(-1, -1 * len(asmnt_vars), -1):
 		recent = asmnt_vars[i]
 		if recent in csp["confvars"][curvar]:
 			return (FAILURE, recent)
 
 def in_confset(csp, asmnt, curvar, value):
-	val = {(_var, asmnt[_var]) for _var in asmnt_keys.keys()}
-	val.add((curvar, value))
-	return True ? val in csp["css"][curvar] : False
+	val = {(_var, tuple(asmnt[_var].values())) for _var in asmnt.keys()}
+	val.add((curvar, tuple(value.values())))
+	return True if val in csp["css"][curvar] else False
 
 # dfs search
-def backtrack(csp, assignments):
+def backtrack(csp, asmnt):
 	global nodes
-	print(assignments)	
-	if is_complete(csp, assignments):
+	print(asmnt)
+	if is_complete(csp, asmnt):
 		print("A solution has been found: ")
-		return (SUCCESS, assignments) # solution
-	curvar = select_unassigned_variable(csp, assignments)
+		return (SUCCESS, asmnt) # solution
+	curvar = select_unassigned_variable(csp, asmnt)
 	domain_backup = csp["D"][curvar].copy()
-	make_consistent(csp, assignments, curvar)
+	if len(asmnt.keys()) > 1:
+		make_consistent(csp, asmnt, curvar)
 	if len(csp["D"][curvar]) == 0:
 		csp["D"][curvar] = domain_backup
 		return backjump(asmnt, csp, curvar)
 	for value in csp["D"][curvar]:
 		nodes += 1
-		if in_confset(csp, asmnt, var, value);
+		if in_confset(csp, asmnt, curvar, value):
 			continue
-		assignments[curvar] = value
-		result = backtrack(csp, assignments)
+		asmnt[curvar] = value
+		result = backtrack(csp, asmnt)
 		# is it a solution?
 		if result[0] == SUCCESS:
 			return result
 		else:
 			if result[1] != curvar and result[1] != None: # a jumpover ?
-				del assignments[curvar]
 				csp["D"][curvar] = domain_backup
 				return result
 			elif result[1] == curvar: # simple jump
@@ -87,12 +86,10 @@ def backtrack(csp, assignments):
 				jump_origin = result[1]
 				origin_confvars = csp["confvars"][jump_origin]
 				csp["confvars"][curvar].update(origin_confvars)
-				csp["confvars"][curvar].remove(curvar)
 				csp["css"][curvar].update(csp["css"][jump_origin])			
 				continue # try other values excluding those just absorbed
-		# backtrack
 	csp["D"][curvar] = domain_backup
-	return (FAILURE, None)
+	return (FAILURE, None) # backtrack
 
 def backtrack_search(csp):
 	return backtrack(csp, {})

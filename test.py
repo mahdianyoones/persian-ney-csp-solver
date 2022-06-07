@@ -13,9 +13,10 @@ class TestConstraints(unittest.TestCase):
 			"D1": {"TH": 2.0, "R": 0},
 			"E1": {"TH": 2.0, "R": 0},
 			"F1": {"TH": 2.0, "R": 0},
-			"G1": {"TH": 2.0, "R": 0}
+			"G": {"TH": 2.0, "R": 0}
 		}
-		self.assertTrue(nodes_similar(asmnt))
+		self.assertEqual(nodes_similar(asmnt), (True, None))
+		
 		asmnt = {
 			"A": {"TH": 2.0, "R": 0},
 			"B1": {"TH": 2.0, "R": 0},
@@ -23,9 +24,10 @@ class TestConstraints(unittest.TestCase):
 			"D1": {"TH": 2.0, "R": 0},
 			"E1": {"TH": 2.0, "R": 1},
 			"F1": {"TH": 2.0, "R": 0},
-			"G1": {"TH": 2.0, "R": 0}
+			"G": {"TH": 2.0, "R": 0}
 		}
-		self.assertFalse(nodes_similar(asmnt))
+		self.assertEqual(nodes_similar(asmnt), (False, {"D1", "E1"}))
+		
 		asmnt = {
 			"A": {"TH": 2.0, "R": 0},
 			"B1": {"TH": 2.0, "R": 0},

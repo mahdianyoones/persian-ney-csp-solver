@@ -1,12 +1,8 @@
 from ney_spec import desired_ney
 
-EMPTY_VALUE = {
-	"NO": 	0, 
-	"L": 	0,
-	"TH": 	0,
-	"R":		0,
-	"D":		0 
-}
+
+
+# A value is a tuple of this format: (NO, L, TH, R, D).
 
 def N1_length(asmnt):
 	'''Takes assignments, returns length(node 1) + length(mouthpiece).'''

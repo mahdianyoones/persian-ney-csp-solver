@@ -13,7 +13,7 @@ EMPTY_VALUE = {
 	"D":		0 
 }
 
-def select_unassigned_variable(csp, asmnt):
+def select_var(csp, asmnt):
 	# Degree sorted
 	degree_sorted = ["A", "B1", "C1", "D1", "E1", "F1", "G",
 				"B2", "B3", "B4", "C2", "C3", "C4",
@@ -32,6 +32,7 @@ def select_unassigned_variable(csp, asmnt):
 	return _var
 
 def is_complete(csp, asmnt):
+	if
 	for var in csp["X"]:
 		if not var in asmnt:
 			return False
@@ -61,7 +62,7 @@ def backtrack(csp, asmnt):
 	if is_complete(csp, asmnt):
 		print("A solution has been found: ")
 		return (SUCCESS, asmnt) # solution
-	curvar = select_unassigned_variable(csp, asmnt)
+	curvar = select_var(csp, asmnt)
 	domain_backup = csp["D"][curvar].copy()
 	if len(asmnt.keys()) > 1:
 		make_consistent(csp, asmnt, curvar)
@@ -94,7 +95,7 @@ def backtrack(csp, asmnt):
 def backtrack_search(csp):
 	return backtrack(csp, {})
 
-csp = init_csp()
+csp = init_csp(csp)
 make_A_consistent(csp)
 print(backtrack_search(csp))
 print("Nodes: ", nodes)

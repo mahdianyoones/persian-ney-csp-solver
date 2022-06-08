@@ -19,24 +19,6 @@ csp = {
 					"F1", "F2",			# n6
 					"G"					# n7
 	],
-	"css": {
-					"A": set([]),
-					"B1": set([]), "B2": set([]), "B3": set([]), "B4": set([]),
-					"C1": set([]), "C2": set([]), "C3": set([]), "C4": set([]),
-					"D1": set([]), "D2": set([]), "D3": set([]),
-					"E1": set([]), "E2": set([]),
-					"F1": set([]), "F2": set([]),
-					"G": set([])
-	},
-	"confvars": {
-					"A": set([]),
-					"B1": set([]), "B2": set([]), "B3": set([]), "B4": set([]),
-					"C1": set([]), "C2": set([]), "C3": set([]), "C4": set([]),
-					"D1": set([]), "D2": set([]), "D3": set([]),
-					"E1": set([]), "E2": set([]),
-					"F1": set([]), "F2": set([]),
-					"G": set([])
-	},
 	"optional_vars": ["B2", "B3", "B4", "C2", "C3", "C4", "D2", "D3", "E2", "F2"],
 	"C": {
 		"h1_length": [ "A",
@@ -116,10 +98,10 @@ csp = {
 		"top_llower": ["A"], 	
 		"top_lupper": ["A"]
 	},
-	# variable: [its values]
 	"D": {},
-	# variable: [its constraints]
-	"X_C": {}
+	"X_C": {},
+	"confset": {},
+	"confvars": {},
 }
 
 def init_domain(csp):
@@ -148,6 +130,8 @@ def init_domain(csp):
 def init_csp():
 	init_domain(csp)
 	for var in csp["X"]:
+		csp["confset"][var] = set([])
+		csp["confvars"][var] = set([])
 		csp["X_C"][var] = set([])
 		for constraint, variables in csp["C"].items(): 
 			if var in variables:

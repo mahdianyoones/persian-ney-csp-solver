@@ -52,7 +52,7 @@ def backjump(asmnt, csp, curvar):
 def in_confset(csp, asmnt, curvar, value):
 	val = {(_var, tuple(asmnt[_var].values())) for _var in asmnt.keys()}
 	val.add((curvar, tuple(value.values())))
-	return True if val in csp["css"][curvar] else False
+	return True if val in csp["confset"][curvar] else False
 
 # dfs search
 def backtrack(csp, asmnt):
@@ -86,7 +86,7 @@ def backtrack(csp, asmnt):
 				jump_origin = result[1]
 				origin_confvars = csp["confvars"][jump_origin]
 				csp["confvars"][curvar].update(origin_confvars)
-				csp["css"][curvar].update(csp["css"][jump_origin])			
+				csp["confset"][curvar].update(csp["confset"][jump_origin])			
 				continue # try other values excluding those just absorbed
 	csp["D"][curvar] = domain_backup
 	return (FAILURE, None) # backtrack

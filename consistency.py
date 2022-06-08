@@ -70,7 +70,7 @@ def make_consistent(csp, asmnt, curvar):
 					cons_res[1].remove(curvar)
 				confasmnt = {(confvar, tuple(asmnt[confvar].values())) \
 					for confvar in cons_res[1]}
-				csp["css"][curvar].update(confasmnt)
+				csp["confset"][curvar].update(confasmnt)
 				csp["confvars"][curvar].update(cons_res[1])
 			except:
 				print(cons_res)

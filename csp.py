@@ -7,7 +7,6 @@ csp = {
 	"X": set(["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
 				"D1", "D2", "D3", "E1", "E2", "F1", "F2", "G"
 	]),
-	"optional_vars": ["B2", "B3", "B4", "C2", "C3", "C4", "D2", "D3", "E2", "F2"],
 	"C": {
 		"h1_length": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
 					"D1", "D2", "D3", "E1", "E2", "F1", "F2", "G"
@@ -60,8 +59,10 @@ def init_domain(csp):
 	f = open("measures_of_drained_pieces.csv")
 	reader = csv.reader(f)
 	domain = set([])
+	optional_vars= set(["B2", "B3", "B4", "C2", "C3", "C4", 
+		"D2", "D3", "E2", "F2"])
 	for piece in reader:
-		length_mm = float(piece[1]) * 10 # mm -> cm
+		length_mm = float(piece[1]) * 10 # cm -> mm
 		# "chunk minimum length" constraint
 		if length_mm < desired_ney["min_chunk_l"]:
 			continue
@@ -74,10 +75,19 @@ def init_domain(csp):
 			domain.add((no, l, th, r, d))
 	for var in csp["X"]:
 		csp["D"][var] = domain.copy()
-		if var in csp["optional_vars"]:
+		if var in optional_vars:
 			csp["D"][var].add(EMPTY_VALUE)
 
-def init_csp(csp):
+def assigned_vars(asmnt):
+	'''Preserving the order, extracts assigned variables from asmnt.'''
+	return [_asmnt[0] for _asmnt in asmnt]
+
+def remove_var(var, asmnt):
+	for i, a in enumerate(asmnt):
+		if var == a[0]:
+			del asmnt[i]
+			
+def init_csp():
 	init_domain(csp)
 	for var in csp["X"]:
 		csp["confset"][var] = set([])

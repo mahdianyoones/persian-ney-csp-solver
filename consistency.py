@@ -1,7 +1,8 @@
 from constraints import *
+from csp import assigned_vars
 
 # References to constraints callbacks 
-ccs = {
+constraints_ref = {
 	"h1_length" 		: h1_length,
 	"no_overlap"		: no_overlap,
 	"len_decrement"	: len_decrement,
@@ -26,56 +27,49 @@ ccs = {
 	"top_lupper"		: top_lupper
 }	
 
-def satisfies(constraint, assignments):
-	return ccs[constraint](assignments)
+def satisfies(const, asmnt):
+	asmnt_dict = {a[0]: a[1] for a in asmnt}
+	return constraints_ref[const](asmnt_dict)
 
-def is_consistent(csp, assignments, var, value):
-	if len(assignments.keys()) == 0:
+def is_consistent(csp, asmnt, var, value):
+	'''Checks consistency of assignments to at least two variables'''
+	asmnt_vars = assigned_vars(asmnt)
+	if len(asmnt_vars) == 0:
 		return (True, None)
-	common_constraints = set([])
-	for constraint in csp["X_C"][var]:
-		for assigned_var in assignments.keys():
-			if var != assigned_var and assigned_var in csp["C"][constraint]:
-				common_constraints.add(constraint)
-	_assignments = assignments.copy()
-	_assignments[var] = value
-	for constraint in common_constraints:	
-		sat_res = satisfies(constraint, _assignments)
+	# common constraints between assigned vars and current var
+	common_consts = set([])
+	for assigned_var in asmnt_vars:
+		common_consts.update(csp["X_C"][var].intersection(csp["X_C"][assigned_var]))
+	_asmnt = asmnt.copy()
+	_asmnt.append(tuple([var, value]))
+	for const in common_consts:
+		sat_res = satisfies(const, _asmnt)
 		if sat_res[0] == False:
 			return sat_res
 	return (True, None)
 
 # node consistency
 def make_A_consistent(csp):
-	legal_values = []
-	for value in csp["D"]["A"]:
-		asmnt = {"A": value}
-		res1 = top_diameter(asmnt)
-		res2 = top_llower(asmnt)
-		res3 = top_lupper(asmnt)
-		if res1[0] and res2[0] and res3[0]:
-			legal_values.append(value)
-	csp["D"]["A"] = legal_values
+	for value in csp["D"]["A"].copy():
+		asmnt = [("A", value)]
+		res1 = satisfies("top_diameter", asmnt)
+		res2 = satisfies("top_llower", asmnt)
+		res3 = satisfies("top_lupper", asmnt)
+		if not res1[0] or not res2[0] or not res3[0]:
+			csp["D"]["A"].remove(value)
 
 def make_consistent(csp, asmnt, curvar):
-	legal_values = []
-	for value in csp["D"][curvar]:
+	'''Makes curvar consistent with respect to the given assignments'''
+	for value in csp["D"][curvar].copy():
 		cons_res = is_consistent(csp, asmnt, curvar, value)
-		if cons_res[0]:
-			legal_values.append(value)
-		else:
-			# add the conflict assignment to the conflict set of curvar
-			try:
-				if curvar in cons_res[1]:
-					cons_res[1].remove(curvar)
-				confasmnt = {(confvar, tuple(asmnt[confvar].values())) \
-					for confvar in cons_res[1]}
-				csp["confset"][curvar].update(confasmnt)
-				csp["confvars"][curvar].update(cons_res[1])
-			except:
-				print(cons_res)
-				print(asmnt)
-				print(curvar)
-				print(confasmnt)
-#				exit()
-	csp["D"][curvar] = legal_values
+		if cons_res[0] == False:
+			csp["D"][curvar].remove(value)
+			confvars = cons_res[1]
+			if curvar in confvars:
+				confvars.remove(curvar)
+			confasmnt = []
+			for a in asmnt:
+				if a[0] in confvars:
+					confasmnt.append((a[0], a[1]))
+					csp["confvars"][curvar].add(a[0])
+			csp["confset"][curvar].add(tuple(confasmnt))

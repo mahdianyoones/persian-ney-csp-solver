@@ -1,63 +1,76 @@
 from ney_spec import desired_ney
-
-
+from csp import EMPTY_VALUE, assigned_vars
 
 # A value is a tuple of this format: (NO, L, TH, R, D).
+# All functions return (success/failure indicator, inconsistent variables)
+# True = success, False = failure
+# inconsistent variables is a set of variables in conflict	
 
+def no(value):
+	return value[0]
+def l(value):
+	return value[1]
+def th(value):
+	return value[2]
+def r(value):
+	return value[3]
+def d(value):
+	return value[4]
+	
 def N1_length(asmnt):
 	'''Takes assignments, returns length(node 1) + length(mouthpiece).'''
-	return asmnt["A"]["L"] + desired_ney["mp_lenght"]
+	return l(asmnt["A"]) + desired_ney["mp_lenght"]
 
 def N2_length(asmnt):
 	'''Takes assignments, returns length(B1+B2+B3+B4).'''
-	length = asmnt["B1"]["L"]
+	length = l(asmnt["B1"])
 	if asmnt["B2"] != EMPTY_VALUE:
-		length += asmnt["B2"]["L"]
+		length += l(asmnt["B2"])
 	if asmnt["B3"] != EMPTY_VALUE:
-		length += asmnt["B3"]["L"]
+		length += l(asmnt["B3"])
 	if asmnt["B4"] != EMPTY_VALUE:
-		length += asmnt["B4"]["L"]
+		length += l(asmnt["B4"])
 	return length
 	
 def N3_length(asmnt):
 	'''Takes assignments, returns length(C1+C2+C3+C4).'''
-	length = asmnt["C1"]["L"]
+	length = l(asmnt["C1"])
 	if asmnt["C2"] != EMPTY_VALUE:
-		length += asmnt["C2"]["L"]
+		length += l(asmnt["C2"])
 	if asmnt["C3"] != EMPTY_VALUE:
-		length += asmnt["C3"]["L"]
+		length += l(asmnt["C3"])
 	if asmnt["C4"] != EMPTY_VALUE:
-		length += asmnt["C4"]["L"]
+		length += l(asmnt["C4"])
 	return length
 
 def N4_length(asmnt):
 	'''Takes assignments, returns length(D1+D2+D3).'''
-	length = asmnt["D1"]["L"]
+	length = l(asmnt["D1"])
 	if asmnt["D2"] != EMPTY_VALUE:
-		length += asmnt["D2"]["L"]
+		length += l(asmnt["D2"])
 	if asmnt["D3"] != EMPTY_VALUE:
-		length += asmnt["D3"]["L"]
+		length += l(asmnt["D3"])
 	return length
 
 def N5_length(asmnt):
 	'''Takes assignments, returns length(E1+E2).'''
-	length = asmnt["E1"]["L"]
+	length = l(asmnt["E1"])
 	if asmnt["E2"] != EMPTY_VALUE:
-		length += asmnt["E2"]["L"]
+		length += l(asmnt["E2"])
 	return length
 	
 def N6_length(asmnt):
 	'''Takes assignments, returns length(F1+F2).'''
-	length = asmnt["F1"]["L"]
+	length = l(asmnt["F1"])
 	if asmnt["F2"] != EMPTY_VALUE:
-		length += asmnt["F2"]["L"]
+		length += l(asmnt["F2"])
 	return length
 	
 # Unary constraints
 
 def top_diameter(asmnt):
 	'''Takes assignments and checks the diameter of node 1.'''
-	if asmnt["A"]["D"] == desired_ney["n1_diameter"]:
+	if d(asmnt["A"]) == desired_ney["n1_diameter"]:
 		return (True, None)
 	return (False, {"A"})
 	
@@ -107,9 +120,9 @@ def n6_chunks_sim(asmnt):
 	'''
 	if not set(["F1", "F2"]).issubset(set(asmnt.keys())):
 		return (True, None)
-	if asmnt["F1"]["D"] == asmnt["F2"]["D"]:
-		if asmnt["F1"]["R"] == asmnt["F2"]["R"]:
-			if asmnt["F1"]["TH"] == asmnt["F2"]["TH"]:
+	if d(asmnt["F1"]) == d(asmnt["F2"]):
+		if r(asmnt["F1"]) == r(asmnt["F2"]):
+			if th(asmnt["F1"]) == th(asmnt["F2"]):
 				return (True, None)
 	return (False, {"F1", "F2"})
 
@@ -120,9 +133,9 @@ def n5_chunks_sim(E1, E2):
 	'''
 	if not set(["E1", "E2"]).issubset(set(asmnt.keys())):
 		return (True, None)
-	if asmnt["E1"]["D"] == asmnt["E2"]["D"]:
-		if asmnt["E1"]["R"] == asmnt["E2"]["R"]:
-			if asmnt["E1"]["TH"] == asmnt["E2"]["TH"]:
+	if d(asmnt["E1"]) == d(asmnt["E2"]):
+		if r(asmnt["E1"]) == r(asmnt["E2"]):
+			if th(asmnt["E1"]) == th(asmnt["E2"]):
 				return (True, None)
 	return (False, {"E1", "E2"})
 
@@ -187,9 +200,9 @@ def chunks_similar(asmnt):
 		for var in q:
 			if var not in asmnt or var == EMPTY_VALUE:
 				continue
-			if asmnt[p]["TH"] != asmnt[var]["TH"] or \
-			   	asmnt[p]["D"] != asmnt[var]["D"] or \
-			   	asmnt[p]["R"] != asmnt[var]["R"]:
+			if th(asmnt[p]) != th(asmnt[var]) or \
+			   	d(asmnt[p]) != d(asmnt[var]) or \
+			   	r(asmnt[p]) != r(asmnt[var]):
 			   		return (False, {p, var})
 	return (True, None)
 
@@ -317,8 +330,8 @@ def ddiff_similar(asmnt):
 		if index + 1 == len(_vars):
 			break
 		if set([var, _vars[index + 1]]).issubset(asmnt_keys):
-			left_diam = asmnt[var]["D"]
-			right_diam = asmnt[_vars[index + 1]]["D"]
+			left_diam = d(asmnt[var])
+			right_diam = d(asmnt[_vars[index + 1]])
 			if index == 0:
 				diff = left_diam - right_diam
 				continue
@@ -341,8 +354,8 @@ def diam_diff(asmnt):
 		if index + 1 == len(_vars):
 			break
 		if set([var, _vars[index + 1]]).issubset(set(asmnt_keys)):
-			left_diam = asmnt[var]["D"]
-			right_diam = asmnt[_vars[index + 1]]["D"]
+			left_diam = d(asmnt[var])
+			right_diam = d(asmnt[_vars[index + 1]])
 			diff = left_diam - right_diam
 			if diff < lower or diff > upper:
 				return (False, {var, _vars[index + 1]})
@@ -350,19 +363,19 @@ def diam_diff(asmnt):
 
 def nodes_similar(asmnt):
 	'''Takes assignments and checks whether all nodes are similar or not.'''
-	asmnt_keys = asmnt.keys()
-	present_vars = set(asmnt_keys).intersection(["A", "B1", "C1", "D1", "E1", "F1", "G"])
-	# At least two of the above vars must exist
+	asmnt_vars = asmnt.keys()
+	present_vars = set(asmnt_vars).intersection(["A", "B1", "C1", 
+		"D1", "E1", "F1", "G"])
+	# At least two of the above vars should exist
 	if len(present_vars) < 2:
 		return (True, None)
 	last_THR = (0, 0) # (thickness, roundness)
 	last_var = None
 	for var in present_vars:
-		value = asmnt[var]
 		if last_THR == (0, 0):
-			last_THR = (value["TH"], value["R"])
+			last_THR = (th(asmnt[var]), r(asmnt[var]))
 			last_var = var
-		elif last_THR != (value["TH"], value["R"]):
+		elif last_THR != (th(asmnt[var]), r(asmnt[var])):
 			return (False, {last_var, var})
 	return (True, None)
 
@@ -379,7 +392,7 @@ def h1_length(asmnt):
 	chunks_length = N1_length(asmnt) + N2_length(asmnt)
 	chunks_length += N3_length(asmnt) + N4_length(asmnt)
 	chunks_length += N5_length(asmnt) + N6_length(asmnt)
-	chunks_length += asmnt["G"]["L"]
+	chunks_length += l(asmnt["G"])
 	if chunks_length == desired_ney["h1"]:
 		return (True, None)
 	return (False, set(req_vars))
@@ -395,8 +408,8 @@ def no_overlap(asmnt):
 	piece_number = 0
 	last_var = 0
 	for var, value in asmnt.items():
-		if piece_number == value["NO"]:
+		if piece_number == no(value):
 			return (False, {last_var, var})
-		piece_number = value["NO"]
+		piece_number = no(value)
 		last_var = var
 	return (True, None)

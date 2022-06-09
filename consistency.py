@@ -1,5 +1,8 @@
 from constraints import *
 from csp import assigned_vars
+from conflict import in_confset
+import os
+c = 0
 
 # References to constraints callbacks 
 constraints_ref = {
@@ -60,16 +63,22 @@ def make_A_consistent(csp):
 
 def make_consistent(csp, asmnt, curvar):
 	'''Makes curvar consistent with respect to the given assignments'''
+	global c
 	for value in csp["D"][curvar].copy():
+		if in_confset(csp, asmnt, curvar, value):
+			csp["D"][curvar].remove(value)
+			continue
 		cons_res = is_consistent(csp, asmnt, curvar, value)
 		if cons_res[0] == False:
 			csp["D"][curvar].remove(value)
 			confvars = cons_res[1]
-			if curvar in confvars:
-				confvars.remove(curvar)
-			confasmnt = []
+			consasmnt = asmnt.copy()
+			consasmnt.append((curvar, value))
+			csp["confset"][curvar].add(tuple(consasmnt))
+			c += 1
 			for a in asmnt:
-				if a[0] in confvars:
-					confasmnt.append((a[0], a[1]))
-					csp["confvars"][curvar].add(a[0])
-			csp["confset"][curvar].add(tuple(confasmnt))
+				if a[0] in confvars and a[0] != curvar: # do not add curvar
+					if not a[0] in csp["confvars"][curvar]: # prevent duplicates
+						csp["confvars"][curvar].append(a[0])
+	os.system("clear")
+	print("added ", c, "to all conflict sets, latest var:", curvar)

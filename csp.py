@@ -91,7 +91,7 @@ def init_csp():
 	init_domain(csp)
 	for var in csp["X"]:
 		csp["confset"][var] = set([])
-		csp["confvars"][var] = set([])
+		csp["confvars"][var] = []
 		csp["X_C"][var] = set([])
 		for constraint, variables in csp["C"].items(): 
 			if var in variables:

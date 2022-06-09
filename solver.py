@@ -1,12 +1,13 @@
 import time
-from csp 			import remove_var, assigned_vars, init_csp, EMPTY_VALUE
-from consistency 	import is_consistent, make_A_consistent, make_consistent
+import os
+from csp import remove_var, assigned_vars, init_csp, EMPTY_VALUE
+from consistency import is_consistent, make_A_consistent, make_consistent
+from conflict import in_confset
 
 FAILURE = False
 SUCCESS = True
 
 nodes = 0
-
 
 def select_var(csp, asmnt):
 	# Degree sorted
@@ -25,85 +26,54 @@ def select_var(csp, asmnt):
 
 def backjump(asmnt, csp, curvar):
 	'''Backjumps to a conflict variable, if any.'''
-	if len(csp["confvars"][curvar]) == 0:
-		return (FAILURE, None) 	# Cannot backjump; just backtrack.
-	asmnt_vars = assigned_vars(asmnt)
+	if len(asmnt) == 0:
+		return (FAILURE, None) # No solution has been found
+	confvars = csp["confvars"][curvar]
+	if len(confvars) == 0:
+		return (FAILURE, None) # Backtracking
 	jump_origin = curvar
 	# from last to first
-	for i in range(-1, -1 * len(asmnt_vars), -1):
-		jump_target = asmnt_vars[i]
-		if jump_target in csp["confvars"][curvar]:
-			return (FAILURE, jump_target, jump_origin)
-	return (FAILURE, None)
+	jump_target = confvars[-1]
+	return (FAILURE, jump_target, jump_origin)
 
-def in_confset(csp, asmnt, curvar, value):
-	confasmnt = asmnt.copy()
-	confasmnt.append((curvar, value))
-	if tuple(confasmnt) in csp["confset"][curvar]:
-		return True
-	return False
-
-def absorbconfs(csp, curvar, result):
+def absorbconfs(csp, curvar, jump_origin):
 	'''Absorbing conflict set and conflict vars from jump origin.'''
-	jump_origin = result[2]
-	o_confvars = csp["confvars"][jump_origin]
-	o_confvars.remove(curvar)
-	csp["confvars"][curvar].update(o_confvars)
-	o_confset = csp["confset"][jump_origin]
-	csp["confset"][curvar].update(o_confset)			
-
+	for confvar in csp["confvars"][jump_origin]:
+		if confvar != curvar and not confvar in csp["confvars"][curvar]:
+			csp["confvars"][curvar].append(confvar)
+	
 def backtrack(csp, asmnt):
 	'''Implements Depth-first search (DFS) to solve the given CSP problem.'''
 	global nodes
 	asmnt_vars = assigned_vars(asmnt)
 	if csp["X"] == set(asmnt_vars): # a complete assignment ?
-		print("A solution has been found: ")
 		return (SUCCESS, asmnt) # solution
 	curvar = select_var(csp, asmnt)
 	domain_backup = csp["D"][curvar].copy()
 	if len(asmnt_vars) >= 1:
 		make_consistent(csp, asmnt, curvar)
-	varsleft = len(csp["X"]) - len(asmnt_vars)
-	print("Trying ", curvar," - domain size : ", \
-		len(csp["D"][curvar]), "confvars:",  csp["confvars"][curvar], \
-		"confset size: ", len(csp["confset"][curvar]),
-		"- vars left: ", varsleft)
-	if len(csp["D"][curvar]) == 0:
-		csp["D"][curvar] = domain_backup
-		return backjump(asmnt, csp, curvar)
-	for value in csp["D"][curvar]:
-		nodes += 1
+	legal_values = csp["D"][curvar].copy()
+	csp["D"][curvar] = domain_backup # reverting the domain 
+	for value in legal_values:
 		if in_confset(csp, asmnt, curvar, value):
-			print("Omitting conflict value for ", curvar)
+			remove_var(curvar, asmnt)
 			continue
+		nodes += 1
+		print("Nodes: ", nodes)
 		asmnt.append(tuple([curvar, value]))
 		result = backtrack(csp, asmnt)
-		# is it a solution?
-		if result[0] == SUCCESS:
+		if result[0] == SUCCESS: # a solution?
 			return result
-		else:
-			jump_target = result[1]
-			# a jumpover ?
-			remove_var(curvar, asmnt)
-			if jump_target != curvar and jump_target != None:
-				print("Jumping over", curvar)
-				csp["D"][curvar] = domain_backup
-				return result
-			elif jump_target == curvar: # simple jump
-				absorbconfs(csp, curvar, result)
-				print("Jumped back to ", jump_target," - domain size : ", \
-					len(csp["D"][jump_target]), "confvars:", \
-					csp["confvars"][jump_target], \
-					"confset size: ", \
-					len(csp["confset"][jump_target]))	
-				#print(csp["confset"][jump_target])			
-				# try other values excluding those just absorbed
-				continue			
-	csp["D"][curvar] = domain_backup
-	remove_var(curvar, asmnt)
-	# backtrack
-	return (FAILURE, None)
-
+		remove_var(curvar, asmnt)
+		jump_target = result[1]
+		if jump_target != curvar and jump_target != None: # a jumpover ?
+			return result
+		elif jump_target == curvar: # a jump?
+			absorbconfs(csp, curvar, result[2])
+			continue	
+	# Backjump / backtrack
+	return backjump(asmnt, csp, curvar)
+	
 def backtrack_search(csp):
 	return backtrack(csp, [])
 

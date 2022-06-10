@@ -52,7 +52,7 @@ csp = {
 	"D": {},
 	"X_C": {},
 	"confset": {},
-	"confvars": {},
+	"R": {}
 }
 
 def init_domain(csp):
@@ -86,14 +86,17 @@ def remove_var(var, asmnt):
 	for i, a in enumerate(asmnt):
 		if var == a[0]:
 			del asmnt[i]
-			
-def init_csp():
-	init_domain(csp)
+
+def update_consts(csp):
 	for var in csp["X"]:
-		csp["confset"][var] = set([])
-		csp["confvars"][var] = []
-		csp["X_C"][var] = set([])
 		for constraint, variables in csp["C"].items(): 
 			if var in variables:
 				csp["X_C"][var].add(constraint)
+	
+def init_csp():
+	init_domain(csp)
+	for var in csp["X"]:
+		csp["confset"][var] = []
+		csp["X_C"][var] = set([])
+	update_consts(csp)
 	return csp

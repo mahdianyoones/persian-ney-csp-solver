@@ -162,10 +162,10 @@ def n3n4_llower(asmnt):
 	This constraint could have been two separate constraints.
 	'''
 	if set(["C1", "C2", "C3", "C4"]).issubset(set(asmnt.keys())):
-		if n3_length(asmnt) < desired_ney["n3_llower"]:
+		if N3_length(asmnt) < desired_ney["n3_llower"]:
 			return (False, {"C1", "C2", "C3", "C4"})
 	if set(["D1", "D2", "D3"]).issubset(set(asmnt.keys())):
-	 	if n4_length(asmnt) < desired_ney["n4_llower"]:
+	 	if N4_length(asmnt) < desired_ney["n4_llower"]:
 	 		return (False, {"D1", "D2", "D3"})
 	return (True, None)
 

@@ -52,7 +52,8 @@ csp = {
 	"D": {},
 	"X_C": {},
 	"confset": {},
-	"R": {}
+	"R": {},
+	"learned_consts": set({})
 }
 
 def init_domain(csp):

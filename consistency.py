@@ -2,8 +2,7 @@ from constraints import *
 from csp import assigned_vars, update_consts
 from conflict import accum_confset
 import os
-
-lc = 0
+discarded_no_goods = 0
 
 # References to constraints callbacks 
 constraints_ref = {
@@ -34,30 +33,36 @@ constraints_ref = {
 def satisfies(csp, const, asmnt):
 	asmnt_dict = {a[0]: a[1] for a in asmnt}
 	return constraints_ref[const](asmnt_dict)
+
+#def forward_check(csp, asmnt, curvar):
 	
+
 def is_consistent(csp, asmnt, curvar, value):
 	'''Checks if curvar: value violates the given assignments.
 	
 	Assumes the given assignments(asmnt) are already consistent.
 	'''
+	# Check for learned constraints
+	_asmnt = asmnt.copy()
+	_asmnt.append((curvar, value))
+	if len(csp["learned_consts"]) > 0:
+		for lc_vars in csp["learned_consts"]:
+			const = str(list(lc_vars))
+			subasmnt = [a for a in _asmnt if a[0] in lc_vars]
+			if len(subasmnt) == len(lc_vars):
+				if tuple(subasmnt) in csp["R"][const]:
+					return (False, lc_vars)
+	# Check for standard constraints
 	if len(asmnt) == 0: # leaves unary constraints alone
 		return (True, None)
 	consts = set([])
 	for assigned_var in assigned_vars(asmnt):
 		consts.update(csp["X_C"][curvar].intersection(csp["X_C"][assigned_var]))
-	_asmnt = asmnt.copy()
-	_asmnt.append((curvar, value))
 	for const in consts:
 		if not const in csp["R"]:
-			sat_res = satisfies(csp, const, _asmnt) # dynamic constraints
+			sat_res = satisfies(csp, const, _asmnt)
 			if sat_res[0] == False:
 				return sat_res
-		elif len(csp["confset"][curvar]) > 0:
-			for confset in csp["confset"][curvar]:
-				subasmnt = [a for a in asmnt if a[0] in confset]
-				subasmnt.append((curvar, value))
-				if tuple(subasmnt) in csp["R"][const]:
-					return (False, set(subasmnt))
 	return (True, None)
 
 # node consistency
@@ -71,23 +76,19 @@ def make_A_consistent(csp):
 			csp["D"]["A"].remove(value)
 
 def learn_constraint(csp, asmnt, confset, curvar):
-	global lc
 	confvars = [a[0] for a in asmnt if a[0] in confset and a[0] != curvar]
 	constraint = str(confvars)
+	if constraint == "[]":
+		print(asmnt, confset, curvar)
+		exit()
 	if not constraint in csp["C"]:
 		csp["C"][constraint] = confvars
-		update_consts(csp)
 		csp["R"][constraint] = set([])
-		lc += 1
-		print("Learned constraints so far: ", lc)
 	no_good = [(a[0], a[1]) for a in asmnt if a[0] in confvars]
 	no_good = tuple(no_good)
 	csp["R"][constraint].add(no_good)
-	print("Assignment: ", asmnt)
-	print("Conflict set: ", confset)
-	print("No good: ", no_good)
-	print("Constraint: ", constraint)
-#	exit(0)
+	csp["learned_consts"].add(tuple(confvars))
+
 def consistent_values(csp, asmnt, curvar):
 	'''Returns consistent values W.R.T. the given assignments.
 	
@@ -95,8 +96,6 @@ def consistent_values(csp, asmnt, curvar):
 	made consistent before search starts.
 	'''
 	values = set([])
-	if len(assigned_vars(asmnt)) < 1: # leave unary constraints alone
-		return csp["D"][curvar]
 	for value in csp["D"][curvar]:
 		cons_res = is_consistent(csp, asmnt, curvar, value)
 		if cons_res[0]:

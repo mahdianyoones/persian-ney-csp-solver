@@ -1,6 +1,6 @@
 # Specification of the desired Ney
 
-desired_ney = {
+spec = {
 	"total_len":		round(524.4),	# total height, including the mouthpiece
 	"h1_len":			round(467.2),	# 1st hole from top
 	"h2_len":			round(428.4),	# 2nd hole from top

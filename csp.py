@@ -1,103 +1,70 @@
-import csv
-from ney_spec import desired_ney
-
-EMPTY_VALUE = (0, 0, 0, 0, 0)
-
-csp = {
-	"X": set(["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-				"D1", "D2", "D3", "E1", "E2", "F1", "F2", "G"
-	]),
-	"C": {
-		"h1_length": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3", "E1", "E2", "F1", "F2", "G"
-		],
-		"no_overlap": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3", "E1", "E2",	"F1", "F2", "G"
-		],
-		"len_decrement": ["B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-						"D1", "D2", "D3", "E1", "E2", "F1", "F2"
-		],
-		"h2_startof_n6": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3", "E1", "E2"
-		],
-		"h3_endof_n5": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3", "E1", "E2"
-		],
-		"h4_on_n5": ["A",	"B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3"
-		],
-		"h5_on_n5": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3"
-		],
-		"h6_end_n4": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3"
-		],				
-		"chunks_similar": ["B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4",
-					"D1", "D2", "D3"
-		],		
-		"h7_on_n4": ["A", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"],
-		"nodes_similar": ["A", "B1", "C1", "D1", "E1", "F1", "G"],
-		"diam_diff": ["A",	"B1", "C1", "D1", "E1", "F1",	"G"],
-		"ddiff_similar": ["A", "B1", "C1", "D1", "E1", "F1", "G"],
-		"n3n4_llower": ["C1", "C2", "C3", "C4", "D1", "D2", "D3"],		
-		"n1_half_n2": ["A", "B1", "B2", "B3", "B4"],		
-		"n5_chunks_sim": ["E1", "E2"],
-		"n6_chunks_sim": ["F1", "F2"],
-		"n6_llower": ["F1", "F2"],
-		"n5_llower": ["E1", "E2"],		
-		"top_diameter": ["A"],
-		"top_llower": ["A"], 	
-		"top_lupper": ["A"]
-	},
-	"D": {},
-	"X_C": {},
-	"confset": {},
-	"R": {},
-	"learned_consts": set({})
-}
-
-def init_domain(csp):
-	f = open("measures_of_drained_pieces.csv")
-	reader = csv.reader(f)
-	domain = set([])
-	optional_vars= set(["B2", "B3", "B4", "C2", "C3", "C4", 
-		"D2", "D3", "E2", "F2"])
-	for piece in reader:
-		length_mm = float(piece[1]) * 10 # cm -> mm
-		# "chunk minimum length" constraint
-		if length_mm < desired_ney["min_chunk_l"]:
-			continue
-		for length in range(20, int(length_mm) + 1):
-			no = piece[0]
-			l = length
-			th = float(piece[2])
-			r = float(piece[3])
-			d = float(piece[4])
-			domain.add((no, l, th, r, d))
-	for var in csp["X"]:
-		csp["D"][var] = domain.copy()
-		if var in optional_vars:
-			csp["D"][var].add(EMPTY_VALUE)
-
-def assigned_vars(asmnt):
-	'''Preserving the order, extracts assigned variables from asmnt.'''
-	return [_asmnt[0] for _asmnt in asmnt]
-
-def remove_var(var, asmnt):
-	for i, a in enumerate(asmnt):
-		if var == a[0]:
-			del asmnt[i]
-
-def update_consts(csp):
-	for var in csp["X"]:
-		for constraint, variables in csp["C"].items(): 
-			if var in variables:
-				csp["X_C"][var].add(constraint)
+class CSP():
 	
-def init_csp():
-	init_domain(csp)
-	for var in csp["X"]:
-		csp["confset"][var] = []
-		csp["X_C"][var] = set([])
-	update_consts(csp)
-	return csp
+	def getC(self):
+		return self.C
+	
+	def getVars(self):
+		return self.X
+		
+	def varDomain(self, var):
+		return self.D[var].copy()
+	
+	def Dsize(self, var):
+		if var[1] == "L":
+			return self.D[var]["max"] - self.D[Lvar]["min"]
+		return len(self.D[var])
+			
+	def initC(self):
+		self.C["inStock"] = self.X
+		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+		self.C["sameTH"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.C["sameR"] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+		self.C["Ldec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
+		self.C["Ddec"] = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.C["L1_half_L2"] = {"L1", "L2"}
+		self.C["h1"] = {"L1", "L2", "L3"}
+		self.C["h2"] = {"L1", "L2", "L3"}
+		self.C["h3"] = {"L1", "L2", "L3", "L4"}
+		self.C["h4"] = {"L1", "L2", "L3", "L4"}
+		self.C["h5"] = {"L1", "L2", "L3", "L4"}
+		self.C["h6"] = {"L1", "L2", "L3", "L4", "L5"}
+			
+	def unary(self):
+		'''Makes variables unary consistent.'''
+		for diam in self.D["D1"]:
+			if diam < spec["topd"]["min"] or diam > spec["topd"]["max"]:
+				self.D["D1"].remove(diam)
+		for Lvar in self.Lvars:
+			self.D[Lvar]["min"] = spec["minl"]
+		self.D["L6"]["min"] = spec["hmarg"] * 2 + spec["holed"] * 1 # 1 hole
+		self.D["L5"]["min"] = spec["hmarg"] * 4 + spec["holed"] * 3 # 3 holes
+		self.D["L4"]["min"] = spec["hmarg"] * 3 + spec["holed"] * 2 # 2 holes
+	
+	def initD(self):
+		for Lvar in self.Lvars:
+			self.D[Lvar] = {"min": 0, "max": float("inf")}
+		ds = self.catalog.values("D")
+		ths = self.catalog.values("TH")
+		rs = self.catalog.values("R")
+		for Dvar in self.Dvars:
+			self.D[Dvar] = ds
+		for Rvar in self.Rvars:
+			self.D[Rvar] = rs
+		for THvar in self.THvars:
+			self.D[THvar] = ths
+
+	def __init__(self, spec, catalog):
+		self.catalog = catalog
+		self.spec = spec
+		self.Lvars = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+		self.Dvars = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.Rvars = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+		self.THvars = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.X = self.Lvars.union(self.Dvars, self.THvars, self.Rvars)
+		self.C = {}
+		self.learnedC = set([])
+		self.D = {}
+		self.R = {} # Relations for learned constraints
+		self.initD()
+		self.unary()
+		self.initC()

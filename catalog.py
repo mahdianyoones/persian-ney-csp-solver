@@ -1,6 +1,4 @@
 import csv
-from ney_spec import spec
-import pprint
 
 class Tree(object):
 	def __init__(self, key=None, val=0):
@@ -36,36 +34,35 @@ class Tree(object):
 	def getChildren(self):
 		return self.children
 
-'''
-Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
-
-- What diameters exist in the stock?
-	catalog.values("D")
-	
-- What diameters exist in the stock, given thickness=2.0mm?
-	catalog.values("D", {"TH": "2.0"})
-	
-- What thicknesses exist in the stock, given diameter=18.0mm?
-	catalog.values("TH", {"D": "18.0"})
-	
-- What is the length of all nodes in the stock?
-	catalog.getL()
-
-- What is the length of all nodes with diameter=18.0mm?
-	catalog.getL({"D": 18.0})
-
-- What is the length of all nodes with diameter=18.0mm and thickness=2.0?
-	catalog.getL({"D": 18.0, "TH": 2.0})
-	
-- What is the length of all nodes with diameter=18.0mm and thickness=2.0 and roundness=0.0mm?
-	catalog.getL({"D": "18.0", "TH": "2.0", "R": "0.0"})
-
-* Any combinations of TH, R, and D could be given as filters to both values and getL methods.
-* Both methods execute in constant time.
-
-'''
 class catalog(object):
+	'''
+	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
 
+	- What diameters exist in the stock?
+		catalog.values("D")
+		
+	- What diameters exist in the stock, given thickness=2.0mm?
+		catalog.values("D", {"TH": "2.0"})
+		
+	- What thicknesses exist in the stock, given diameter=18.0mm?
+		catalog.values("TH", {"D": "18.0"})
+		
+	- What is the length of all nodes in the stock?
+		catalog.getL()
+
+	- What is the length of all nodes with diameter=18.0mm?
+		catalog.getL({"D": 18.0})
+
+	- What is the length of all nodes with diameter=18.0mm and thickness=2.0?
+		catalog.getL({"D": 18.0, "TH": 2.0})
+		
+	- What is the length of all nodes with diameter=18.0mm and thickness=2.0 and roundness=0.0mm?
+		catalog.getL({"D": "18.0", "TH": "2.0", "R": "0.0"})
+
+	* Any combinations of TH, R, and D could be given as filters to both values and getL methods.
+	* Both methods execute in constant time.	
+	'''
+	
 	def values(self, key="D", filters={}):
 		'''Returns values for key, given the filters (one or two of D,TH,R)'''
 		fKeys = ""
@@ -171,13 +168,3 @@ class catalog(object):
 			R = float(p[3])
 			D = float(p[4])			
 			self.index(TH, D, R, L)
-		
-ca = catalog("measures_of_drained_pieces.csv")
-print("Thicknesses: ", ca.values("TH"))
-print("Roundnesses: ", ca.values("R"))
-print("Diameters: ", ca.values("D"))
-
-print(ca.values("TH", {"R": "2.0"}))
-print(ca.getL({"R": "2.0", "TH": "2.0", "D": "19.5"}))
-print(ca.getL({"TH": "1.0"}))
-print(ca.getL())

@@ -4,8 +4,10 @@ from assignment import assignment
 
 FAILURE = False
 SUCCESS = True
+DOMAIN_EXHAUSTED = None
 
 class Solver():
+	
 	def __init__(self, csvfile, spec):
 		self.catalog = catalog(csvfile)
 		self.spec = spec
@@ -17,11 +19,7 @@ class Solver():
 
 	def getSolution(self):
 		return self.assignment.getAssignment()
-		
-	def backtrack_search(self):
-		self.assignment = assignment(self.csp)
-		return self.backtrack
-	
+			
 	def accum_confset(curvar, confset):
 		'''Accumulates the conflict set for curvar.
 		
@@ -47,7 +45,7 @@ class Solver():
 			if not cfv in self.confset[curvar]: # prevent duplicates
 				self.confset[curvar].append(cfv)
 
-	def absorb_confset(self, curvar, futureVar):
+	def absorb_confset(self, curvar, confset):
 		'''Absorbs conflict set from jump origin.
 		
 		Current variable gets the conflict set of the 
@@ -60,14 +58,31 @@ class Solver():
 		effect of their actions far enough because it takes too much time
 		to consider every scenario.
 		'''
-		future_confset = self.confset[futureVar]
-		for f_confset in [v for v in future_confset if v !=curvar]:
-			if not f_confset in self.confset[curvar]:
-				self.confset[curvar].append(f_confset) # order matters
-	
-	def learnC(self, assignment, confset, curvar):
-		'''Adds new constraints or new values to learned constraints.'''
-		assigned = assignment.getAssigned() # order matters
+		for confvar in [v for v in confset if v !=curvar]:
+			if not confvar in self.confset[curvar]:
+				self.confset[curvar].append(confvar) # order matters
+
+	def learnC(self, curvar, confset):
+		'''Adds new constraints or new values to learned constraints.
+		
+		Confset contains all variables that participate in a violated
+		constraint. The variables that participate in the new constraints
+		are all the confset except curvar.
+		
+		For example, if confset = {D1, TH1, R1}, and curvar = R1, we build
+		a new constraint on D1 and TH1 only, since these new learned
+		constraints are to target LEGAL assignments that contradict all
+		values of R1.
+		
+		i.e. an assignment to D1 and TH1 caused contradiction
+		for R1; hence, we need to prevent this very valid assignment to 
+		D1 and TH1 from ever happening again.
+		
+		This LEGAL-yet-must-prevented assignment forms a no-good set where
+		members are tuples like (D1, value), (TH1, value), ... . No-goods are
+		added to relations (R) for the new constraint.
+		'''
+		assigned = self.assignment.getAssigned() # order matters
 		confvars = [var for var in assigned if var in confset and var != curvar]
 		constraint = ""
 		for confvar in confvars:
@@ -77,11 +92,42 @@ class Solver():
 			self.R[constraint] = set([])
 		asmnt = assignment.getAssignment()
 		no_good = [(var, asmnt[var]) for var in assigned if var in confvars]
-		no_good = tuple(no_good)
+		no_good = set(no_good)
 		self.R[constraint].add(no_good)
 		self.learnC.add(tuple(confvars))
-	
+
+	def next_val(self, curvar, D, offset):
+		'''Returns the next value in domain of given curvar W.R.T. offset.
+		
+		Encapsulates the difference between representations of domains.
+		'''
+		if curvar[1] == "L":
+			if offset > D["max"] - D["min"]:
+				return DOMAIN_EXHAUSTED
+			else:
+				value = D["min"] + offset
+		else:
+			if offset > len(D):
+				return DOMAIN_EXHAUSTED
+			else:
+				value = D[offset]
+		
+	def backtrack_search(self):
+	self.assignment = assignment(self.csp)
+	return self.backtrack()
+
 	def backtrack(self):
+		'''Recursively assigns values to variables til a solution is found.
+		
+		Or til a failure is discovered. When the domain of a variable is 
+		exhausted	without any solution being found, the algorithm marks this
+		as a new constraint and do not backjump to the last 
+		variable (yesterday), since backtracking occurs anyway.
+		
+		This case does not occur more than once before termination. However,
+		adding this contradiction to a constraint may help optimization in
+		the next phase of the project.
+		'''
 		if self.assignment.isComplete():
 			return (SUCCESS, None)
 		curvar = self.select_var()
@@ -90,38 +136,35 @@ class Solver():
 		offset = 0
 		while True:
 			offset += 1
-			if curvar[1] == "L":
-				if offset > D["max"] - D["min"]:
-					break # domain exhausted	
-				else:
-					value = D["min"] + offset
-			else:
-				if offset > len(D):
-					break # domain exhausted
-				else:
-					value = D[offset]
+			value = self.next_val(curvar, D, offset)
+			if value == DOMAIN_EXHAUSTED:
+				break
 			cresult = self.consistency.make(curvar, value)
 			if cresult[0] == FAILURE:				# Future would fail if tried.
-				self.accum_confset(curvar, cresult[1])
-				self.csp.learnC(self.assignment, cresult[1], curvar)
+				confset = cresult[1]
+				self.accum_confset(curvar, confset)
+				self.csp.learnC(curvar, confset)
 				continue
 			self.assignment.assign(curvar, value)
-			result = self.backtrack()
-			if result[0] == SUCCESS:					# Future succeeded
+			result = self.backtrack()				# Go to the future.
+			if result[0] == SUCCESS:					# Future was bright.
 				return result						
-			self.assignment.unassign(curvar)
+			self.assignment.unassign(curvar)			# Future failed.
 			if result[1] == None:
-				continue							# backtracked to curvar
-			if result[1] == curvar:
-				self.absorb_confset(curvar, result[2])	# backjumped to curvar
+				continue							# backtracked
+			if result[2] == curvar:
+				confset = result[1]
+				self.absorb_confset(curvar, confset)	# backjumped
 				continue
 			else:
-				return result						# backjumped over curvar
+				return result						# Jumped over curvar
 		# domain exhausted
 		confset = self.assignment.getAssigned()
-		self.csp.learnC(self.assignment, confset, curvar)
+		self.csp.learnC(confset, curvar)
 		if len(self.confset[curvar]) > 0:
-			return (FAILURE, self.confset[curvar][-1], curvar) # do jumpback
+			confset = self.confset[curvar]
+			jump_target = self.confset[curvar][-1]
+			return (FAILURE, confset, jump_target) 		# do jumpback
 		return (FAILURE, None) # do backtrack
 					
 	def select_var(self):

@@ -105,16 +105,16 @@ class Solver():
 			if offset > D["max"] - D["min"]:
 				return DOMAIN_EXHAUSTED
 			else:
-				value = D["min"] + offset
+				return D["min"] + offset
 		else:
 			if offset > len(D):
 				return DOMAIN_EXHAUSTED
 			else:
-				value = D[offset]
+				return D[offset]
 		
 	def backtrack_search(self):
-	self.assignment = assignment(self.csp)
-	return self.backtrack()
+		self.assignment = assignment(self.csp)
+		return self.backtrack()
 
 	def backtrack(self):
 		'''Recursively assigns values to variables til a solution is found.
@@ -137,6 +137,7 @@ class Solver():
 		while True:
 			offset += 1
 			value = self.next_val(curvar, D, offset)
+			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
 			cresult = self.consistency.make(curvar, value)

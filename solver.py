@@ -118,9 +118,19 @@ class Solver():
 				return D[offset]
 		
 	def backtrack_search(self):
-		return self.backtrack()
+		'''Runs MAC for all variables first and then calls DFS.
+		
+		If MAC figures out any contradiction before search begins, no
+		solution could ever be found.
+		'''
+		for var in self.csp.X:
+			cresult = self.mac.maintain(var, None)
+			if cresult[0] == CONTRADICTION:
+				print("Search cannot start. No consistent solution exists")
+				return (FAILURE)
+		return self.dfs()
 
-	def backtrack(self):
+	def dfs(self):
 		'''Recursively assigns values to variables to find a solution.
 		
 		When the domain of a variable is exhausted without any solution
@@ -151,7 +161,7 @@ class Solver():
 				self.learn_c(curvar, confset)
 				continue
 			self.asmnt.assign(curvar, value)
-			result = self.backtrack()				# Go to the future.
+			result = self.dfs()						# Go to the future.
 			if result[0] == SUCCESS:					# Future was bright.
 				return result						
 			self.asmnt.unassign(curvar)				# Future failed.

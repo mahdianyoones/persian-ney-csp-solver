@@ -1,5 +1,29 @@
 class CSP():
+	def __init__(self, spec, catalog):
+		self.catalog = catalog
+		self.spec = spec
+		self.Lvars = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+		self.Dvars = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.Rvars = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+		self.THvars = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.X = self.Lvars.union(self.Dvars, self.THvars, self.Rvars)
+		self.C = {}
+		self.learnedC = set([])
+		self.D = {}
+		self.DBackup = {}
+		self.R = {} # Relations for learned constraints
+		self.initD()
+		self.unary()
+		self.initC()
 	
+	#TODO: add updateD(var, domain) method
+	
+	def backupD(self):
+		self.DBackup = self.D.copy()
+		
+	def revertD(self):
+		self.D = self.DBackup.copy()
+		
 	def getC(self):
 		return self.C
 	
@@ -15,13 +39,13 @@ class CSP():
 		return len(self.D[var])
 			
 	def initC(self):
-		self.C["inStock"] = self.X
+		self.C["in_stock"] = self.X
 		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
-		self.C["sameTH"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
-		self.C["sameR"] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
-		self.C["Ldec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
-		self.C["Ddec"] = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
-		self.C["L1_half_L2"] = {"L1", "L2"}
+		self.C["same_th"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.C["same_r"] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+		self.C["l_dec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
+		self.C["d_dec"] = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.C["l1_half_l2"] = {"L1", "L2"}
 		self.C["h1"] = {"L1", "L2", "L3"}
 		self.C["h2"] = {"L1", "L2", "L3"}
 		self.C["h3"] = {"L1", "L2", "L3", "L4"}
@@ -31,6 +55,7 @@ class CSP():
 			
 	def unary(self):
 		'''Makes variables unary consistent.'''
+		# TODO: apply other unary bounds constraints
 		for diam in self.D["D1"]:
 			if diam < spec["topd"]["min"] or diam > spec["topd"]["max"]:
 				self.D["D1"].remove(diam)
@@ -52,19 +77,3 @@ class CSP():
 			self.D[Rvar] = rs
 		for THvar in self.THvars:
 			self.D[THvar] = ths
-
-	def __init__(self, spec, catalog):
-		self.catalog = catalog
-		self.spec = spec
-		self.Lvars = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
-		self.Dvars = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
-		self.Rvars = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
-		self.THvars = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
-		self.X = self.Lvars.union(self.Dvars, self.THvars, self.Rvars)
-		self.C = {}
-		self.learnedC = set([])
-		self.D = {}
-		self.R = {} # Relations for learned constraints
-		self.initD()
-		self.unary()
-		self.initC()

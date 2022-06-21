@@ -6,7 +6,7 @@ FEATURE_IS_SET = True
 DOMAINS_REDUCED = 0
 DOMAINS_INTACT = 1
 
-class Consistency():
+class MAC():
 	'''Implements MAC through special consistency algorithms.
 				
 	Impacts due to {D1: 18}: 
@@ -123,7 +123,7 @@ class Consistency():
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
 
-	def MAC(self, curvar, value):
+	def maintain(self, curvar, value):
 		'''Establishes consistency for curvar neighbors and returns a conflict set.
 		
 		If the domain of a neighbor changes, neighbors of that neighbor are also

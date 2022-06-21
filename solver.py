@@ -9,10 +9,12 @@ DOMAIN_EXHAUSTED = None
 class Solver():
 	
 	def __init__(self, csvfile, spec):
+		''''''
 		self.catalog = catalog(csvfile)
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)
 		self.confset = {}
+		self.assignment = assignment(self.csp)		
 		self.consistency = consistency(self.csp, self.assignment, self.confset)
 		for var in self.csp.X:
 			self.confset[var] = [] # order matters
@@ -113,7 +115,6 @@ class Solver():
 				return D[offset]
 		
 	def backtrack_search(self):
-		self.assignment = assignment(self.csp)
 		return self.backtrack()
 
 	def backtrack(self):
@@ -184,7 +185,7 @@ class Solver():
 				mrv = Dsize
 		return mrv_var
 
-solver = Solver("measures_of_drained_pieces.csv")
+solver = Solver("measures_of_drained_pieces.csv", spec)
 result = solver.backtrack_search()
 if result[0] == SUCCESS:
 	print("Found a solution: ", solver.getSolution())

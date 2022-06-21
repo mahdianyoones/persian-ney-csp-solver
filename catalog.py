@@ -89,7 +89,7 @@ class catalog(object):
 			values.add(child.getKey())
 		return values
 	
-	def getL(self, filters={}):
+	def get_l(self, filters={}):
 		'''Given the filters, searchs in indices for values.'''
 		if filters == {}:
 			idx = "DRTH" # any index would do

@@ -80,27 +80,25 @@ class MAC():
 
 
 	'''
-	
-	def __init__(self, csp, assignment, confset):
-		'''Saves references to the given needed objects.'''
+	def __init__(self, csp, asmnt, confset):
 		self.csp = csp
-		self.assignment = assignment
+		self.asmnt = asmnt
 		self.confset = confset
 		self.neighbors = {}
 		self.alg_ref = {
-			"in_stock": 	self.apply_in_stock,
-			"len":		self.apply_len,
-			"same_th":	self.apply_same_thr,
-			"same_r":		self.apply_same_thr,
-			"l_dec":		self.apply_l_dec,
-			"d_dec":		self.apply_d_dec,
-			"l1_half_l2":	self.apply_l1_half_l2,
 			"h1":		self.apply_holes,
 			"h2":		self.apply_holes,
 			"h3":		self.apply_holes,
 			"h4":		self.apply_holes,
 			"h5":		self.apply_holes,
-			"h6":		self.apply_holes
+			"h6":		self.apply_holes,
+			"l1_half_l2":	self.apply_l1_half_l2,
+			"in_stock": 	self.apply_in_stock,
+			"same_th":	self.apply_same_thr,
+			"same_r":		self.apply_same_thr,
+			"l_dec":		self.apply_l_dec,
+			"d_dec":		self.apply_d_dec,
+			"len":		self.apply_len
 		}
 
 	def neighborhood(self, curvar):
@@ -127,17 +125,27 @@ class MAC():
 		'''Establishes consistency for curvar neighbors and returns a conflict set.
 		
 		If the domain of a neighbor changes, neighbors of that neighbor are also
-		checked for reduction.'''
+		checked for reduction.
+		
+		curvar is the variable which neighbors are to be made consistent.
+		Before search, bounds on varaibles needs to be made consistent.
+		Therefore, this method is called for all variables one by one with
+		value = None. 
+		
+		Individual consistency algorithms (i.e. other methods of this class),
+		detect if there is an oppotunity to reduce the domain of variables
+		W.R.T. curvar.
+		'''
 		reduced = set([curvar])
 		self.csp.backupD()
 		while len(reduced) > 0:
 			curvar = reduced.pop()
 			neighborhood = self.neighborhood(curvar)
-			myCs = neighborhood.keys()
-			for C in myCs:
-				cresult = self.alg_ref[C](curvar, value)
+			my_cs = neighborhood.keys()
+			for c in my_cs:
+				cresult = self.alg_ref[c](curvar, value)
 				if cresult[0] == CONTRADICTION:
-					self.csp.revertD()
+					self.csp.revert_d()
 					return (FAILURE, cresult[1])
 				elif cresult[0] == DOMAINS_INTACT:
 					continue
@@ -165,8 +173,8 @@ class MAC():
 		impacted = {"R"+i, "TH"+i, "D"+i}
 		impacted.remove(curvar)
 		filters = {curvar: value}
-		node = self.assignment.nodes[curvar[1]]
-		asmnt = self.assignment.getAssignment()
+		node = self.asmnt.nodes[curvar[1]]
+		asmnt = self.asmnt.asmnt
 		for var in [v for v in impacting if node[v] == FEATURE_IS_SET]:
 			impacted.remove(var)
 			filters[var] = asmnt(var)
@@ -205,7 +213,7 @@ class MAC():
 		
 		where h1 is the length of the Ney.
 		'''
-		asmnt = self.assignment.getAssignment()
+		asmnt = self.asmnt.asmnt
 		assignedLs = []
 		unassignedL = None
 		_sum = 0
@@ -218,12 +226,12 @@ class MAC():
 		if len(assignedLs < 6):
 			return (DOMAINS_INTACT, None)
 		newL = self.csp.spec["len"] - _sum # L1 = h1 - (L2+L3+L4+L5+L6+L7)
-		D = self.csp.varDomain(impact)
+		D = self.csp.D[impact]
 		if newL < D["min"] or newL > D["max"]:
 			confset = assignedLs
 			return (CONTRADICTION, confset)
 		newD = {"min": newL, "max": newL}
-		self.csp.updateD(unassignedL, newD)
+		self.csp.update_d(unassignedL, newD)
 		return (DOMAINS_REDUCED, set([unassignedL]))
 	
 	def apply_same_thr(self, curvar, value):

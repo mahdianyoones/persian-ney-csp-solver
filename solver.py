@@ -127,6 +127,7 @@ class Solver():
 			if cresult[0] == FAILURE:
 				print("Search cannot start. No consistent solution exists")
 				return (FAILURE, None)
+			print(self.csp.D)
 		return self.dfs()
 
 	def dfs(self):

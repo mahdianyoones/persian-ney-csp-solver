@@ -331,8 +331,9 @@ class MAC():
 			values to variables can trigger strongger domain reduction
 			in propagation.
 		'''
-		impacted = {}
+		impacted = set({})
 		for i in range(int(curvar[1])+1, 8): # curvar up to L7
+			li = "L"+str(i)
 			if value != None:
 				curvar_d = {"min": value, "max": value}
 			else:
@@ -347,11 +348,11 @@ class MAC():
 				new_d = last_d.copy()
 				new_d["max"] = new_max
 				new_d["min"] = new_min
-				impacted.add("L"+i)
-				self.csp.update_d("L"+i, new_d)
+				impacted.add(li)
+				self.csp.update_d(li, new_d)
 				reduced = True
 			if reduced:
-				curvar = "L"+i
+				curvar = li
 			else:
 				break # stop propagating nothing!
 		if len(impacted) > 0:
@@ -558,77 +559,79 @@ class MAC():
 		s = [ None, hmarg * 1, hmarg * 2 + holed * 1, hmarg * 1, 
 			hmarg * 2 + holed * 1, hmarg * 3 + holed * 2, hmarg * 1]
 		asmnt = self.asmnt.assignment
-		m = ds = [None, 0, 0, 0, 0, 0, 0]
-		impacted = {}
+		ds = [None, 0, 0, 0, 0, 0, 0]
+		m = [None, 0, 0, 0, 0, 0, 0]
+		impacted = set([])
 		for i in range(1, 7):
-			i = str(i)
+			li = "L"+str(i)
 			if curvar[1] == i and value != None:
 				ds[i] = {"min": value, "max": value}
-			elif "L"+i in asmnt:
-				ds[i] = {"min": asmnt["L"+i], "max": asmnt["L"+i]}
+			elif li in asmnt:
+				ds[i] = {"min": asmnt[li], "max": asmnt[li]}
 			else:
-				ds[i] = self.csp.D["L"+i]
-				impacted.add("L"+i)
+				ds[i] = self.csp.D[li]
+				impacted.add(li)
 			m[i] = ds[i]["min"]
+		spec = self.csp.spec
 		h = [None, spec["h1"], spec["h2"], spec["h3"], spec["h4"], 
-			spec["h5"], spec["h6"], spec["h7"]]
+			spec["h5"], spec["h6"]]
 		maxs = [None, 0, 0, 0, 0, 0]
 		if curvar[1] != "1" and "L1" in impacted:
 			maxs[1] = min(ds[1]["max"], h[1] - (m[2] + m[3] + s[1]))	# h1 - upper1
-			maxs[1] = min(max1, h[2] - (m[2] + m[3] + s[2]))			# h2 - upper1
-			maxs[1] = min(max1, h[3] - (m[2] + m[3] + m[4] + s[3]))	# h3 - upper1
-			maxs[1] = min(max1, h[4] - (m[2] + m[3] + m[4] + s[4]))	# h4 - upper1
-			maxs[1] = min(max1, h[5] - (m[2] + m[3] + m[4] + s[5]))	# h5 - upper1
-			maxs[1] = min(max1, h[6] - (m[2] + m[3] + m[4] + m[5] + s[6]))	# h6 - upper1
-			confset = ["L"+i for i in [2, 3, 4, 5] if "L"+i in asmnt]
+			maxs[1] = min(maxs[1], h[2] - (m[2] + m[3] + s[2]))			# h2 - upper1
+			maxs[1] = min(maxs[1], h[3] - (m[2] + m[3] + m[4] + s[3]))	# h3 - upper1
+			maxs[1] = min(maxs[1], h[4] - (m[2] + m[3] + m[4] + s[4]))	# h4 - upper1
+			maxs[1] = min(maxs[1], h[5] - (m[2] + m[3] + m[4] + s[5]))	# h5 - upper1
+			maxs[1] = min(maxs[1], h[6] - (m[2] + m[3] + m[4] + m[5] + s[6]))	# h6 - upper1
+			confset = ["L"+str(i) for i in [2, 3, 4, 5] if "L"+str(i) in asmnt]
 			if m[1] > maxs[1]:
 				return (CONTRADICTION, confset)
 			if maxs[1] < ds[1]["max"]:
 				ds[1]["max"] = maxs[1]
 		if curvar[1] != "2" and "L2" in impacted:
 			maxs[2] = min(ds[2]["max"], h[1] - (m[1] + m[3] + s[1]))	# h1 - upper2
-			maxs[2] = min(max2, h[2] - (m[1] + m[3] + s[2]))			# h2 - upper2
-			maxs[2] = min(max2, h[3] - (m[1] + m[3] + m[4] + s[3]))		# h3 - upper2
-			maxs[2] = min(max2, h[4] - (m[1] + m[3] + m[4] + s[4]))		# h4 - upper2
-			maxs[2] = min(max2, h[5] - (m[1] + m[3] + m[4] + s[5]))		# h5 - upper2
-			maxs[2] = min(max2, h[6] - (m[1] + m[3] + m[4] + m[5] + s[6]))	# h6 - upper2
-			confset = ["L"+i for i in [1, 3, 4, 5] if "L"+i in asmnt]
+			maxs[2] = min(maxs[2], h[2] - (m[1] + m[3] + s[2]))			# h2 - upper2
+			maxs[2] = min(maxs[2], h[3] - (m[1] + m[3] + m[4] + s[3]))		# h3 - upper2
+			maxs[2] = min(maxs[2], h[4] - (m[1] + m[3] + m[4] + s[4]))		# h4 - upper2
+			maxs[2] = min(maxs[2], h[5] - (m[1] + m[3] + m[4] + s[5]))		# h5 - upper2
+			maxs[2] = min(maxs[2], h[6] - (m[1] + m[3] + m[4] + m[5] + s[6]))	# h6 - upper2
+			confset = ["L"+str(i) for i in [1, 3, 4, 5] if "L"+str(i) in asmnt]
 			if m[2] > maxs[2]:
 				return (CONTRADICTION, confset)
 			if maxs[2] < ds[2]["max"]:
 				ds[2]["max"] = maxs[2]
 		if curvar[1] != "3" and "L3" in impacted:
 			maxs[3] = min(ds[3]["max"], h[1] - (m[1] + m[2] + s[1]))	# h1 - upper3
-			maxs[3] = min(max3, h[2] - (m[1] + m[2] + s[2]))			# h2 - upper3
-			maxs[3] = min(max3, h[3] - (m[1] + m[2] + m[4] + s[3]))	# h3 - upper3
-			maxs[3] = min(max3, h[4] - (m[1] + m[2] + m[4] + s[4]))	# h4 - upper3
-			maxs[3] = min(max3, h[5] - (m[1] + m[2] + m[4] + s[5]))	# h5 - upper3
-			maxs[3] = min(max3, h[6] - (m[1] + m[2] + m[4] + m[5] + s[6]))	# h6 - upper3
-			confset = ["L"+i for i in [1, 2, 4, 5] if "L"+i in asmnt]
+			maxs[3] = min(maxs[3], h[2] - (m[1] + m[2] + s[2]))			# h2 - upper3
+			maxs[3] = min(maxs[3], h[3] - (m[1] + m[2] + m[4] + s[3]))	# h3 - upper3
+			maxs[3] = min(maxs[3], h[4] - (m[1] + m[2] + m[4] + s[4]))	# h4 - upper3
+			maxs[3] = min(maxs[3], h[5] - (m[1] + m[2] + m[4] + s[5]))	# h5 - upper3
+			maxs[3] = min(maxs[3], h[6] - (m[1] + m[2] + m[4] + m[5] + s[6]))	# h6 - upper3
+			confset = ["L"+str(i) for i in [1, 2, 4, 5] if "L"+str(i) in asmnt]
 			if m[3] > maxs[3]:
 				return (CONTRADICTION, confset)
 			if maxs[3] < ds[3]["max"]:
 				ds[3]["max"] = maxs[3]
 		if curvar[1] != "4" and "L4" in impacted:
 			maxs[4] = min(ds[4]["max"], h[3] - (m[1] + m[2] + m[3] + s[3]))	# h3 - upper4
-			maxs[4] = min(max4, h[4] - (m[1] + m[2] + m[3] + s[4]))		# h4 - upper4
-			maxs[4] = min(max4, h[5] - (m[1] + m[2] + m[3] + s[5]))		# h5 - upper4
-			maxs[4] = min(max4, h[6] - (m[1] + m[2] + m[3] + m[5] + s[6]))	# h6 - upper4
-			confset = ["L"+i for i in [1, 2, 3, 5] if "L"+i in asmnt]
+			maxs[4] = min(maxs[4], h[4] - (m[1] + m[2] + m[3] + s[4]))		# h4 - upper4
+			maxs[4] = min(maxs[4], h[5] - (m[1] + m[2] + m[3] + s[5]))		# h5 - upper4
+			maxs[4] = min(maxs[4], h[6] - (m[1] + m[2] + m[3] + m[5] + s[6]))	# h6 - upper4
+			confset = ["L"+str(i) for i in [1, 2, 3, 5] if "L"+str(i) in asmnt]
 			if m[4] > maxs[4]:
 				return (CONTRADICTION, confset)
 			if maxs[4] < ds[4]["max"]:
 				ds[4]["max"] = maxs[4]
 		if curvar[1] != "5" and "L5" in impacted:
 			maxs[5] = min(ds[5]["max"], h[6] - (m[1]+m[2]+m[3]+m[4]+s[6])) # h6 - upper5		
-			confset = ["L"+i for i in [1, 2, 3, 4] if "L"+i in asmnt]
+			confset = ["L"+str(i) for i in [1, 2, 3, 4] if "L"+str(i) in asmnt]
 			if m[5] > maxs[5]:
 				return (CONTRADICTION, confset)
 			if maxs[5] < ds[5]["max"]:
 				ds[1]["max"] = maxs[1]
-		for i in range(1, 7):
+		for i in range(1, 6):
 			if maxs[i] == ds[i]["max"]:
-				impacted.remove("L"+i)
+				impacted.remove("L"+str(i))
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)
 		return (DOMAINS_INTACT, None)

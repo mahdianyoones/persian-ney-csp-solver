@@ -1,44 +1,13 @@
 class CSP():
-	def __init__(self, spec, catalog):
+	def __init__(self, catalog, spec):
 		self.catalog = catalog
 		self.spec = spec
-		self.Lvars = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
-		self.Dvars = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
-		self.Rvars = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
-		self.THvars = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
-		self.X = self.Lvars.union(self.Dvars, self.THvars, self.Rvars)
+		self.l_vars = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+		self.d_vars = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.r_vars = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+		self.th_vars = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.X = self.l_vars.union(self.d_vars, self.th_vars, self.r_vars)
 		self.C = {}
-		self.learnedC = set([])
-		self.D = {}
-		self.DBackup = {}
-		self.R = {} # Relations for learned constraints
-		self.initD()
-		self.unary()
-		self.initC()
-	
-	#TODO: add updateD(var, domain) method
-	
-	def backupD(self):
-		self.DBackup = self.D.copy()
-		
-	def revertD(self):
-		self.D = self.DBackup.copy()
-		
-	def getC(self):
-		return self.C
-	
-	def getVars(self):
-		return self.X
-		
-	def varDomain(self, var):
-		return self.D[var].copy()
-	
-	def Dsize(self, var):
-		if var[1] == "L":
-			return self.D[var]["max"] - self.D[Lvar]["min"]
-		return len(self.D[var])
-			
-	def initC(self):
 		self.C["in_stock"] = self.X
 		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
 		self.C["same_th"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
@@ -52,28 +21,41 @@ class CSP():
 		self.C["h4"] = {"L1", "L2", "L3", "L4"}
 		self.C["h5"] = {"L1", "L2", "L3", "L4"}
 		self.C["h6"] = {"L1", "L2", "L3", "L4", "L5"}
-			
+		self.D = {}
+		self.d_backup = {}
+		self.R = {} # Relations for learned constraints
+		self.init_d()
+		self.unary()
+	
+	def update_d(self, var, new_domain):
+		self.D[var] = new_domain
+		
+	def backup_d(self):
+		self.d_backup = self.D.copy()
+		
+	def revert_d(self):
+		self.D = self.d_backup.copy()
+							
 	def unary(self):
 		'''Makes variables unary consistent.'''
-		# TODO: apply other unary bounds constraints
 		for diam in self.D["D1"]:
 			if diam < spec["topd"]["min"] or diam > spec["topd"]["max"]:
 				self.D["D1"].remove(diam)
-		for Lvar in self.Lvars:
+		for l_var in self.l_vars:
 			self.D[Lvar]["min"] = spec["minl"]
 		self.D["L6"]["min"] = spec["hmarg"] * 2 + spec["holed"] * 1 # 1 hole
 		self.D["L5"]["min"] = spec["hmarg"] * 4 + spec["holed"] * 3 # 3 holes
 		self.D["L4"]["min"] = spec["hmarg"] * 3 + spec["holed"] * 2 # 2 holes
 	
-	def initD(self):
-		for Lvar in self.Lvars:
-			self.D[Lvar] = {"min": 0, "max": float("inf")}
+	def init_d(self):
+		for l_var in self.l_vars:
+			self.D[l_var] = {"min": 0, "max": float("inf")}
 		ds = self.catalog.values("D")
 		ths = self.catalog.values("TH")
 		rs = self.catalog.values("R")
-		for Dvar in self.Dvars:
-			self.D[Dvar] = ds
-		for Rvar in self.Rvars:
-			self.D[Rvar] = rs
-		for THvar in self.THvars:
-			self.D[THvar] = ths
+		for d_var in self.d_vars:
+			self.D[d_var] = ds
+		for r_var in self.r_vars:
+			self.D[r_var] = rs
+		for th_var in self.th_vars:
+			self.D[th_var] = ths

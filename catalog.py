@@ -33,7 +33,7 @@ class Tree(object):
 	
 	def getChildren(self):
 		return self.children
-
+				
 class CATALOG(object):
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
@@ -65,39 +65,11 @@ class CATALOG(object):
 	
 	def values(self, key="D", filters={}):
 		'''Returns values for key, given the filters (one or two of D,TH,R)'''
-		fKeys = ""
-		for f in filters.keys():
-			fKeys += f
-		fKeys += key
-		idx2filters = {
-			"DRTH": set(["D", "DR", "DRTH"]),
-			"DTHR": set(["DTH", "DTHR"]),
-			"RDTH": set(["R", "RD", "RDTH"]),
-			"RTHD": set(["RTH", "RTHD"]),
-			"THRD": set(["TH", "THR", "THRD"]),
-			"THDR": set(["THD", "THDR"]),
-		}
-		for idx, _filters in idx2filters.items():
-			if fKeys in _filters:
-				cursor = self.idxs[idx]["tree"]
-				break
-		for k in self.idxs[idx]["keys"]:
-			if k in filters.keys():
-				cursor = cursor.getChild(filters[k])
-		values = set([])
-		for child in cursor.getChildren():
-			values.add(child.getKey())
-		return values
-	
-	def get_l(self, filters={}):
-		'''Given the filters, searchs in indices for values.'''
-		if filters == {}:
-			idx = "DRTH" # any index would do
-			cursor = self.idxs[idx]["tree"] 
-		else:
+		try:
 			fKeys = ""
 			for f in filters.keys():
 				fKeys += f
+			fKeys += key
 			idx2filters = {
 				"DRTH": set(["D", "DR", "DRTH"]),
 				"DTHR": set(["DTH", "DTHR"]),
@@ -110,10 +82,44 @@ class CATALOG(object):
 				if fKeys in _filters:
 					cursor = self.idxs[idx]["tree"]
 					break
-		for k in self.idxs[idx]["keys"]:
-			if k in filters.keys():
-				cursor = cursor.getChild(filters[k])
-		return cursor.getVal()
+			for k in self.idxs[idx]["keys"]:
+				if k in filters.keys():
+					cursor = cursor.getChild(filters[k])
+			values = set([])
+			for child in cursor.getChildren():
+				values.add(child.getKey())
+			return values		
+		except:
+			return set([])
+	
+	def get_l(self, filters={}):
+		'''Given the filters, searchs in indices for values.'''
+		try:
+			if filters == {}:
+				idx = "DRTH" # any index would do
+				cursor = self.idxs[idx]["tree"] 
+			else:
+				fKeys = ""
+				for f in filters.keys():
+					fKeys += f
+				idx2filters = {
+					"DRTH": set(["D", "DR", "DRTH"]),
+					"DTHR": set(["DTH", "DTHR"]),
+					"RDTH": set(["R", "RD", "RDTH"]),
+					"RTHD": set(["RTH", "RTHD"]),
+					"THRD": set(["TH", "THR", "THRD"]),
+					"THDR": set(["THD", "THDR"]),
+				}
+				for idx, _filters in idx2filters.items():
+					if fKeys in _filters:
+						cursor = self.idxs[idx]["tree"]
+						break
+			for k in self.idxs[idx]["keys"]:
+				if k in filters.keys():
+					cursor = cursor.getChild(filters[k])
+			return cursor.getVal()
+		except:
+			return 0
 
 	def index(self, TH, D, R, L):
 		'''Adds the given data to all indices.'''

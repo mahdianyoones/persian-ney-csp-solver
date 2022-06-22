@@ -34,7 +34,7 @@ class Tree(object):
 	def getChildren(self):
 		return self.children
 
-class catalog(object):
+class CATALOG(object):
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
 

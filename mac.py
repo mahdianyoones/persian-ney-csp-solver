@@ -137,7 +137,7 @@ class MAC():
 		W.R.T. curvar.
 		'''
 		reduced = set([curvar])
-		self.csp.backupD()
+		self.csp.backup_d()
 		while len(reduced) > 0:
 			curvar = reduced.pop()
 			neighborhood = self.neighborhood(curvar)
@@ -155,46 +155,39 @@ class MAC():
 		return (SUCCESS)
 		
 	def apply_in_stock(self, curvar, value):
-		'''Updates variables in the updatables set W.R.T. in_stock constraint.
-		
-		Returns 
-		(CONTRADICTION, confset),
-		(DOMAINS_INTACT, impacted variables), or 
-		(domains intact, None).
-		
-		"Domains intact" means an L variable is newly assigned. We 
-		intuitively know that L variables do not impact TH, R, and D
-		variables.'''
+		'''Establishes consistency W.R.T. in_stock constraint.'''
 		i = curvar[1]
 		if not curvar[0] in ["R", "D", "TH"]:
 			return (DOMAINS_INTACT, None)
 		impacting = {"R"+i, "TH"+i, "D"+i}
-		impacting.remove(curvar)
 		impacted = {"R"+i, "TH"+i, "D"+i}
 		impacted.remove(curvar)
+		impacting.remove(curvar)
 		filters = {curvar: value}
 		node = self.asmnt.nodes[curvar[1]]
-		asmnt = self.asmnt.asmnt
-		for var in [v for v in impacting if node[v] == FEATURE_IS_SET]:
+		asmnt = self.asmnt.assignment
+		for var in [v for v in impacting if node[v[0]] == FEATURE_IS_SET]:
 			impacted.remove(var)
 			filters[var] = asmnt(var)
 		confset = filters.keys()
 		for var in impacted:
-			newD = self.csp.catalog.values(var, filters)
-			if len(newD) == 0:
+			new_d = self.csp.catalog.values(var, filters)
+			if len(new_d) == 0:
 				return (CONTRADICTION, confset)
-			self.csp.updateD(var, newD)
+			self.csp.update_d(var, new_d)
 		if node["L"] == FEATURE_IS_NOT_SET:
-			Dprev = self.csp.varDomain("L"+i)
-			newD = {
-				"min": Dprev["min"],
-				"max": self.csp.catalog.get_l(filters)
-			}
-			if new_domains["L"+i]["max"] < new_domains["L"+i]["min"]:
+			last_d = self.csp.D["L"+i]
+			new_d = last_d.copy()
+			new_d["max"] = self.csp.catalog.get_l(filters)
+			if new_d["max"] < new_d["min"]:
 				return (CONTRADICTION, confset)
-			impacted.add("L"+i)
-			self.csp.updateD("L"+i, newD)
-		return (DOMAINS_REDUCED, impacted)
+			if new_d["max"] < last_d["max"]:			
+				impacted.add("L"+i)
+				self.csp.update_d("L"+i, new_d)
+		if len(impacted) > 0:
+			return (DOMAINS_REDUCED, impacted)
+		else:
+			return (DOMAINS_INTACT, None)
 	
 	def apply_len(self, curvar, value):
 		'''Makes L variables consistent W.R.T len constraint.
@@ -214,25 +207,25 @@ class MAC():
 		where h1 is the length of the Ney.
 		'''
 		asmnt = self.asmnt.asmnt
-		assignedLs = []
-		unassignedL = None
+		assigned_ls = []
+		unassigned_l = None
 		_sum = 0
 		for i in range(1, 8):
 			if "L"+i in asmnt:
-				assignedLs.add("L"+i)
+				assigned_ls.add("L"+i)
 				_sum += asmnt["L"+i]
 			else:
-				unassignedL = "L"+i
-		if len(assignedLs < 6):
+				unassigned_l = "L"+i
+		if len(assigned_ls < 6):
 			return (DOMAINS_INTACT, None)
-		newL = self.csp.spec["len"] - _sum # L1 = h1 - (L2+L3+L4+L5+L6+L7)
-		D = self.csp.D[impact]
-		if newL < D["min"] or newL > D["max"]:
-			confset = assignedLs
+		new_l = self.csp.spec["len"] - _sum # L1 = h1 - (L2+L3+L4+L5+L6+L7)
+		old_d = self.csp.D[impact]
+		if new_l < old_d["min"] or new_l > old_d["max"]:
+			confset = assigned_ls
 			return (CONTRADICTION, confset)
-		newD = {"min": newL, "max": newL}
-		self.csp.update_d(unassignedL, newD)
-		return (DOMAINS_REDUCED, set([unassignedL]))
+		new_d = {"min": new_l, "max": new_l}
+		self.csp.update_d(unassigned_l, new_d)
+		return (DOMAINS_REDUCED, set([unassigned_l]))
 	
 	def apply_same_thr(self, curvar, value):
 		'''Applies same thickness and roundness constraints.
@@ -248,30 +241,30 @@ class MAC():
 		Resolving the contradictions due to this constraint are done only via
 		backtracking. No backjumping is possible.
 		'''
-		impacted_Rs = set([])
+		impacted_rs = set([])
 		for i in range(1, 8):
 			if curvar[0] == "R‌" and "R"+i != curvar:
-				impacted_Rs.add("R"+i)
+				impacted_rs.add("R"+i)
 			elif curvar[0] == "TH" and "TH"+i != curvar:
-				impacted_THs.add("TH"+i)
-		if len(impacted_Rs) == 6:
-			impacted = impacted_Rs
-		elif len(impacted_THs) == 6:
-			impacted = impacted_THs
+				impacted_ths.add("TH"+i)
+		if len(impacted_rs) == 6:
+			impacted = impacted_rs
+		elif len(impacted_ths) == 6:
+			impacted = impacted_ths
 		else
 			return (DOMAINS_INTACT, None)
-		asmnt = self.assignment.getAssignment()
+		asmnt = self.asmnt.assignment
 		i = curvar[1]
 		impacted = []
-		newD = set([value])
+		new_d = set([value])
 		for var in impacted.copy():
-			Dprev = self.csp.varDomain(var)
-			if not value in Dprev:
+			last_d = self.csp.D[var]
+			if not value in last_d:
 				return (CONTRADICTION, set([]))
-			if len(Dprev) == 1: # no change
+			if len(last_d) == 1: # no change
 				impacted.remove(var)
 				continue
-			self.csp.updateD(curvar, newD)
+			self.csp.update_d(curvar, new_d)
 		return (DOMAINS_REDUCED, impacted)
 
 	def apply_l_dec(self, curvar, value):
@@ -339,27 +332,23 @@ class MAC():
 			in propagation.
 		'''
 		impacted = {}
-		self.csp.backupD()
 		for i in range(curvar[1]+1, 8): # curvar up to L7
 			if value != None:
-				D = {"min": value, "max": value}
+				curvar_d = {"min": value, "max": value}
 			else:
-				D = self.csp.varDomain(curvar)
-			Dprev = self.csp.varDomain(impact)
-			newMax = D["max"] - 1
-			newMin = D["min"] * 2/3 if i < 7 else Dprev["min"]
-			if newMax < newMin:
-				self.csp.revertD()
+				curvar_d = self.csp.D[curvar]
+			last_d = self.csp.D["L"+i]
+			new_max = curvar_d["max"] - 1
+			new_min = curvar_d["min"] * 2/3 if i < 7 else last_d["min"]
+			if new_max < new_min:
 				return (CONTRADICTION, set([]))
-			newD = Dprev.copy()
 			reduced = False
-			if newMax < Dprev["max"]:
-				newD["max"] = newMax
+			if new_max < last_d["max"] or new_min > last_d["min"]:
+				new_d = last_d.copy()
+				new_d["max"] = new_max
+				new_d["min"] = new_min
 				impacted.add("L"+i)
-				reduced = True
-			if newMin > Dprev["min"]:
-				newD[impact]["min"] = newMin
-				impacted.add("L"+i)
+				self.csp.update_d("L"+i, new_d)
 				reduced = True
 			if reduced:
 				curvar = "L"+i
@@ -391,40 +380,36 @@ class MAC():
 		 		value > max(Di-1) - 0.5
 		'''
 		impacted = {}
-		self.csp.backupD()
 		if value != None:
-			maxPrev = value
-			minPrev = value
+			last_max = value
+			last_min = value
 		else:
-			D = sorted(self.csp.varDomain(curvar), reverse=True)
-			maxPrev = D[-1]
-			minPrev = D[0]
-		ddiffmin = self.csp.spec["ddiff"]["min"]
-		ddiffmax = self.csp.spec["ddiff"]["max"]
+			d = sorted(self.csp.D[curvar], reverse=True)
+			last_max = d[-1]
+			last_min = d[0]
+		ddiff = self.csp.spec["ddiff"]
 		for i in range(curvar[1]+1, 8): # curvar up to D7
-			D = self.csp.varDomain("D"+i)
-			newMaxPrev = float("-inf")
-			newMinPrev = float("+inf")
-			for v in D.copy():
-				if v < minPrev - ddiffmax or v > maxPrev - ddiffmin:
+			d = self.csp.D["D"+i]
+			new_max = float("-inf")
+			new_min = float("+inf")
+			for v in d.copy():
+				if v < last_min - ddiff["max"] or v > last_max - ddiff["min"]:
 					impacted.add("D"+i)
-					D.remove(v)
-				elif v > newMaxPrev:
-					newMaxPrev = v
-				elif v < newMinPrev:
-					newMinPrev = v
+					d.remove(v)
+				elif v > new_max:
+					new_max = v
+				elif v < new_min:
+					new_min = v
 			if len(impacted) == 0:
-				self.csp.revertD()
 				break # stop propagating nothing!
-			if len(D) == 0:
-				self.csp.revertD()
+			if len(d) == 0:
 				return (CONTRADICTION, set([]))
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)
 		else:
 			return (DOMAINS_INTACT, None)
 
-	def apply_l1_half_l2(self, L1, value):
+	def apply_l1_half_l2(self, l1, value):
 		'''Reduces L1 and L2 domains so that L1 = L2 * 2.
 		
 		If L1 is assigned a value, L2 reduces to one value only. However,
@@ -433,29 +418,28 @@ class MAC():
 		
 		Example: 
 		'''
-		DL1 = self.csp.varDomain("L1")
-		DL2 = self.csp.varDomain("L2")
+		dl1 = self.csp.D["L1"]
+		dl2 = self.csp.D["L2"]
 		impacted = {}
-		self.csp.backupD()
 		if value == None:
-			lower22 = DL2["min"] / 2
-			if lower22 >= DL1["max"] or lower22 <= DL2["min"]:
+			lower22 = dl2["min"] / 2
+			if lower22 >= dl1["max"] or lower22 <= dl2["min"]:
 				return (DOMAINS_INTACT, None)
-			if lower22 < DL1["max"]:
-				DL1["max"] = lower22
+			if lower22 < dl1["max"]:
+				dl1["max"] = lower22
 				impacted.add("L1")
-			if lower22 > DL2["min"]:
-				DL2["min"] = lower22
+			if lower22 > dl2["min"]:
+				dl2["min"] = lower22
 				impacted.add("L2")
-			if DL1["min"] < DL1["max"] or DL2["min"] < DL2["max"]:
+			if dl1["min"] < dl1["max"] or dl2["min"] < dl2["max"]:
 				return (CONTRADICTION, None)
 		else:
-			newValue = value * 2
-			if newValue >= DL2["max"] or newValue <= DL2["min"]:
+			new_val = value * 2
+			if new_val >= dl2["max"] or new_val <= dl2["min"]:
 				return (CONTRADICTION, None)
-			if newValue == DL2["max"] and newValue == DL2["min"]:
+			if new_val == dl2["max"] and new_val == dl2["min"]:
 				return (DOMAINS_INTACT, None)			
-			DL2 = {"min": value * 2, "max": value * 2}
+			dl2 = {"min": new_val, "max": new_val}
 			impacted.add("L2")
 		if len(impacted) == 0:
 			return (DOMAINS_INTACT, None)
@@ -569,7 +553,7 @@ class MAC():
 		L1 + L2 + L3 + L4 + 50 		< h5
 		L1 + L2 + L3 + L4 + L5 + 10 	< h6
 		'''
-		S = [
+		s = [
 			None,
 			spec["hmarg"] * 1,
 			spec["hmarg"] * 2 + spec["holed"] * 1,
@@ -578,66 +562,76 @@ class MAC():
 			spec["hmarg"] * 3 +‌ spec["hold"] * 2,
 			spec["hmarg"] * 1
 		]
-		asmnt = self.csp.getAssignment()
-		M = Ds = [None, 0, 0, 0, 0, 0, 0]
+		asmnt = self.asmnt.assignment
+		m = ds = [None, 0, 0, 0, 0, 0, 0]
 		impacted = {}
 		for i in range(1, 7):
 			if curvar[1] == i and value != None:
-				Ds[i] = {"min": value, "max": value}
+				ds[i] = {"min": value, "max": value}
 			else if "L"+i in asmnt:
-				Ds[i] = {"min": asmnt["L"+i], "max": asmnt["L"+i]}
+				ds[i] = {"min": asmnt["L"+i], "max": asmnt["L"+i]}
 			else:
-				Ds[i] = self.csp.varDomain("L"+i)
+				ds[i] = self.csp.D["L"+i]
 				impacted.add("L"+i)
-			M[i] = Ds[i]["min"]
-		H = [None, spec["h1"], spec["h2"], spec["h3"], spec["h4"], 
+			m[i] = ds[i]["min"]
+		h = [None, spec["h1"], spec["h2"], spec["h3"], spec["h4"], 
 			spec["h5"], spec["h6"], spec["h7"]]
 		maxs = [None, 0, 0, 0, 0, 0]
 		if curvar[1] != "1" and "L1" in impacted:
-		 	maxs[1] = min(Ds[1]["max"], H[1] - (M[2] + M[3] + S[1]))	# h1 - upper1
-			maxs[1] = min(max1, H[2] - (M[2] + M[3] + S[2]))			# h2 - upper1
-			maxs[1] = min(max1, H[3] - (M[2] + M[3] + M[4] + S[3]))	# h3 - upper1
-			maxs[1] = min(max1, H[4] - (M[2] + M[3] + M[4] + S[4]))	# h4 - upper1
-			maxs[1] = min(max1, H[5] - (M[2] + M[3] + M[4] + S[5]))	# h5 - upper1
-			maxs[1] = min(max1, H[6] - (M[2] + M[3] + M[4] + M[5] + S[6]))	# h6 - upper1
+		 	maxs[1] = min(ds[1]["max"], h[1] - (m[2] + m[3] + s[1]))	# h1 - upper1
+			maxs[1] = min(max1, h[2] - (m[2] + m[3] + s[2]))			# h2 - upper1
+			maxs[1] = min(max1, h[3] - (m[2] + m[3] + m[4] + s[3]))	# h3 - upper1
+			maxs[1] = min(max1, h[4] - (m[2] + m[3] + m[4] + s[4]))	# h4 - upper1
+			maxs[1] = min(max1, h[5] - (m[2] + m[3] + m[4] + s[5]))	# h5 - upper1
+			maxs[1] = min(max1, h[6] - (m[2] + m[3] + m[4] + m[5] + s[6]))	# h6 - upper1
 			confset = ["L"+i for i in [2, 3, 4, 5] if "L"+i in asmnt]
-			if M[1] > maxs[1]:
+			if m[1] > maxs[1]:
 				return (CONTRADICTION, confset)
+			if maxs[1] < ds[1]["max"]:
+				ds[1]["max"] = maxs[1]
 		if curvar[1] != "2" and "L2" in impacted:
-			maxs[2] = min(Ds[2]["max"], H[1] - (M[1] + M[3] + S[1]))	# h1 - upper2
-			maxs[2] = min(max2, H[2] - (M[1] + M[3] + S[2]))			# h2 - upper2
-			maxs[2] = min(max2, H[3] - (M[1] + M[3] + M[4] + S[3]))		# h3 - upper2
-			maxs[2] = min(max2, H[4] - (M[1] + M[3] + M[4] + S[4]))		# h4 - upper2
-			maxs[2] = min(max2, H[5] - (M[1] + M[3] + M[4] + S[5]))		# h5 - upper2
-			maxs[2] = min(max2, H[6] - (M[1] + M[3] + M[4] + M[5] + S[6]))	# h6 - upper2
+			maxs[2] = min(ds[2]["max"], h[1] - (m[1] + m[3] + s[1]))	# h1 - upper2
+			maxs[2] = min(max2, h[2] - (m[1] + m[3] + s[2]))			# h2 - upper2
+			maxs[2] = min(max2, h[3] - (m[1] + m[3] + m[4] + s[3]))		# h3 - upper2
+			maxs[2] = min(max2, h[4] - (m[1] + m[3] + m[4] + s[4]))		# h4 - upper2
+			maxs[2] = min(max2, h[5] - (m[1] + m[3] + m[4] + s[5]))		# h5 - upper2
+			maxs[2] = min(max2, h[6] - (m[1] + m[3] + m[4] + m[5] + s[6]))	# h6 - upper2
 			confset = ["L"+i for i in [1, 3, 4, 5] if "L"+i in asmnt]
-			if M[2] > maxs[2]:
+			if m[2] > maxs[2]:
 				return (CONTRADICTION, confset)
+			if maxs[2] < ds[2]["max"]:
+				ds[2]["max"] = maxs[2]
 		if curvar[1] != "3" and "L3" in impacted:
-			maxs[3] = min(Ds[3]["max"], H[1] - (M[1] + M[2] + S[1]))	# h1 - upper3
-			maxs[3] = min(max3, H[2] - (M[1] + M[2] + S[2]))			# h2 - upper3
-			maxs[3] = min(max3, H[3] - (M[1] + M[2] + M[4] + S[3]))	# h3 - upper3
-			maxs[3] = min(max3, H[4] - (M[1] + M[2] + M[4] + S[4]))	# h4 - upper3
-			maxs[3] = min(max3, H[5] - (M[1] + M[2] + M[4] + S[5]))	# h5 - upper3
-			maxs[3] = min(max3, H[6] - (M[1] + M[2] + M[4] + M[5] + S[6]))	# h6 - upper3
+			maxs[3] = min(ds[3]["max"], h[1] - (m[1] + m[2] + s[1]))	# h1 - upper3
+			maxs[3] = min(max3, h[2] - (m[1] + m[2] + s[2]))			# h2 - upper3
+			maxs[3] = min(max3, h[3] - (m[1] + m[2] + m[4] + s[3]))	# h3 - upper3
+			maxs[3] = min(max3, h[4] - (m[1] + m[2] + m[4] + s[4]))	# h4 - upper3
+			maxs[3] = min(max3, h[5] - (m[1] + m[2] + m[4] + s[5]))	# h5 - upper3
+			maxs[3] = min(max3, h[6] - (m[1] + m[2] + m[4] + m[5] + s[6]))	# h6 - upper3
 			confset = ["L"+i for i in [1, 2, 4, 5] if "L"+i in asmnt]
-			if M[3] > maxs[3]:
+			if m[3] > maxs[3]:
 				return (CONTRADICTION, confset)
+			if maxs[3] < ds[3]["max"]:
+				ds[3]["max"] = maxs[3]
 		if curvar[1] != "4" and "L4" in impacted:
-			maxs[4] = min(Ds[4]["max"], H[3] - (M[1] + M[2] + M[3] + S[3]))	# h3 - upper4
-			maxs[4] = min(max4, H[4] - (M[1] + M[2] + M[3] + S[4]))		# h4 - upper4
-			maxs[4] = min(max4, H[5] - (M[1] + M[2] + M[3] + S[5]))		# h5 - upper4
-			maxs[4] = min(max4, H[6] - (M[1] + M[2] + M[3] + M[5] + S[6]))	# h6 - upper4
+			maxs[4] = min(ds[4]["max"], h[3] - (m[1] + m[2] + m[3] + s[3]))	# h3 - upper4
+			maxs[4] = min(max4, h[4] - (m[1] + m[2] + m[3] + s[4]))		# h4 - upper4
+			maxs[4] = min(max4, h[5] - (m[1] + m[2] + m[3] + s[5]))		# h5 - upper4
+			maxs[4] = min(max4, h[6] - (m[1] + m[2] + m[3] + m[5] + s[6]))	# h6 - upper4
 			confset = ["L"+i for i in [1, 2, 3, 5] if "L"+i in asmnt]
-			if M[4] > maxs[4]:
+			if m[4] > maxs[4]:
 				return (CONTRADICTION, confset)
+			if maxs[4] < ds[4]["max"]:
+				ds[4]["max"] = maxs[4]
 		if curvar[1] != "5" and "L5" in impacted:
-			maxs[5] = min(Ds[5]["max"], H[6] - (M[1] + M[2] + M[3] + M[4] + S[6])) # h6 - upper5		
+			maxs[5] = min(ds[5]["max"], h[6] - (m[1]+m[2]+m[3]+m[4]+s[6])) # h6 - upper5		
 			confset = ["L"+i for i in [1, 2, 3, 4] if "L"+i in asmnt]
-			if M[5] > maxs[5]:
+			if m[5] > maxs[5]:
 				return (CONTRADICTION, confset)
+			if maxs[5] < ds[5]["max"]:
+				ds[5]["max"] = maxs[1]
 		for i in range(1, 7):
-			if maxs[i] == Ds[i]["max"]:
+			if maxs[i] == ds[i]["max"]:
 				impacted.remove("L"+i)
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)

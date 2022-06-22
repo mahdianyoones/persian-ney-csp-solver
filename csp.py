@@ -38,14 +38,17 @@ class CSP():
 							
 	def unary(self):
 		'''Makes variables unary consistent.'''
-		for diam in self.D["D1"]:
-			if diam < spec["topd"]["min"] or diam > spec["topd"]["max"]:
+		topd = self.spec["topd"]
+		holed = self.spec["holed"]
+		hmarg = self.spec["hmarg"]
+		for diam in self.D["D1"].copy():
+			if diam < topd["min"] or diam > topd["max"]:
 				self.D["D1"].remove(diam)
 		for l_var in self.l_vars:
-			self.D[Lvar]["min"] = spec["minl"]
-		self.D["L6"]["min"] = spec["hmarg"] * 2 + spec["holed"] * 1 # 1 hole
-		self.D["L5"]["min"] = spec["hmarg"] * 4 + spec["holed"] * 3 # 3 holes
-		self.D["L4"]["min"] = spec["hmarg"] * 3 + spec["holed"] * 2 # 2 holes
+			self.D[l_var]["min"] = self.spec["minl"]
+		self.D["L6"]["min"] = hmarg * 2 + holed * 1 # 1 hole
+		self.D["L5"]["min"] = hmarg * 4 + holed * 3 # 3 holes
+		self.D["L4"]["min"] = hmarg * 3 + holed * 2 # 2 holes
 	
 	def init_d(self):
 		for l_var in self.l_vars:
@@ -54,8 +57,8 @@ class CSP():
 		ths = self.catalog.values("TH")
 		rs = self.catalog.values("R")
 		for d_var in self.d_vars:
-			self.D[d_var] = ds
+			self.D[d_var] = ds.copy()
 		for r_var in self.r_vars:
-			self.D[r_var] = rs
+			self.D[r_var] = rs.copy()
 		for th_var in self.th_vars:
-			self.D[th_var] = ths
+			self.D[th_var] = ths.copy()

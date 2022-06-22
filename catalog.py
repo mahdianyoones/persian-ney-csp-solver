@@ -124,9 +124,9 @@ class CATALOG(object):
 	def index(self, TH, D, R, L):
 		'''Adds the given data to all indices.'''
 		vals = {
-			"D": str(D),
-			"R": str(R),
-			"TH": str(TH)
+			"D": D,
+			"R": R,
+			"TH": TH
 		}
 		for idx in self.idxs.values():
 			cursor = idx["tree"]

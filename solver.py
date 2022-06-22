@@ -6,6 +6,7 @@ from catalog import CATALOG
 
 FAILURE = False
 SUCCESS = True
+CONTRADICTION = None
 DOMAIN_EXHAUSTED = None
 
 class Solver():
@@ -14,8 +15,8 @@ class Solver():
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)
 		self.asmnt = ASSIGNMENT(self.csp)		
-		self.mac = MAC(self.csp, self.asmnt, self.confset)
 		self.confset = {}
+		self.mac = MAC(self.csp, self.asmnt, self.confset)
 		self.learned_cs = set([]) # learned constraints		
 		for var in self.csp.X:
 			self.confset[var] = [] # order matters
@@ -43,7 +44,7 @@ class Solver():
 		full year again to see if that solves the issue or not!
 		'''
 		assigned = self.asmnt.assigned # time sorted
-		for cfv in [var in assigned if var in confset and var != curvar]:
+		for cfv in [v for v in assigned if v in confset and v != curvar]:
 			if not cfv in self.confset[curvar]: # prevent duplicates
 				self.confset[curvar].append(cfv)
 
@@ -123,9 +124,9 @@ class Solver():
 		'''
 		for var in self.csp.X:
 			cresult = self.mac.establish(var, None)
-			if cresult[0] == CONTRADICTION:
+			if cresult[0] == FAILURE:
 				print("Search cannot start. No consistent solution exists")
-				return (FAILURE)
+				return (FAILURE, None)
 		return self.dfs()
 
 	def dfs(self):
@@ -152,7 +153,7 @@ class Solver():
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
-			cresult = self.mac.maintain(curvar, value)
+			cresult = self.mac.establish(curvar, value)
 			if cresult[0] == FAILURE:				# Future would fail if tried.
 				confset = cresult[1]
 				self.accum_confset(curvar, confset)

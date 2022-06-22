@@ -3,7 +3,6 @@ from catalog import CATALOG
 
 class TestCatalog(unittest.TestCase):
 
-
 	def test_test1(self):
 		self.catalog = CATALOG("measures_of_drained_pieces.csv")
 		er = [

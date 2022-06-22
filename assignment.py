@@ -2,20 +2,19 @@ FEATURE_IS_NOT_SET = False
 FEATURE_IS_SET = True
 class ASSIGNMENT():
 	def __init__(self, csp):
-		self.X = csp.getVars()
 		self.assignment = {}
-		self.unassigned = self.X.copy()
+		self.unassigned = csp.X.copy()
 		self.assigned = [] # order matters
 		self.nodes = {}
 		for i in [1, 2, 3, 4, 5, 6, 7]:			
-			self.nodes[i] = {
+			self.nodes[str(i)] = {
 				"D": 	FEATURE_IS_NOT_SET, 
 				"R": 	FEATURE_IS_NOT_SET, 
-				"TH": 	FEATURE_IS_NOT_SET, 
+				"T": 	FEATURE_IS_NOT_SET, # for TH
 				"L": 	FEATURE_IS_NOT_SET
 			}
 	
-	def is_complete(self)
+	def is_complete(self):
 		if len(self.unassigned) == 0:
 			return True
 		return False

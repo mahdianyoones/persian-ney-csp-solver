@@ -114,9 +114,8 @@ class MAC():
 		To boost performace, neighbors are cached in self.neighbors.
 		'''
 		if not curvar in self.neighbors:
-			self.neighbors[curvar] = set([])
-			C = self.csp.getC()
-			for constraint, _vars in C.items():
+			self.neighbors[curvar] = {}
+			for constraint, _vars in self.csp.C.items():
 				if curvar in _vars:
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
@@ -152,7 +151,7 @@ class MAC():
 				elif cresult[0] == DOMAINS_REDUCED:
 					reduced.update(cresult[1])
 		# All domains have survived consistency.
-		return (SUCCESS)
+		return (SUCCESS, None)
 		
 	def apply_in_stock(self, curvar, value):
 		'''Establishes consistency W.R.T. in_stock constraint.'''
@@ -206,17 +205,17 @@ class MAC():
 		
 		where h1 is the length of the Ney.
 		'''
-		asmnt = self.asmnt.asmnt
+		asmnt = self.asmnt.assignment
 		assigned_ls = []
 		unassigned_l = None
 		_sum = 0
 		for i in range(1, 8):
-			if "L"+i in asmnt:
-				assigned_ls.add("L"+i)
-				_sum += asmnt["L"+i]
+			if "L"+str(i) in asmnt:
+				assigned_ls.add("L"+str(i))
+				_sum += asmnt["L"+str(i)]
 			else:
-				unassigned_l = "L"+i
-		if len(assigned_ls < 6):
+				unassigned_l = "L"+str(i)
+		if len(assigned_ls) < 6:
 			return (DOMAINS_INTACT, None)
 		new_l = self.csp.spec["len"] - _sum # L1 = h1 - (L2+L3+L4+L5+L6+L7)
 		old_d = self.csp.D[impact]
@@ -242,6 +241,7 @@ class MAC():
 		backtracking. No backjumping is possible.
 		'''
 		impacted_rs = set([])
+		impacted_ths = set([])
 		for i in range(1, 8):
 			if curvar[0] == "R‌" and "R"+i != curvar:
 				impacted_rs.add("R"+i)
@@ -251,7 +251,7 @@ class MAC():
 			impacted = impacted_rs
 		elif len(impacted_ths) == 6:
 			impacted = impacted_ths
-		else
+		else:
 			return (DOMAINS_INTACT, None)
 		asmnt = self.asmnt.assignment
 		i = curvar[1]
@@ -332,12 +332,12 @@ class MAC():
 			in propagation.
 		'''
 		impacted = {}
-		for i in range(curvar[1]+1, 8): # curvar up to L7
+		for i in range(int(curvar[1])+1, 8): # curvar up to L7
 			if value != None:
 				curvar_d = {"min": value, "max": value}
 			else:
 				curvar_d = self.csp.D[curvar]
-			last_d = self.csp.D["L"+i]
+			last_d = self.csp.D["L"+str(i)]
 			new_max = curvar_d["max"] - 1
 			new_min = curvar_d["min"] * 2/3 if i < 7 else last_d["min"]
 			if new_max < new_min:
@@ -553,22 +553,18 @@ class MAC():
 		L1 + L2 + L3 + L4 + 50 		< h5
 		L1 + L2 + L3 + L4 + L5 + 10 	< h6
 		'''
-		s = [
-			None,
-			spec["hmarg"] * 1,
-			spec["hmarg"] * 2 + spec["holed"] * 1,
-			spec["hmarg"] * 1,
-			spec["hmarg"] * 2 + spec["hold"] * 1,
-			spec["hmarg"] * 3 +‌ spec["hold"] * 2,
-			spec["hmarg"] * 1
-		]
+		hmarg = self.csp.spec["hmarg"]
+		holed = self.csp.spec["holed"]
+		s = [ None, hmarg * 1, hmarg * 2 + holed * 1, hmarg * 1, 
+			hmarg * 2 + holed * 1, hmarg * 3 + holed * 2, hmarg * 1]
 		asmnt = self.asmnt.assignment
 		m = ds = [None, 0, 0, 0, 0, 0, 0]
 		impacted = {}
 		for i in range(1, 7):
+			i = str(i)
 			if curvar[1] == i and value != None:
 				ds[i] = {"min": value, "max": value}
-			else if "L"+i in asmnt:
+			elif "L"+i in asmnt:
 				ds[i] = {"min": asmnt["L"+i], "max": asmnt["L"+i]}
 			else:
 				ds[i] = self.csp.D["L"+i]
@@ -578,7 +574,7 @@ class MAC():
 			spec["h5"], spec["h6"], spec["h7"]]
 		maxs = [None, 0, 0, 0, 0, 0]
 		if curvar[1] != "1" and "L1" in impacted:
-		 	maxs[1] = min(ds[1]["max"], h[1] - (m[2] + m[3] + s[1]))	# h1 - upper1
+			maxs[1] = min(ds[1]["max"], h[1] - (m[2] + m[3] + s[1]))	# h1 - upper1
 			maxs[1] = min(max1, h[2] - (m[2] + m[3] + s[2]))			# h2 - upper1
 			maxs[1] = min(max1, h[3] - (m[2] + m[3] + m[4] + s[3]))	# h3 - upper1
 			maxs[1] = min(max1, h[4] - (m[2] + m[3] + m[4] + s[4]))	# h4 - upper1

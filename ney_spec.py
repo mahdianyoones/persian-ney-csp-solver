@@ -1,5 +1,4 @@
 # Specification of the desired Ney
-
 spec = {
 	"len":			round(524.4),				# total height, including the mouthpiece
 	"h1":			round(467.2),				# 1st hole from top
@@ -14,4 +13,4 @@ spec = {
 	"minl":			20,						# minimum chunk length
 	"hmarg":			10,						# minimum hole/hole and hole/junction space
 	"ddiff":			{"min": 0.5, "max": 1.5},	# diameter difference between adjacent nodes
-}	
+}

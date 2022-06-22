@@ -121,7 +121,7 @@ class MAC():
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
 
-	def maintain(self, curvar, value):
+	def establish(self, curvar, value):
 		'''Establishes consistency for curvar neighbors and returns a conflict set.
 		
 		If the domain of a neighbor changes, neighbors of that neighbor are also
@@ -629,7 +629,7 @@ class MAC():
 			if m[5] > maxs[5]:
 				return (CONTRADICTION, confset)
 			if maxs[5] < ds[5]["max"]:
-				ds[5]["max"] = maxs[1]
+				ds[1]["max"] = maxs[1]
 		for i in range(1, 7):
 			if maxs[i] == ds[i]["max"]:
 				impacted.remove("L"+i)

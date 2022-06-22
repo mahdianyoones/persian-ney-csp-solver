@@ -9,9 +9,7 @@ SUCCESS = True
 DOMAIN_EXHAUSTED = None
 
 class Solver():
-	
 	def __init__(self, csvfile, spec):
-		'''Instantiates from CSP, MAC, CATALOG, and ASSIGNMENT classes.'''
 		self.catalog = CATALOG(csvfile)
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)
@@ -21,9 +19,6 @@ class Solver():
 		self.learned_cs = set([]) # learned constraints		
 		for var in self.csp.X:
 			self.confset[var] = [] # order matters
-
-	def getSolution(self):
-		return self.asmnt.assignment
 			
 	def accum_confset(curvar, confset):
 		'''Accumulates the conflict set for curvar.
@@ -35,15 +30,17 @@ class Solver():
 		
 		Example:
 		
-		D1 -> R1 -> TH1 -> L1 (failes due to TH1 and D1)
+		D1 -> R1 -> TH1 -> L1 (if failes due to TH1 and D1)
 		
 		confset[L1] = [D1, TH1] so that jump happens to TH1 not D1
 		
 		Jumping must happen to the near past not distant past.
+		
 		Why would we repeat a long history? Why not jump to yesterday and
-		make a tiny different decision and quicky proceed to today? If we jumped
-		to the last year instead, we would have to to live a fully year again to see if
-		that solves the issue or not!
+		make a tiny difference and quicky proceed to today?
+		
+		If we jumped to the last year instead, we would have to to live a
+		full year again to see if that solves the issue or not!
 		'''
 		assigned = self.asmnt.assigned # time sorted
 		for cfv in [var in assigned if var in confset and var != curvar]:
@@ -53,15 +50,16 @@ class Solver():
 	def absorb_confset(self, curvar, confset):
 		'''Absorbs conflict set from jump origin.
 		
-		Current variable gets the conflict set of the 
+		Current variable incorporates in itself the conflict set of the
 		variable that has failed in the future.
 		
 		This failure in the future happens due to legal assignments at
 		some time in the past. Conflict set provides a time machine
 		to travel back to the time when people made good moves, but
-		future proves it wrong! People may not be able to see the
-		effect of their actions far enough because it takes too much time
-		to consider every scenario.
+		future proves it wrong!
+		
+		People may not be able to see the effect of their actions far enough
+		because it takes too much time to consider every scenario.
 		'''
 		for confvar in [v for v in confset if v !=curvar]:
 			if not confvar in self.confset[curvar]:
@@ -101,21 +99,21 @@ class Solver():
 		self.R[constraint].add(no_good)
 		self.learned_cs.add(tuple(confvars))
 
-	def next_val(self, curvar, D, offset):
-		'''Returns the next value in domain of given curvar W.R.T. offset.
+	def next_val(self, curvar, d, offset):
+		'''Returns the next value in the domain curvar W.R.T. offset.
 		
 		This is a utility function.
 		'''
 		if curvar[1] == "L":
-			if offset > D["max"] - D["min"]:
+			if offset > d["max"] - d["min"]:
 				return DOMAIN_EXHAUSTED
 			else:
-				return D["min"] + offset
+				return d["min"] + offset
 		else:
-			if offset > len(D):
+			if offset > len(d):
 				return DOMAIN_EXHAUSTED
 			else:
-				return D[offset]
+				return d[offset]
 		
 	def backtrack_search(self):
 		'''Runs MAC for all variables first and then calls DFS.
@@ -124,7 +122,7 @@ class Solver():
 		solution could ever be found.
 		'''
 		for var in self.csp.X:
-			cresult = self.mac.maintain(var, None)
+			cresult = self.mac.establish(var, None)
 			if cresult[0] == CONTRADICTION:
 				print("Search cannot start. No consistent solution exists")
 				return (FAILURE)
@@ -145,12 +143,12 @@ class Solver():
 		if self.asmnt.is_complete():
 			return (SUCCESS, None)
 		curvar = self.select_var()
-		D = self.csp.D[curvar] # Domain of curvar is never empty here
+		d = self.csp.D[curvar] # Domain of curvar is never empty here
 		value = None
 		offset = 0
 		while True:
 			offset += 1
-			value = self.next_val(curvar, D, offset)
+			value = self.next_val(curvar, d, offset)
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break

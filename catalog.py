@@ -1,39 +1,36 @@
 import csv
 
-class Tree(object):
-	def __init__(self, key=None, val=0):
+NODE_NOT_FOUND = 100
+
+class TREE(object):
+	def __init__(self, key=None, meta=0):
 		self.children = []
 		self.key = key
-		self.val = val
+		self.meta = meta
 		
-	def addChild(self, key=None, val=0):
-		child = Tree(key, val)
+	def add_child(self, key=None, meta=0):
+		child = TREE(key, meta)
 		self.children.append(child)
 		return child
 	
-	def updateVal(self, val):
-		self.val = val
-		
-	def getVal(self):
-		return self.val
+	def update_meta(self, meta):
+		self.meta = meta	
 	
-	def getKey(self):
-		return self.key
-	
-	def hasChild(self, key):
-		if self.getChild(key):
+	def has_child(self, key):
+		if self.get_child(key) != NODE_NOT_FOUND:
 			return True
 		return False
 	
-	def getChild(self, key):
+	def get_child(self, key):
 		for child in self.children:
-			if key == child.getKey():
+			if key == child.key:
 				return child
-		return None
-	
-	def getChildren(self):
-		return self.children
-				
+		return NODE_NOT_FOUND
+		
+	def printChildren(self):
+		for ch in self.children:
+			print(ch.key, ": ", ch.meta)
+
 class CATALOG(object):
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
@@ -62,64 +59,56 @@ class CATALOG(object):
 	* Any combinations of TH, R, and D could be given as filters to both values and getL methods.
 	* Both methods execute in constant time.	
 	'''
+	def locate_index(self, filters, key=""):
+		'''Figures out which index can be used W.R.T. key and filters.'''
+		path = ""
+		for filter_key in filters.keys():
+			path += filter_key
+		path += key
+		ind2path = {
+			"DRTH": set(["D", "DR", "DRTH"]),
+			"DTHR": set(["DTH", "DTHR"]),
+			"RDTH": set(["R", "RD", "RDTH"]),
+			"RTHD": set(["RTH", "RTHD"]),
+			"THRD": set(["TH", "THR", "THRD"]),
+			"THDR": set(["THD", "THDR"]),
+		}
+		for index, paths in ind2path.items():
+			if path in paths:
+				return index
+		return None
 	
+	def locate_node(self, index, filters):
+		cursor = self.indices[index]["tree"]
+		for index_key in self.indices[index]["keys"]:
+			if index_key in filters.keys():
+				cursor = cursor.get_child(filters[index_key])
+			if cursor == NODE_NOT_FOUND:
+				break
+		return cursor
+			
 	def values(self, key="D", filters={}):
 		'''Returns values for key, given the filters (one or two of D,TH,R)'''
-		try:
-			fKeys = ""
-			for f in filters.keys():
-				fKeys += f
-			fKeys += key
-			idx2filters = {
-				"DRTH": set(["D", "DR", "DRTH"]),
-				"DTHR": set(["DTH", "DTHR"]),
-				"RDTH": set(["R", "RD", "RDTH"]),
-				"RTHD": set(["RTH", "RTHD"]),
-				"THRD": set(["TH", "THR", "THRD"]),
-				"THDR": set(["THD", "THDR"]),
-			}
-			for idx, _filters in idx2filters.items():
-				if fKeys in _filters:
-					cursor = self.idxs[idx]["tree"]
-					break
-			for k in self.idxs[idx]["keys"]:
-				if k in filters.keys():
-					cursor = cursor.getChild(filters[k])
-			values = set([])
-			for child in cursor.getChildren():
-				values.add(child.getKey())
-			return values		
-		except:
+		index = self.locate_index(filters, key=key)
+		node = self.locate_node(index, filters)
+		if node == NODE_NOT_FOUND:
 			return set([])
+		values = set([])
+		for child in node.children:
+			values.add(child.key)
+		return values		
 	
 	def get_l(self, filters={}):
-		'''Given the filters, searchs in indices for values.'''
-		try:
-			if filters == {}:
-				idx = "DRTH" # any index would do
-				cursor = self.idxs[idx]["tree"] 
-			else:
-				fKeys = ""
-				for f in filters.keys():
-					fKeys += f
-				idx2filters = {
-					"DRTH": set(["D", "DR", "DRTH"]),
-					"DTHR": set(["DTH", "DTHR"]),
-					"RDTH": set(["R", "RD", "RDTH"]),
-					"RTHD": set(["RTH", "RTHD"]),
-					"THRD": set(["TH", "THR", "THRD"]),
-					"THDR": set(["THD", "THDR"]),
-				}
-				for idx, _filters in idx2filters.items():
-					if fKeys in _filters:
-						cursor = self.idxs[idx]["tree"]
-						break
-			for k in self.idxs[idx]["keys"]:
-				if k in filters.keys():
-					cursor = cursor.getChild(filters[k])
-			return cursor.getVal()
-		except:
-			return 0
+		'''Given the filters, searchs in indices for L.'''
+		if filters == {}:
+			index = "DRTH" 				# any index would do
+			node = self.indices[index]["tree"] # root
+		else:
+			index = self.locate_index(filters)
+			node = self.locate_node(index, filters)
+		if node != NODE_NOT_FOUND:
+			return node.meta # L
+		return 0
 
 	def index(self, TH, D, R, L):
 		'''Adds the given data to all indices.'''
@@ -128,41 +117,44 @@ class CATALOG(object):
 			"R": R,
 			"TH": TH
 		}
-		for idx in self.idxs.values():
-			cursor = idx["tree"]
-			cursor.updateVal(cursor.getVal() + L)	# root
-			for key in idx["keys"]:
-				if not cursor.hasChild(vals[key]):
-					cursor = cursor.addChild(vals[key], 0)
+		for index in self.indices.values():
+			cursor = index["tree"]
+			root_meta = cursor.meta + L
+			cursor.update_meta(cursor.meta + L)	# root
+			for index_key in index["keys"]:
+				node_key = vals[index_key]
+				if not cursor.has_child(node_key):
+					cursor = cursor.add_child(node_key, 0)
 				else:
-					cursor = cursor.getChild(vals[key])
-				cursor.updateVal(cursor.getVal() + L)
+					cursor = cursor.get_child(node_key)
+				node_meta = cursor.meta + L
+				cursor.update_meta(node_meta)
 					
 	def __init__(self, csvfile):
-		self.idxs = {
+		self.indices = {
 			"DRTH":	{
-				"keys": ("D", "R", "TH"),
-				"tree": Tree(),
+				"keys": ["D", "R", "TH"],
+				"tree": TREE(),
 			},
 			"DTHR":	{
-				"keys": ("D", "TH", "R"),
-				"tree": Tree(),
+				"keys": ["D", "TH", "R"],
+				"tree": TREE(),
 			},
 			"THDR":	{
-				"keys": ("TH", "D", "R"),
-				"tree": Tree(),
+				"keys": ["TH", "D", "R"],
+				"tree": TREE(),
 			},
 			"THRD":	{
-				"keys": ("TH", "R", "D"),
-				"tree": Tree(),
+				"keys": ["TH", "R", "D"],
+				"tree": TREE(),
 			},
 			"RTHD":	{
-				"keys": ("R", "TH", "D"),
-				"tree": Tree(),
+				"keys": ["R", "TH", "D"],
+				"tree": TREE(),
 			},
 			"RDTH":	{
-				"keys": ("R", "D", "TH"),
-				"tree": Tree(),
+				"keys": ["R", "D", "TH"],
+				"tree": TREE(),
 			}
 		}
 		f = open(csvfile)

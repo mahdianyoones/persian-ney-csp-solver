@@ -26,10 +26,6 @@ class TREE(object):
 			if key == child.key:
 				return child
 		return NODE_NOT_FOUND
-		
-	def printChildren(self):
-		for ch in self.children:
-			print(ch.key, ": ", ch.meta)
 
 class CATALOG(object):
 	'''

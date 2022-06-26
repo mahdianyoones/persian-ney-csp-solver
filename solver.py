@@ -9,7 +9,7 @@ SUCCESS = True
 CONTRADICTION = None
 DOMAIN_EXHAUSTED = None
 
-class Solver():
+class SOLVER():
 	def __init__(self, csvfile, spec):
 		self.catalog = CATALOG(csvfile)
 		self.spec = spec
@@ -123,11 +123,11 @@ class Solver():
 		solution could ever be found.
 		'''
 		for var in self.csp.X:
+			print("Making ", var, " consistent; before search")
 			cresult = self.mac.establish(var, None)
 			if cresult[0] == FAILURE:
 				print("Search cannot start. No consistent solution exists")
 				return (FAILURE, None)
-			print(self.csp.D)
 		return self.dfs()
 
 	def dfs(self):
@@ -201,7 +201,7 @@ class Solver():
 				mrv = d_size
 		return mrv_var
 
-solver = Solver("measures_of_drained_pieces.csv", spec)
+solver = SOLVER("measures_of_drained_pieces.csv", spec)
 result = solver.backtrack_search()
 if result[0] == SUCCESS:
 	print("Found a solution: ", solver.asmnt.assignment)

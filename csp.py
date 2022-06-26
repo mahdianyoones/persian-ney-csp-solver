@@ -8,24 +8,12 @@ class CSP():
 		self.th_vars = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
 		self.X = self.l_vars.union(self.d_vars, self.th_vars, self.r_vars)
 		self.C = {}
-		self.C["in_stock"] = self.X
-		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
-		self.C["same_th"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
-		self.C["same_r"] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
-		self.C["l_dec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
-		self.C["d_dec"] = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
-		self.C["l1_half_l2"] = {"L1", "L2"}
-		self.C["h1"] = {"L1", "L2", "L3"}
-		self.C["h2"] = {"L1", "L2", "L3"}
-		self.C["h3"] = {"L1", "L2", "L3", "L4"}
-		self.C["h4"] = {"L1", "L2", "L3", "L4"}
-		self.C["h5"] = {"L1", "L2", "L3", "L4"}
-		self.C["h6"] = {"L1", "L2", "L3", "L4", "L5"}
 		self.D = {}
 		self.d_backup = {}
 		self.R = {} # Relations for learned constraints
 		self.init_d()
 		self.unary()
+		self.init_c()
 	
 	def update_d(self, var, new_domain):
 		self.D[var] = new_domain
@@ -62,3 +50,18 @@ class CSP():
 			self.D[r_var] = rs.copy()
 		for th_var in self.th_vars:
 			self.D[th_var] = ths.copy()
+	
+	def init_c(self):
+		self.C["in_stock"] = self.X
+		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+		self.C["same_th"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.C["same_r"] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+		self.C["l_dec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
+		self.C["d_dec"] = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.C["l1_half_l2"] = {"L1", "L2"}
+		self.C["h1"] = {"L1", "L2", "L3"}
+		self.C["h2"] = {"L1", "L2", "L3"}
+		self.C["h3"] = {"L1", "L2", "L3", "L4"}
+		self.C["h4"] = {"L1", "L2", "L3", "L4"}
+		self.C["h5"] = {"L1", "L2", "L3", "L4"}
+		self.C["h6"] = {"L1", "L2", "L3", "L4", "L5"}	

@@ -3,11 +3,7 @@ from csp import CSP
 from assignment import ASSIGNMENT
 from mac import MAC
 from catalog import CATALOG
-
-FAILURE = False
-SUCCESS = True
-CONTRADICTION = None
-DOMAIN_EXHAUSTED = None
+from constants import *
 
 class SOLVER():
 	def __init__(self, csvfile, spec):
@@ -16,7 +12,7 @@ class SOLVER():
 		self.csp = CSP(self.catalog, self.spec)
 		self.asmnt = ASSIGNMENT(self.csp)		
 		self.confset = {}
-		self.mac = MAC(self.csp, self.asmnt, self.confset)
+		self.mac = MAC(self.csp)
 		self.learned_cs = set([]) # learned constraints		
 		for var in self.csp.X:
 			self.confset[var] = [] # order matters
@@ -124,7 +120,7 @@ class SOLVER():
 		'''
 		for var in self.csp.X:
 			print("Making ", var, " consistent; before search")
-			cresult = self.mac.establish(var, None)
+			cresult = self.mac.establish(self.asmnt, var, None)
 			if cresult[0] == FAILURE:
 				print("Search cannot start. No consistent solution exists")
 				return (FAILURE, None)
@@ -154,7 +150,7 @@ class SOLVER():
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
-			cresult = self.mac.establish(curvar, value)
+			cresult = self.mac.establish(self.asmnt, curvar, value)
 			if cresult[0] == FAILURE:				# Future would fail if tried.
 				confset = cresult[1]
 				self.accum_confset(curvar, confset)

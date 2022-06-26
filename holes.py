@@ -1,10 +1,4 @@
-CONTRADICTION = None
-FAILURE = False
-SUCCESS = True
-FEATURE_IS_NOT_SET = False
-FEATURE_IS_SET = True
-DOMAINS_REDUCED = 0
-DOMAINS_INTACT = 1
+from constants import *
 
 class HOLES():
 	'''Establishes consistency W.R.T h1, h2, h3, h4, h5, h6 constraints.
@@ -117,8 +111,9 @@ class HOLES():
 	L1 + L2 + L3 + L4 + L5 + 10 	< h6
 	'''
 	
-	def __init__(self, csp, spec):
+	def __init__(self, csp):
 		self.csp = csp
+		spec = csp.spec
 		hmarg = spec["hmarg"]
 		holed = self.csp.spec["holed"]
 		self.spaces = [ None, hmarg * 1, hmarg * 2 + holed * 1, hmarg * 1, 
@@ -282,9 +277,9 @@ class HOLES():
 	def establish(self, asmnt, curvar, value):
 		self.asmnt = asmnt
 		domains = self.domains(curvar, value)	# domains
-		lowers = [None]					# lowers
+		lowers = [None, 0, 0, 0, 0, 0, 0, 0]	# lowers
 		for i in range(1, 7):
-			m[i] = ds[i]["min"]
+			lowers[i] = domains[i]["min"]
 		inf = float("inf")
 		uppers = [None, inf, inf, inf, inf, inf, inf, inf] # new uppers
 		self.h1(uppers, lowers, domains, curvar)
@@ -296,13 +291,14 @@ class HOLES():
 		impacted = set([])
 		asmnt = asmnt.assignment
 		for i in range(1, 6):
+			li = "L"+str(i)
 			if uppers[i] < lowers[i]:
-				confset = ["L"+str(i) for i in [1,2,3,4,5] if "L"+str(i) in asmnt]
+				confset = ["L"+str(j) for j in [1,2,3,4,5] if "L"+str(j) in asmnt]
 				return (CONTRADICTION, confset)
 			if uppers[i] < domains[i]["max"]:
 				new_d = {"min": lowers[i], "max": uppers[i]}
-				self.csp.update_d("L"+i, new_d)
-				impacted.add("L"+i)
+				self.csp.update_d(li, new_d)
+				impacted.add(li)
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)
 		return (DOMAINS_INTACT, None)		

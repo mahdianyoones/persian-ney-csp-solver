@@ -1,6 +1,5 @@
 import csv
-
-NODE_NOT_FOUND = 100
+from constants import *
 
 class TREE(object):
 	def __init__(self, key=None, meta=0):

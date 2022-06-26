@@ -1,6 +1,6 @@
 import unittest
 from catalog import CATALOG
-#from solver import SOLVER
+from constants import *
 
 class TestCatalog(unittest.TestCase):
 

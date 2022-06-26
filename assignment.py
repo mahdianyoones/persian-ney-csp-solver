@@ -1,5 +1,5 @@
-FEATURE_IS_NOT_SET = False
-FEATURE_IS_SET = True
+from constants import *
+
 class ASSIGNMENT():
 	def __init__(self, csp):
 		self.assignment = {}

@@ -1,10 +1,4 @@
-CONTRADICTION = None
-FAILURE = False
-SUCCESS = True
-FEATURE_IS_NOT_SET = False
-FEATURE_IS_SET = True
-DOMAINS_REDUCED = 0
-DOMAINS_INTACT = 1
+from constants import *
 
 class IN_STOCK():
 	'''Establishes consistency W.R.T. in_stock constraint.'''
@@ -64,7 +58,7 @@ class IN_STOCK():
 		l_res = self.update_l(filters)
 		if l_res[0] == CONTRADICTION:
 			return l_res
-		if l_res[0] = DOMAINS_REDUCED:
+		if l_res[0] == DOMAINS_REDUCED:
 			impacted.add(l_res[1]) # impacted l
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)

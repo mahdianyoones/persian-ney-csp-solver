@@ -117,7 +117,7 @@ class HOLES():
 	L1 + L2 + L3 + L4 + L5 + 10 	< h6
 	'''
 	
-	def __init__(self, csp, asmnt, spec):
+	def __init__(self, csp, spec):
 		self.csp = csp
 		hmarg = spec["hmarg"]
 		holed = self.csp.spec["holed"]
@@ -267,19 +267,20 @@ class HOLES():
 		bounds using the lower bounds of variables. And, when an assignment
 		happens, the value of that variable is used instead.
 		'''
+		asmnt = self.asmnt.assignment
 		domains = [None, 0, 0, 0, 0, 0, 0]
 		for i in range(1, 7):
 			li = "L"+str(i)
 			if curvar[1] == i and value != None:
 				domains[i] = {"min": value, "max": value}
-			elif li in self.asmnt:
-				domains[i] = {"min": self.asmnt[li], "max": self.asmnt[li]}
+			elif li in asmnt:
+				domains[i] = {"min": asmnt[li], "max": asmnt[li]}
 			else:
 				domains[i] = self.csp.D[li]
 		return domains
 	
-	def establish(self, curvar, value):
-		asmnt = self.asmnt.assignment
+	def establish(self, asmnt, curvar, value):
+		self.asmnt = asmnt
 		domains = self.domains(curvar, value)	# domains
 		lowers = [None]					# lowers
 		for i in range(1, 7):
@@ -293,6 +294,7 @@ class HOLES():
 		self.h5(uppers, lowers, domains, curvar)
 		self.h6(uppers, lowers, domains, curvar)
 		impacted = set([])
+		asmnt = asmnt.assignment
 		for i in range(1, 6):
 			if uppers[i] < lowers[i]:
 				confset = ["L"+str(i) for i in [1,2,3,4,5] if "L"+str(i) in asmnt]

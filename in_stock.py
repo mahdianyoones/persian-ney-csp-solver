@@ -43,9 +43,12 @@ class IN_STOCK():
 				self.csp.update_d("L"+i, new_d)
 				return (DOMAINS_REDUCED, "L"+i)
 		return (DOMAINS_INTACT, None)
-		
+	
+	def b_update(self, asmnt):
+		return (DOMAINS_INTACT, None)
+	
 	def establish(self, asmnt, curvar, value):
-		if value == None or not curvar[0] in ["R", "D", "TH"]:
+		if curvar[0] in ["R", "D", "TH"]:
 			return (DOMAINS_INTACT, None)
 		(filters, impacted) = self.filters_impacted(asmnt, curvar, value)
 		i = curvar[1]

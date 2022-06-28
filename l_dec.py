@@ -68,32 +68,51 @@ class L_DEC():
 	def __init__(self, csp):
 		self.csp = csp
 	
-	def establish(self, asmnt, curvar, value):
-		impacted = set({})
-		for i in range(int(curvar[1])+1, 8): # curvar up to L7
+	def _establish(self, asmnt, ds, start):		
+		uppers = [None, None, 0, 0, 0, 0, 0, 0]
+		lowers = [None, None, 0, 0, 0, 0, 0, 0]
+		for i in range(3, 8):
+			uppers[i] = ds[i]["max"]
+			lowers[i] = ds[i]["min"]
+		impacted = set([])
+		for i in range(start, 8): # 3 to 7
 			li = "L"+str(i)
-			if value != None:
-				curvar_d = {"min": value, "max": value}
-			else:
-				curvar_d = self.csp.D[curvar]
-			last_d = self.csp.D["L"+str(i)]
-			new_max = curvar_d["max"] - 1
-			new_min = curvar_d["min"] * 2/3 if i < 7 else last_d["min"]
-			if new_max < new_min:
-				return (CONTRADICTION, set([]))
-			reduced = False
-			if new_max < last_d["max"] or new_min > last_d["min"]:
-				new_d = last_d.copy()
-				new_d["max"] = new_max
-				new_d["min"] = new_min
+			if li in asmnt.assigned:
+				# further variables are already consistent via establish
+				break
+			if i < 7: # lower of L7 is not restricted
+				lowers[i] = max(lowers[i], 2/3 * lowers[i-1])
+			uppers[i] = min(uppers[i], uppers[i-1] - 1)
+			if lowers[i] < ds[i]["min"]:
+				return (CONTRADICTION, None)
+			if uppers[i] > ds[i]["max"]:
+				return (CONTRADICTION, None)
+			if lowers[i] > ds[i]["min"] or uppers[i] < ds[i]["max"]:
+				self.csp.update_d(li, {"min": lowers[i], "max": uppers[i]})
 				impacted.add(li)
-				self.csp.update_d(li, new_d)
-				reduced = True
-			if reduced:
-				curvar = li
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, None)
+		return (DOMAINS_REDUCED, impacted)
+				
+	def domains(self, asmnt):
+		assignment = asmnt.assignment
+		domains = [None, None, 0, 0, 0, 0, 0, 0]
+		for i in range(2, 8):
+			li = "L"+str(i)
+			if li in asmnt.assigned:
+				val = assignment[li]
+				domains[i] = {"min": val,"max": val}
 			else:
-				break # stop propagating nothing!
-		if len(impacted) > 0:
-			return (DOMAINS_REDUCED, impacted)
-		else:
-			return (DOMAINS_INTACT, None)		
+				domains[i] = self.csp.D[li]
+		return domains
+
+	def b_update(self, asmnt):
+		ds = self.domains(asmnt)
+		return self._establish(asmnt, ds, 3)
+
+	def establish(self, asmnt, curvar, value):
+		if curvar == "L7":
+			return (DOMAINS_INTACT, None)
+		ds = self.domains(asmnt)
+		ds[curvar[1]] = {"min": value,"max": value}
+		return self._establish(asmnt, ds, int(curvar[1])+1)

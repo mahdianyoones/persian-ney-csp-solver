@@ -1,6 +1,16 @@
 import unittest
 from catalog import CATALOG
 from constants import *
+from holes import HOLES
+from len import LEN
+from l_dec import L_DEC
+from d_dec import D_DEC
+from same_thr import SAME_THR
+from l1_half_l2 import L1_HALF_L2
+from in_stock import IN_STOCK
+from ney_spec import spec
+from assignment import ASSIGNMENT
+from csp import CSP
 
 class TestCatalog(unittest.TestCase):
 
@@ -46,10 +56,137 @@ class TestCatalog(unittest.TestCase):
 			returned = self.catalog.values(key, filters)
 			self.assertEqual(expected, returned)
 
-#class TestMAC(unittest.TestCase):
-#	def test_test1(self):
-		#solver = SOLVER("measures_of_drained_pieces.csv", spec)
-		#solver.mac.establish("L1")
+'''
+The initial domains:
+
+{
+	'L1': {'min': 20, 'max': inf},
+	'L2': {'min': 20, 'max': inf}, 
+	'L3': {'min': 20, 'max': inf}, 
+	'L4': {'min': 50, 'max': inf},
+	'L5': {'min': 70, 'max': inf},
+	'L6': {'min': 30, 'max': inf}, 
+	'L7': {'min': 20, 'max': inf}, 
+	'D1': {18.5, 18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 24.0}, 
+	'D2': {13.5, 14.0, 15.0, 14.5, 15.5, 18.5, 16.5, 17.5, 
+		  18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 
+		  25.0, 24.0, 16.0, 17.0}, 
+	'D3': {13.5, 14.0, 15.0, 14.5, 15.5, 18.5, 16.5, 17.5, 
+	       18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 
+	       25.0, 24.0, 16.0, 17.0}, 
+	'D4': {13.5, 14.0, 15.0, 14.5, 15.5, 18.5, 16.5, 17.5, 
+		  18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 
+		  25.0, 24.0, 16.0, 17.0}, 
+	'D5': {13.5, 14.0, 15.0, 14.5, 15.5, 18.5, 16.5, 17.5, 
+	       18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 
+	       25.0, 24.0, 16.0, 17.0}, 
+	'D6': {13.5, 14.0, 15.0, 14.5, 15.5, 18.5, 16.5, 17.5, 
+	       18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 
+	       25.0, 24.0, 16.0, 17.0}, 
+	'D7': {13.5, 14.0, 15.0, 14.5, 15.5, 18.5, 16.5, 17.5, 
+	       18.0, 19.0, 20.5, 21.0, 21.5, 20.0, 19.5, 23.5, 
+	       25.0, 24.0, 16.0, 17.0}, 
+	'R1': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'R2': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'R3': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'R4': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'R5': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'R6': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'R7': {0.0, 0.5, 2.0, 1.0, 1.5, 2.5}, 
+	'TH1': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}, 
+	'TH2': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}, 
+	'TH3': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}, 
+	'TH4': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}, 
+	'TH5': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}, 
+	'TH6': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}
+	'TH7': {1.5, 2.5, 3.0, 2.0, 1.0, 2.1, 3.5}, 
+}
+'''
 	
+class TestDDEC(unittest.TestCase):
+
+	def d_dec_1(self, csp, asmnt, d_dec):
+		res = d_dec.b_update(asmnt)
+		impacted_exp = {"D2", "D3", "D3", "D4", "D5", "D6", "D7"}
+		self.assertEqual(res[1], impacted_exp)		
+		ddiff = csp.spec["ddiff"]
+		prev_upper = max(csp.D["D1"])
+		for i in range(2, 8):
+			di = "D"+str(i)
+			upper = max(csp.D[di])
+			self.assertTrue(upper <= prev_upper - ddiff["min"])
+			prev_upper = upper
+	
+	def d_dec_2(self, csp, asmnt, d_dec):
+		res = d_dec.establish(asmnt, "D1", 18)
+		impacted_exp = {"D2", "D3", "D3", "D4", "D5", "D6", "D7"}
+		self.assertEqual(res[1], impacted_exp)
+		ddiff = csp.spec["ddiff"]
+		prev_upper = 18
+		for i in range(2, 8):
+			di = "D"+str(i)
+			upper = max(csp.D[di])
+			self.assertTrue(upper <= prev_upper - ddiff["min"])
+			prev_upper = upper
+
+	def d_dec_3(self, csp, asmnt, d_dec):
+		impacted_exp = {"D7"}
+		res = d_dec.establish(asmnt, "D6", 15.0)
+		self.assertEqual(res[1], impacted_exp)
+	
+	def test_d_dec(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)		
+		d_dec = D_DEC(csp)
+		self.d_dec_1(csp, asmnt, d_dec)
+		self.d_dec_2(csp, asmnt, d_dec)
+		self.d_dec_3(csp, asmnt, d_dec)
+
+class TestL1_HALF_L2(unittest.TestCase):
+
+	def half_1(self, catalog, csp, asmnt, half):
+		res = half.b_update(asmnt)
+		self.assertEqual(res[1], {"L2"}) # L2 only is expected to be impacted		
+		L1 = csp.D["L1"]
+		L2 = csp.D["L2"]
+		self.assertTrue(L2["min"] == L1["min"] * 2)
+		self.assertTrue(L2["max"] == L1["max"] * 2)
+
+	def half_2(self, catalog, csp, asmnt, half):
+		half.establish(asmnt, "L1", 25)
+		L2 = csp.D["L2"]
+		self.assertTrue(L2["max"] == 50)
+	
+	def half_3(self, catalog, csp, asmnt, half):
+		csp.D["L1"] = {"min": 30, "max": 100}
+		csp.D["L2"] = {"min": 40, "max": 400}
+		res = half.b_update(asmnt)
+		self.assertEqual(res[1], {"L2"}) # L2 only is expected to be impacted
+		L1 = csp.D["L1"]
+		L2 = csp.D["L2"]
+		self.assertTrue(L2["min"] == L1["min"] * 2)
+		self.assertTrue(L2["max"] == L1["max"] * 2)
+
+	def half_4(self, catalog, csp, asmnt, half):
+		csp.D["L1"] = {"min": 30, "max": 100}
+		csp.D["L2"] = {"min": 80, "max": 200}
+		res = half.b_update(asmnt)
+		self.assertEqual(res[1], {"L1"}) # L2 only is expected to be impacted
+		L1 = csp.D["L1"]
+		L2 = csp.D["L2"]
+		self.assertTrue(L2["min"] == L1["min"] * 2)
+		self.assertTrue(L2["max"] == L1["max"] * 2)
+
+	def test_half(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)		
+		half = L1_HALF_L2(csp)
+		self.half_1(catalog, csp, asmnt, half)
+		self.half_2(catalog, csp, asmnt, half)
+		self.half_3(catalog, csp, asmnt, half)
+		self.half_4(catalog, csp, asmnt, half)
+
 if __name__ == '__main__':
 	unittest.main()

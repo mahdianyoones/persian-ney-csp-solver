@@ -20,7 +20,10 @@ class LEN():
 
 	def __init__(self, csp):
 		self.csp = csp
-		
+	
+	def b_update(self, asmnt):
+		return (DOMAINS_INTACT, None)
+	
 	def establish(self, asmnt, curvar, value):
 		assignment = asmnt.assignment
 		assigned_ls = [curvar]

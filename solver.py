@@ -101,7 +101,7 @@ class SOLVER():
 		
 		This is a utility function.
 		'''
-		if curvar[1] == "L":
+		if curvar[0] == "L":
 			if offset > d["max"] - d["min"]:
 				return DOMAIN_EXHAUSTED
 			else:
@@ -119,10 +119,8 @@ class SOLVER():
 		solution could ever be found.
 		'''
 		for var in self.csp.X:
-			print("Making ", var, " consistent; before search")
 			cresult = self.mac.establish(self.asmnt, var, None)
 			if cresult[0] == FAILURE:
-				print("Search cannot start. No consistent solution exists")
 				return (FAILURE, None)
 		return self.dfs()
 
@@ -186,12 +184,12 @@ class SOLVER():
 			"D1", "D2", "D3", "D4", "D5", "D6", "D7",
 			"R1", "R2", "R3", "R4", "R5", "R6", "R7", 
 			"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"]
-		unassigned = self.asmnt.unassign
+		unassigned = self.asmnt.unassigned
 		for var in [dsv for dsv in degree if dsv in unassigned]:
 			if var[1] == "L":
 				d_size = self.D[var]["max"] - self.D[var]["min"]
 			else:
-				d_size = len(self.D[var])
+				d_size = len(self.csp.D[var])
 			if d_size < mrv:
 				mrv_var = var
 				mrv = d_size

@@ -92,19 +92,19 @@ class MAC():
 		self.same_thr = SAME_THR(csp)
 		self.l1_half_l2 = L1_HALF_L2(csp)
 		self.alg_ref = {
-			"h1":		self.holes.establish,
-			"h2":		self.holes.establish,
-			"h3":		self.holes.establish,
-			"h4":		self.holes.establish,
-			"h5":		self.holes.establish,
-			"h6":		self.holes.establish,
-			"l1_half_l2":	self.l1_half_l2.establish,
-			"in_stock": 	self.in_stock.establish,
-			"same_th":	self.same_thr.establish,
-			"same_r":		self.same_thr.establish,
-			"l_dec":		self.l_dec.establish,
-			"d_dec":		self.d_dec.establish,
-			"len":		self.len.establish
+			"h1":		self.holes,
+			"h2":		self.holes,
+			"h3":		self.holes,
+			"h4":		self.holes,
+			"h5":		self.holes,
+			"h6":		self.holes,
+			"l1_half_l2":	self.l1_half_l2,
+			"in_stock": 	self.in_stock,
+			"same_th":	self.same_thr,
+			"same_r":		self.same_thr,
+			"l_dec":		self.l_dec,
+			"d_dec":		self.d_dec,
+			"len":		self.len
 		}
 
 	def neighborhood(self, curvar):
@@ -148,13 +148,21 @@ class MAC():
 			neighborhood = self.neighborhood(curvar)
 			my_cs = neighborhood.keys()
 			for c in my_cs:
-				cresult = self.alg_ref[c](asmnt, curvar, value)
+				alg_ref = self.alg_ref[c]
+				if value != None:
+					cresult = alg_ref.establish(asmnt, curvar, value)
+				else:
+					cresult = alg_ref.b_update(asmnt)
 				if cresult[0] == CONTRADICTION:
 					self.csp.revert_d()
 					return (FAILURE, cresult[1])
 				elif cresult[0] == DOMAINS_INTACT:
 					continue
 				elif cresult[0] == DOMAINS_REDUCED:
+					if curvar in cresult[1]:
+						print(c, curvar)
+						raise Exception("Curvar is in the reduced variables")
 					reduced.update(cresult[1])
+			value = None
 		# All domains have survived consistency.
 		return (SUCCESS, None)

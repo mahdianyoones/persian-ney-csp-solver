@@ -17,6 +17,10 @@ class SAME_THR():
 
 	def __init__(self, csp):
 		self.csp = csp
+	
+	def b_update(self, asmnt):
+		'''It might be expensive to check bounds many many times!'''
+		return (DOMAINS_INTACT, None)
 		
 	def establish(self, asmnt, curvar, value):
 		impacted_rs = set([])

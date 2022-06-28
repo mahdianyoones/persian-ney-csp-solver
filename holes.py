@@ -262,21 +262,24 @@ class HOLES():
 		bounds using the lower bounds of variables. And, when an assignment
 		happens, the value of that variable is used instead.
 		'''
-		asmnt = self.asmnt.assignment
+		assignment = self.asmnt.assignment
 		domains = [None, 0, 0, 0, 0, 0, 0]
 		for i in range(1, 7):
 			li = "L"+str(i)
 			if curvar[1] == i and value != None:
 				domains[i] = {"min": value, "max": value}
-			elif li in asmnt:
-				domains[i] = {"min": asmnt[li], "max": asmnt[li]}
+			elif li in self.asmnt.assigned:
+				domains[i] = {"min": assignment[li],"max": assignment[li]}
 			else:
 				domains[i] = self.csp.D[li]
 		return domains
 	
-	def establish(self, asmnt, curvar, value):
+	def b_update(self, asmnt):
 		self.asmnt = asmnt
-		domains = self.domains(curvar, value)	# domains
+		domains = self.domains("L9", "None")
+		return self._establish(domains, curvar)
+	
+	def _establish(self, domains, curvar):
 		lowers = [None, 0, 0, 0, 0, 0, 0, 0]	# lowers
 		for i in range(1, 7):
 			lowers[i] = domains[i]["min"]
@@ -296,9 +299,14 @@ class HOLES():
 				confset = ["L"+str(j) for j in [1,2,3,4,5] if "L"+str(j) in asmnt]
 				return (CONTRADICTION, confset)
 			if uppers[i] < domains[i]["max"]:
-				new_d = {"min": lowers[i], "max": uppers[i]}
-				self.csp.update_d(li, new_d)
+				domains[i]["max"] = uppers[i]
+				self.csp.update_d(li, domains[i])
 				impacted.add(li)
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, None)		
+		return (DOMAINS_INTACT, None)	
+		
+	def establish(self, asmnt, curvar, value):
+		self.asmnt = asmnt
+		domains = self.domains(curvar, value)	# domains
+		return self._establish(domains, curvar)

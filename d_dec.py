@@ -23,35 +23,31 @@ class D_DEC():
 
 	def __init__(self, csp):
 		self.csp = csp
-		
-	def establish(self, asmnt, curvar, value):
+	
+	def _establish(self, last_max, start):
 		impacted = set([])
-		if value != None:
-			last_max = value
-			last_min = value
-		else:
-			d = sorted(self.csp.D[curvar], reverse=True)
-			last_max = d[-1]
-			last_min = d[0]
-		ddiff = self.csp.spec["ddiff"]
-		for i in range(int(curvar[1])+1, 8): # curvar up to D7
+		ddiff = self.csp.spec["ddiff"]	
+		for i in range(start, 8): # curvar up to D7
 			di = "D"+str(i)
-			d = self.csp.D[di]
-			new_max = float("-inf")
-			new_min = float("+inf")
-			for v in d.copy():
-				if v < last_min - ddiff["max"] or v > last_max - ddiff["min"]:
+			for v in self.csp.D[di].copy():
+				upper = last_max - ddiff["min"]
+				if v > upper:
 					impacted.add(di)
-					d.remove(v)
-				elif v > new_max:
-					new_max = v
-				elif v < new_min:
-					new_min = v
+					self.csp.D[di].remove(v)
 			if len(impacted) == 0:
 				break # stop propagating nothing!
-			if len(d) == 0:
+			if len(self.csp.D[di]) == 0:
 				return (CONTRADICTION, set([]))
+			last_max = max(self.csp.D[di])
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)
-		else:
-			return (DOMAINS_INTACT, None)
+		return (DOMAINS_INTACT, None)
+		
+	def b_update(self, asmnt):
+		d = sorted(self.csp.D["D1"])
+		last_max = max(self.csp.D["D1"])
+		return self._establish(last_max, 2)		
+					
+	def establish(self, asmnt, curvar, value):
+		last_max = value
+		return self._establish(last_max, int(curvar[1])+1)

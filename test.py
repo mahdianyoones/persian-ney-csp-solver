@@ -188,5 +188,48 @@ class TestL1_HALF_L2(unittest.TestCase):
 		self.half_3(catalog, csp, asmnt, half)
 		self.half_4(catalog, csp, asmnt, half)
 
+class TestIN_STOCK(unittest.TestCase):
+
+	def stock_3(self, catalog, csp, asmnt, in_stock):
+		csp.revert_d()
+		res = in_stock.establish(asmnt, "TH1", 3)
+		asmnt.assign("TH1", 3)
+		res = in_stock.establish(asmnt, "R1", 0.5)
+		asmnt.assign("R1", 0.5)
+		self.assertEqual({18, 19, 25}, csp.D["D1"])
+		self.assertEqual(csp.D["L1"]["max"], 85+55+25)
+		res = in_stock.establish(asmnt, "D1", 19)
+		asmnt.assign("D1", 19)
+		self.assertEqual(csp.D["L1"]["max"], 55)
+		
+	def stock_2(self, catalog, csp, asmnt, in_stock):
+		csp.revert_d()
+		res = in_stock.establish(asmnt, "TH1", 3)
+		asmnt.assign("TH1", 3)
+		res = in_stock.establish(asmnt, "R1", 1)
+		self.assertTrue(not "TH1" in res[1])
+		self.assertEqual({18}, csp.D["D1"])
+		
+	def stock_1(self, catalog, csp, asmnt, in_stock):
+		res = in_stock.establish(asmnt, "TH1", 3.5)
+		self.assertEqual(res[1], {"D1", "R1", "L1"})
+		self.assertEqual(csp.D["D1"], {17.5})		
+		self.assertEqual(csp.D["R1"], {1.5})
+		self.assertEqual(csp.D["L1"]["max"], 60)		
+		
+	def test_stock(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)		
+		in_stock = IN_STOCK(csp)
+		csp.backup_d()
+		self.stock_1(catalog, csp, asmnt, in_stock)
+		csp.revert_d()
+		csp.backup_d()
+		self.stock_2(catalog, csp, asmnt, in_stock)
+		csp.revert_d()
+		csp.backup_d()
+		self.stock_3(catalog, csp, asmnt, in_stock)
+
 if __name__ == '__main__':
 	unittest.main()

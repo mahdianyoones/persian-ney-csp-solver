@@ -85,6 +85,8 @@ class CATALOG(object):
 	def values(self, key="D", filters={}):
 		'''Returns values for key, given the filters (one or two of D,TH,R)'''
 		index = self.locate_index(filters, key=key)
+		if index == None:
+			raise Exception("Index could not be found.", filters, key)
 		node = self.locate_node(index, filters)
 		if node == NODE_NOT_FOUND:
 			return set([])

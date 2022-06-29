@@ -22,13 +22,26 @@ class SAME_THR():
 		'''It might be expensive to check bounds many many times!'''
 		return (DOMAINS_INTACT, None)
 		
+	def var_i(self, var):
+		if var[0] in {"R", "D"}:
+			return var[1]
+		else:
+			return var[2]
+	
+	def var_name(self, var):
+		if len(var) == 2:
+			return var[0]
+		else:
+			return var[0:2]
+
 	def establish(self, asmnt, curvar, value):
 		impacted_rs = set([])
 		impacted_ths = set([])
+		var_name = self.var_name(curvar)
 		for i in range(1, 8):
-			if curvar[0] == "R‌" and "R"+i != curvar:
+			if var_name == "R‌" and "R"+i != curvar:
 				impacted_rs.add("R"+i)
-			elif curvar[0] == "TH" and "TH"+i != curvar:
+			elif var_name == "TH" and "TH"+i != curvar:
 				impacted_ths.add("TH"+i)
 		if len(impacted_rs) == 6:
 			impacted = impacted_rs
@@ -36,9 +49,6 @@ class SAME_THR():
 			impacted = impacted_ths
 		else:
 			return (DOMAINS_INTACT, None)
-		asmnt = self.asmnt.assignment
-		i = curvar[1]
-		impacted = []
 		new_d = set([value])
 		for var in impacted.copy():
 			last_d = self.csp.D[var]
@@ -48,4 +58,6 @@ class SAME_THR():
 				impacted.remove(var)
 				continue
 			self.csp.update_d(curvar, new_d)
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, None)
 		return (DOMAINS_REDUCED, impacted)	

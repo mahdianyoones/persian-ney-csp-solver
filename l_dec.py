@@ -109,10 +109,23 @@ class L_DEC():
 	def b_update(self, asmnt):
 		ds = self.domains(asmnt)
 		return self._establish(asmnt, ds, 3)
+		
+	def var_i(self, var):
+		if var[0] in {"R", "D"}:
+			return int(var[1])
+		else:
+			return int(var[2])
+	
+	def var_name(self, var):
+		if len(var) == 2:
+			return var[0]
+		else:
+			return var[0:2]
 
 	def establish(self, asmnt, curvar, value):
 		if curvar == "L7":
 			return (DOMAINS_INTACT, None)
 		ds = self.domains(asmnt)
-		ds[curvar[1]] = {"min": value,"max": value}
-		return self._establish(asmnt, ds, int(curvar[1])+1)
+		var_i = self.var_i(curvar)
+		ds[var_i] = {"min": value,"max": value}
+		return self._establish(asmnt, ds, var_i+1)

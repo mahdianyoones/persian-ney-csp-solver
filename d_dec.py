@@ -24,6 +24,18 @@ class D_DEC():
 	def __init__(self, csp):
 		self.csp = csp
 	
+	def var_i(self, var):
+		if var[0] in {"R", "D"}:
+			return int(var[1])
+		else:
+			return int(var[2])
+	
+	def var_name(self, var):
+		if len(var) == 2:
+			return var[0]
+		else:
+			return var[0:2]
+	
 	def _establish(self, last_max, start):
 		impacted = set([])
 		ddiff = self.csp.spec["ddiff"]	
@@ -50,4 +62,5 @@ class D_DEC():
 					
 	def establish(self, asmnt, curvar, value):
 		last_max = value
-		return self._establish(last_max, int(curvar[1])+1)
+		var_i = self.var_i(curvar)
+		return self._establish(last_max, var_i+1)

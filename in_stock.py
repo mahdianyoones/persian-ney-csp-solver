@@ -6,30 +6,50 @@ class IN_STOCK():
 	def __init__(self, csp):
 		self.csp = csp
 	
+	def var_i(self, var):
+		if var[0] in {"R", "D"}:
+			return var[1]
+		else:
+			return var[2]
+	
+	def var_name(self, var):
+		if len(var) == 2:
+			return var[0]
+		else:
+			return var[0:2]
+		
 	def filters_impacted(self, asmnt, curvar, value):
 		'''Builds filters dictionary and detects impacted variables.'''
-		i = curvar[1]
+		i = self.var_i(curvar)
 		_vars = {"R"+i, "TH"+i, "D"+i}
 		node = asmnt.nodes[i]
-		asmnt = asmnt.assignment
-		assignment = set([])
+		filters = {}
+		impacted = set({})
 		for var in _vars:
+			var_name = self.var_name(var)
 			if var == curvar:
-				filters[var] = value
-			elif node[var[0]] == FEATURE_IS_SET:
-				filters[var] = assignment(var)
+				filters[var_name] = value
+			elif node[var_name] == FEATURE_IS_SET:
+				filters[var_name] = asmnt.assignment[var]
 			else:
 				impacted.add(var)
 		return (filters, impacted)
 	
 	def update_thrd(self, filters, impacted):
 		'''Updates impacted variables and returns success/contradiction.'''
-		for var in impacted:
-			new_d = self.csp.catalog.values(var, filters)
+		for var in impacted.copy():
+			var_name = self.var_name(var)
+			new_d = self.csp.catalog.values(var_name, filters)
 			if len(new_d) == 0:
 				return (CONTRADICTION, set(filters.keys()))
-			self.csp.update_d(var, new_d)
-		return (DOMAINS_REDUCED)
+			if len(new_d) == len(self.csp.D[var]):
+				impacted.remove(var)
+			else:
+				self.csp.update_d(var, new_d)
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, None)
+		else:
+			return (DOMAINS_REDUCED, impacted)
 		
 	def update_l(self, filters, i, node):
 		'''Updates an L variable using the given filters.'''
@@ -48,17 +68,17 @@ class IN_STOCK():
 		return (DOMAINS_INTACT, None)
 	
 	def establish(self, asmnt, curvar, value):
-		if curvar[0] in ["R", "D", "TH"]:
+		if self.var_name(curvar) == "L":
 			return (DOMAINS_INTACT, None)
 		(filters, impacted) = self.filters_impacted(asmnt, curvar, value)
-		i = curvar[1]
-		node = self.asmnt.nodes[curvar[1]]
+		i = self.var_i(curvar)
+		node = asmnt.nodes[i]
 		self.asmnt = asmnt
 		confset = filters.keys()
 		thrd_res = self.update_thrd(filters, impacted)
 		if thrd_res[0] == CONTRADICTION:
 			return thrd_res
-		l_res = self.update_l(filters)
+		l_res = self.update_l(filters, i, node)
 		if l_res[0] == CONTRADICTION:
 			return l_res
 		if l_res[0] == DOMAINS_REDUCED:

@@ -152,12 +152,12 @@ class CATALOG(object):
 				"tree": TREE(),
 			}
 		}
-		f = open(csvfile)
-		reader = csv.reader(f)
-		for p in reader:
-			NO = p[0]
-			L = float(p[1]) * 10 # cm -> mm
-			TH = float(p[2])
-			R = float(p[3])
-			D = float(p[4])			
-			self.index(TH, D, R, L)
+		with open(csvfile) as f:
+			reader = csv.reader(f)
+			for p in reader:
+				NO = p[0]
+				L = float(p[1]) * 10 # cm -> mm
+				TH = float(p[2])
+				R = float(p[3])
+				D = float(p[4])			
+				self.index(TH, D, R, L)

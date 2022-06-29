@@ -256,7 +256,7 @@ class TestHOLES(unittest.TestCase):
 		holes.b_update(asmnt)
 		for i in range(1, 6):
 			li = "L" + str(i)
-			self.assertTrue(csp.D[li]["max"] < float("inf"))	
+			self.assertTrue(csp.D[li]["max"] < float("inf"))
 	
 if __name__ == '__main__':
 	unittest.main()

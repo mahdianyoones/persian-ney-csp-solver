@@ -1,4 +1,5 @@
 from constants import *
+import math
 
 class L1_HALF_L2():
 	'''Reduces L1 and L2 domains so that L1 = L2 * 2.
@@ -22,8 +23,10 @@ class L1_HALF_L2():
 		d1 = self.csp.D["L1"]
 		d2 = self.csp.D["L2"]
 		lower1 = max(d1["min"], d2["min"]/2) 
+		lower1 = lower1 if lower1 == float("inf") else math.ceil(lower1)
 		lower2 = max(d2["min"], d1["min"]*2)
 		upper1 = min(d1["max"], d2["max"]/2)
+		upper1 = upper1 if upper1 == float("inf") else math.floor(upper1)		
 		upper2 = min(d2["max"], d1["max"]*2)
 		if lower1 < d1["min"] or upper1 > d1["max"]:
 			return (CONTRADICTION, None)

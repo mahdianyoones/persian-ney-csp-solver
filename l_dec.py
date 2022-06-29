@@ -1,4 +1,5 @@
 from constants import *
+import math
 
 class L_DEC():
 	'''Applies length decrement consistency.
@@ -71,7 +72,7 @@ class L_DEC():
 	def _establish(self, asmnt, ds, start):		
 		uppers = [None, None, 0, 0, 0, 0, 0, 0]
 		lowers = [None, None, 0, 0, 0, 0, 0, 0]
-		for i in range(3, 8):
+		for i in range(2, 8):
 			uppers[i] = ds[i]["max"]
 			lowers[i] = ds[i]["min"]
 		impacted = set([])
@@ -81,7 +82,9 @@ class L_DEC():
 				# further variables are already consistent via establish
 				break
 			if i < 7: # lower of L7 is not restricted
-				lowers[i] = max(lowers[i], 2/3 * lowers[i-1])
+				lowers[i] = max(lowers[i], math.ceil(2/3 * lowers[i-1]))
+				lowers[i] = lowers[i] if lowers[i] == float("inf") else \
+				 				math.ceil(lowers[i])				
 			uppers[i] = min(uppers[i], uppers[i-1] - 1)
 			if lowers[i] < ds[i]["min"]:
 				return (CONTRADICTION, None)

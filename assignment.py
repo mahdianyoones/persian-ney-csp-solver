@@ -10,7 +10,7 @@ class ASSIGNMENT():
 			self.nodes[str(i)] = {
 				"D": 	FEATURE_IS_NOT_SET, 
 				"R": 	FEATURE_IS_NOT_SET, 
-				"T": 	FEATURE_IS_NOT_SET, # for TH
+				"TH": 	FEATURE_IS_NOT_SET,
 				"L": 	FEATURE_IS_NOT_SET
 			}
 	

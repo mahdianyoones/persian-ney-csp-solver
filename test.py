@@ -231,5 +231,20 @@ class TestIN_STOCK(unittest.TestCase):
 		csp.backup_d()
 		self.stock_3(catalog, csp, asmnt, in_stock)
 
+class TestSAMETHR(unittest.TestCase):
+	
+	def test_same_thr(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)		
+		same_thr = SAME_THR(csp)
+		res = same_thr.establish(asmnt, "R1", 0)
+		res = same_thr.establish(asmnt, "TH1", 2)
+		for i in range(2, 8):
+			thi = "TH"+str(i)
+			ri = "R"+str(i)		
+			self.assertEqual({0}, csp.D[ri])
+			self.assertEqual({2}, csp.D[thi])
+
 if __name__ == '__main__':
 	unittest.main()

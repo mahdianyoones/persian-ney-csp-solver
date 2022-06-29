@@ -33,31 +33,30 @@ class SAME_THR():
 			return var[0]
 		else:
 			return var[0:2]
-
+	
+	def impacted(self, asmnt, var_name, curvar):
+		impacted = set([])
+		for i, node in asmnt.nodes.items():
+			if node[var_name] == FEATURE_IS_SET:
+				return None
+			var = var_name+str(i)
+			if var != curvar:
+				impacted.add(var)
+		return impacted
+		
 	def establish(self, asmnt, curvar, value):
-		impacted_rs = set([])
-		impacted_ths = set([])
 		var_name = self.var_name(curvar)
-		for i in range(1, 8):
-			if var_name == "R‌" and "R"+i != curvar:
-				impacted_rs.add("R"+i)
-			elif var_name == "TH" and "TH"+i != curvar:
-				impacted_ths.add("TH"+i)
-		if len(impacted_rs) == 6:
-			impacted = impacted_rs
-		elif len(impacted_ths) == 6:
-			impacted = impacted_ths
-		else:
+		impacted = self.impacted(asmnt, var_name, curvar)
+		if len(impacted) < 6:
 			return (DOMAINS_INTACT, None)
-		new_d = set([value])
-		for var in impacted.copy():
-			last_d = self.csp.D[var]
-			if not value in last_d:
+		for imvar in impacted.copy():
+			domain = self.csp.D[imvar]
+			if not value in domain:
 				return (CONTRADICTION, set([]))
-			if len(last_d) == 1: # no change
-				impacted.remove(var)
+			if len(domain) == 1: # no change
+				impacted.remove(imvar)
 				continue
-			self.csp.update_d(curvar, new_d)
+			self.csp.update_d(imvar, set([value]))
 		if len(impacted) == 0:
 			return (DOMAINS_INTACT, None)
 		return (DOMAINS_REDUCED, impacted)	

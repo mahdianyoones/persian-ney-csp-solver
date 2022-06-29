@@ -246,5 +246,17 @@ class TestSAMETHR(unittest.TestCase):
 			self.assertEqual({0}, csp.D[ri])
 			self.assertEqual({2}, csp.D[thi])
 
+class TestHOLES(unittest.TestCase):
+	
+	def test_holes(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)		
+		holes = HOLES(csp)
+		holes.b_update(asmnt)
+		for i in range(1, 6):
+			li = "L" + str(i)
+			self.assertTrue(csp.D[li]["max"] < float("inf"))	
+	
 if __name__ == '__main__':
 	unittest.main()

@@ -15,7 +15,7 @@ class ASSIGNMENT():
 			}
 	
 	def var_i(self, var):
-		if var[0] in {"R", "D"}:
+		if var[0] in {"R", "D", "L"}:
 			return var[1]
 		else:
 			return var[2]

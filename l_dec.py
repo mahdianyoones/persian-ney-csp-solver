@@ -111,7 +111,7 @@ class L_DEC():
 		return self._establish(asmnt, ds, 3)
 		
 	def var_i(self, var):
-		if var[0] in {"R", "D"}:
+		if var[0] in {"R", "D", "L"}:
 			return int(var[1])
 		else:
 			return int(var[2])

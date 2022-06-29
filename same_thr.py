@@ -23,7 +23,7 @@ class SAME_THR():
 		return (DOMAINS_INTACT, None)
 		
 	def var_i(self, var):
-		if var[0] in {"R", "D"}:
+		if var[0] in {"R", "D", "L"}:
 			return var[1]
 		else:
 			return var[2]

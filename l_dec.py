@@ -87,9 +87,9 @@ class L_DEC():
 				 				math.ceil(lowers[i])				
 			uppers[i] = min(uppers[i], uppers[i-1] - 1)
 			if lowers[i] < ds[i]["min"]:
-				return (CONTRADICTION, None)
+				return (CONTRADICTION, set([]))
 			if uppers[i] > ds[i]["max"]:
-				return (CONTRADICTION, None)
+				return (CONTRADICTION, set([]))
 			if lowers[i] > ds[i]["min"] or uppers[i] < ds[i]["max"]:
 				self.csp.update_d(li, {"min": lowers[i], "max": uppers[i]})
 				impacted.add(li)

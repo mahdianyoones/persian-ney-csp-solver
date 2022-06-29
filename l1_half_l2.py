@@ -29,9 +29,9 @@ class L1_HALF_L2():
 		upper1 = upper1 if upper1 == float("inf") else math.floor(upper1)		
 		upper2 = min(d2["max"], d1["max"]*2)
 		if lower1 < d1["min"] or upper1 > d1["max"]:
-			return (CONTRADICTION, None)
+			return (CONTRADICTION, set([]))
 		elif lower2 < d2["min"] or upper2 > d2["max"]:
-			return (CONTRADICTION, None)
+			return (CONTRADICTION, set([]))
 		impacted = set([])
 		if lower1 > d1["min"] or upper1 < d1["max"]:
 			self.csp.update_d("L1", {"min": lower1, "max": upper1})
@@ -51,7 +51,7 @@ class L1_HALF_L2():
 		d1 = self.csp.D["L1"]
 		d2 = self.csp.D["L2"]	
 		if new_val > d2["max"] or new_val < d2["min"]:
-			return (CONTRADICTION, None)
+			return (CONTRADICTION, set([]))
 		if d2["max"] == d2["min"]:
 			return (DOMAINS_INTACT, None)
 		self.csp.update_d("L2", {"min": new_val, "max": new_val})

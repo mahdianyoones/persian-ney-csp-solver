@@ -39,13 +39,15 @@ class IN_STOCK():
 		'''Updates impacted variables and returns success/contradiction.'''
 		for var in impacted.copy():
 			var_name = self.var_name(var)
-			new_d = self.csp.catalog.values(var_name, filters)
-			if len(new_d) == 0:
-				return (CONTRADICTION, set(filters.keys()))
-			if len(new_d) == len(self.csp.D[var]):
+			new_domain = self.csp.catalog.values(var_name, filters)
+			current_domain = self.csp.D[var]
+			new_domain = new_domain.intersection(current_domain)
+			if len(new_domain) == 0:
+				return (CONTRADICTION, set([]))
+			if new_domain == current_domain:
 				impacted.remove(var)
 			else:
-				self.csp.update_d(var, new_d)
+				self.csp.update_d(var, new_domain)
 		if len(impacted) == 0:
 			return (DOMAINS_INTACT, None)
 		else:
@@ -58,7 +60,7 @@ class IN_STOCK():
 			new_d = last_d.copy()
 			new_d["max"] = self.csp.catalog.get_l(filters)
 			if new_d["max"] < new_d["min"]:
-				return (CONTRADICTION, set(filters.keys()))
+				return (CONTRADICTION, set([]))
 			if new_d["max"] < last_d["max"]:			
 				self.csp.update_d("L"+i, new_d)
 				return (DOMAINS_REDUCED, "L"+i)

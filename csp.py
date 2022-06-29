@@ -23,7 +23,16 @@ class CSP():
 		
 	def revert_d(self):
 		self.D = self.d_backup.copy()
-							
+	
+	def print_ds(self, _vars):
+		print()
+		for var in sorted(_vars):
+			if var[0] == "L":
+				print(var, ": [", self.D[var]["min"], "...", self.D[var]["max"], "]")
+			else:
+				print(var, ": ", sorted(self.D[var]))
+		print()
+	
 	def unary(self):
 		'''Makes variables unary consistent.'''
 		topd = self.spec["topd"]

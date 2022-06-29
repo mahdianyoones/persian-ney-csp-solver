@@ -1,5 +1,6 @@
 import unittest
 from catalog import CATALOG
+from mac import MAC
 from constants import *
 from holes import HOLES
 from len import LEN
@@ -196,7 +197,7 @@ class TestIN_STOCK(unittest.TestCase):
 		asmnt.assign("TH1", 3)
 		res = in_stock.establish(asmnt, "R1", 0.5)
 		asmnt.assign("R1", 0.5)
-		self.assertEqual({18, 19, 25}, csp.D["D1"])
+		self.assertEqual({18, 19}, csp.D["D1"])
 		self.assertEqual(csp.D["L1"]["max"], 85+55+25)
 		res = in_stock.establish(asmnt, "D1", 19)
 		asmnt.assign("D1", 19)
@@ -211,11 +212,9 @@ class TestIN_STOCK(unittest.TestCase):
 		self.assertEqual({18}, csp.D["D1"])
 		
 	def stock_1(self, catalog, csp, asmnt, in_stock):
+		csp.print_ds(csp.X)
 		res = in_stock.establish(asmnt, "TH1", 3.5)
-		self.assertEqual(res[1], {"D1", "R1", "L1"})
-		self.assertEqual(csp.D["D1"], {17.5})		
-		self.assertEqual(csp.D["R1"], {1.5})
-		self.assertEqual(csp.D["L1"]["max"], 60)		
+		self.assertEqual(res[0], CONTRADICTION)
 		
 	def test_stock(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
@@ -257,6 +256,22 @@ class TestHOLES(unittest.TestCase):
 		for i in range(1, 6):
 			li = "L" + str(i)
 			self.assertTrue(csp.D[li]["max"] < float("inf"))
-	
+
+class TestMAC(unittest.TestCase):
+
+	def test_mac(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)
+		mac = MAC(csp)
+		
+		csp.print_ds(csp.X)
+		res = mac.establish(asmnt, "R1", 0)
+		csp.print_ds(res[1])
+		asmnt.assign("R1", 0)
+		res = mac.establish(asmnt, "TH1", 2)
+		csp.print_ds(res[1])
+		asmnt.assign("TH1", 2)		
+
 if __name__ == '__main__':
 	unittest.main()

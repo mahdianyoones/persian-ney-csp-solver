@@ -25,7 +25,7 @@ class LEN():
 		return (DOMAINS_INTACT, None)
 	
 	def establish(self, asmnt, curvar, value):
-		assigned_ls = [curvar]
+		assigned_ls = set([curvar])
 		unassigned_l = None
 		_sum = value
 		for i in range(1, 8):

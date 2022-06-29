@@ -142,7 +142,8 @@ class MAC():
 		W.R.T. curvar.
 		'''
 		reduced = set([curvar])
-		self.csp.backup_d()
+		_reduced = set([])
+		self.csp.backup_d()					
 		while len(reduced) > 0:
 			curvar = reduced.pop()
 			neighborhood = self.neighborhood(curvar)
@@ -159,10 +160,8 @@ class MAC():
 				elif cresult[0] == DOMAINS_INTACT:
 					continue
 				elif cresult[0] == DOMAINS_REDUCED:
-					if curvar in cresult[1]:
-						print(c, curvar)
-						raise Exception("Curvar is in the reduced variables")
 					reduced.update(cresult[1])
+					_reduced.update(cresult[1])
 			value = None
 		# All domains have survived consistency.
-		return (SUCCESS, None)
+		return (SUCCESS, _reduced)

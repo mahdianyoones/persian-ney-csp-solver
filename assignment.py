@@ -44,4 +44,6 @@ class ASSIGNMENT():
 		del self.assignment[var]
 		self.unassigned.add(var)
 		del self.assigned[self.assigned.index(var)]
-		self.nodes[int(var[1])][var[0]] = False		
+		var_i = self.var_i(var)
+		var_name = self.var_name(var)
+		self.nodes[var_i][var_name] = False

@@ -6,18 +6,21 @@ from catalog import CATALOG
 from constants import *
 
 class SOLVER():
+
 	def __init__(self, csvfile, spec):
+		self.nodes = 0
 		self.catalog = CATALOG(csvfile)
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)
 		self.asmnt = ASSIGNMENT(self.csp)		
 		self.confset = {}
 		self.mac = MAC(self.csp)
-		self.learned_cs = set([]) # learned constraints		
+		self.learned_cs = {} # learned constraints	
+		self.R = {}	
 		for var in self.csp.X:
 			self.confset[var] = [] # order matters
 			
-	def accum_confset(curvar, confset):
+	def accum_confset(self, curvar, confset):
 		'''Accumulates the conflict set for curvar.
 		
 		Conflict set must be sorted based on the time of assignment.
@@ -40,6 +43,8 @@ class SOLVER():
 		full year again to see if that solves the issue or not!
 		'''
 		assigned = self.asmnt.assigned # time sorted
+		if len(assigned) == 0:
+			return
 		for cfv in [v for v in assigned if v in confset and v != curvar]:
 			if not cfv in self.confset[curvar]: # prevent duplicates
 				self.confset[curvar].append(cfv)
@@ -87,30 +92,28 @@ class SOLVER():
 		constraint = ""
 		for confvar in confvars:
 			constraint += confvar
-		if not constraint in self.C:
-			self.C[constraint] = confvars
+		if not constraint in self.learned_cs:
+			self.learned_cs[constraint] = confvars
 			self.R[constraint] = set([])
-		asmnt = self.asmnt.assignment
-		no_good = [(var, asmnt[var]) for var in assigned if var in confvars]
-		no_good = set(no_good)
-		self.R[constraint].add(no_good)
-		self.learned_cs.add(tuple(confvars))
+		assignment = self.asmnt.assignment
+		no_good = [(var, assignment[var]) for var in assigned if var in confvars]
+		self.R[constraint].add(tuple(no_good))
 
-	def next_val(self, curvar, d, offset):
+	def next_val(self, curvar, domain, offset):
 		'''Returns the next value in the domain curvar W.R.T. offset.
 		
 		This is a utility function.
 		'''
 		if curvar[0] == "L":
-			if offset > d["max"] - d["min"]:
+			if offset > domain["max"] - domain["min"]:
 				return DOMAIN_EXHAUSTED
 			else:
-				return d["min"] + offset
+				return domain["min"] + offset
 		else:
-			if offset > len(d):
+			if len(domain) == 0:
 				return DOMAIN_EXHAUSTED
 			else:
-				return d[offset]
+				return domain.pop()
 		
 	def backtrack_search(self):
 		'''Runs MAC for all variables first and then calls DFS.
@@ -136,15 +139,16 @@ class SOLVER():
 		adding this contradiction to a new constraint may help optimization 
 		in the next phase of the project.
 		'''
+		self.nodes += 1
 		if self.asmnt.is_complete():
 			return (SUCCESS, None)
 		curvar = self.select_var()
-		d = self.csp.D[curvar] # Domain of curvar is never empty here
+		domain = self.csp.D[curvar].copy() # Domain of curvar is never empty here
 		value = None
 		offset = 0
 		while True:
 			offset += 1
-			value = self.next_val(curvar, d, offset)
+			value = self.next_val(curvar, domain, offset)
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
@@ -186,8 +190,8 @@ class SOLVER():
 			"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"]
 		unassigned = self.asmnt.unassigned
 		for var in [dsv for dsv in degree if dsv in unassigned]:
-			if var[1] == "L":
-				d_size = self.D[var]["max"] - self.D[var]["min"]
+			if var[0] == "L":
+				d_size = self.csp.D[var]["max"] - self.csp.D[var]["min"]
 			else:
 				d_size = len(self.csp.D[var])
 			if d_size < mrv:
@@ -199,5 +203,10 @@ solver = SOLVER("measures_of_drained_pieces.csv", spec)
 result = solver.backtrack_search()
 if result[0] == SUCCESS:
 	print("Found a solution: ", solver.asmnt.assignment)
+	print("Nodes: ", solver.nodes)
+	solver.csp.print_ds(solver.csp.X)
 else:
 	print("Failed. No solution has been found!")
+	print("Nodes: ", solver.nodes)	
+	solver.csp.print_ds(solver.csp.X)
+

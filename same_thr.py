@@ -38,7 +38,7 @@ class SAME_THR():
 		impacted = set([])
 		for i, node in asmnt.nodes.items():
 			if node[var_name] == FEATURE_IS_SET:
-				return None
+				return set([])
 			var = var_name+str(i)
 			if var != curvar:
 				impacted.add(var)

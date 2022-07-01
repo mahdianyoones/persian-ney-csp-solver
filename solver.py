@@ -4,6 +4,7 @@ from assignment import ASSIGNMENT
 from mac import MAC
 from catalog import CATALOG
 from constants import *
+from log import logger
 
 class SOLVER():
 
@@ -42,9 +43,11 @@ class SOLVER():
 		If we jumped to the last year instead, we would have to to live a
 		full year again to see if that solves the issue or not!
 		'''
+		if len(confset) == 0:
+			return
 		assigned = self.asmnt.assigned # time sorted
 		if len(assigned) == 0:
-			return
+			raise Exception("Confset & empty assignment.", curvar, confset)
 		for cfv in [v for v in assigned if v in confset and v != curvar]:
 			if not cfv in self.confset[curvar]: # prevent duplicates
 				self.confset[curvar].append(cfv)
@@ -114,16 +117,17 @@ class SOLVER():
 				return DOMAIN_EXHAUSTED
 			else:
 				return domain.pop()
-		
+			
 	def backtrack_search(self):
 		'''Runs MAC for all variables first and then calls DFS.
 		
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.
 		'''
+		domains_backup = self.csp.D.copy()
 		for var in self.csp.X:
 			cresult = self.mac.establish(self.asmnt, var, None)
-			if cresult[0] == FAILURE:
+			if cresult[0] == CONTRADICTION:
 				return (FAILURE, None)
 		return self.dfs()
 
@@ -152,17 +156,19 @@ class SOLVER():
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
+			d_backup = self.csp.D.copy()
 			cresult = self.mac.establish(self.asmnt, curvar, value)
-			if cresult[0] == FAILURE:				# Future would fail if tried.
+			if cresult[0] == CONTRADICTION:			# Future would fail
 				confset = cresult[1]
 				self.accum_confset(curvar, confset)
 				self.learn_c(curvar, confset)
 				continue
 			self.asmnt.assign(curvar, value)
-			result = self.dfs()						# Go to the future.
-			if result[0] == SUCCESS:					# Future was bright.
+			result = self.dfs()						# Try future
+			if result[0] == SUCCESS:					# Future would be bright
 				return result						
-			self.asmnt.unassign(curvar)				# Future failed.
+			self.asmnt.unassign(curvar)				# Future failed!
+			self.csp.D = d_backup	
 			if result[1] == None:
 				continue							# backtracked
 			if result[2] == curvar:
@@ -209,4 +215,4 @@ else:
 	print("Failed. No solution has been found!")
 	print("Nodes: ", solver.nodes)	
 	solver.csp.print_ds(solver.csp.X)
-
+	print(solver.asmnt.assignment)

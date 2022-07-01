@@ -1,4 +1,5 @@
 class CSP():
+
 	def __init__(self, catalog, spec):
 		self.catalog = catalog
 		self.spec = spec
@@ -9,8 +10,8 @@ class CSP():
 		self.X = self.l_vars.union(self.d_vars, self.th_vars, self.r_vars)
 		self.C = {}
 		self.D = {}
-		self.d_backup = {}
-		self.R = {} # Relations for learned constraints
+		self.d_backup = [] # order matters
+		self.R = {} 		# Relations for learned constraints
 		self.init_d()
 		self.unary()
 		self.init_c()
@@ -50,15 +51,15 @@ class CSP():
 	def init_d(self):
 		for l_var in self.l_vars:
 			self.D[l_var] = {"min": 0, "max": float("inf")}
-		ds = self.catalog.values("D")
-		ths = self.catalog.values("TH")
-		rs = self.catalog.values("R")
+		diameters = self.catalog.values("D")
+		thicknesses = self.catalog.values("TH")
+		roundnesses = self.catalog.values("R")
 		for d_var in self.d_vars:
-			self.D[d_var] = ds.copy()
+			self.D[d_var] = diameters.copy()
 		for r_var in self.r_vars:
-			self.D[r_var] = rs.copy()
+			self.D[r_var] = roundnesses.copy()
 		for th_var in self.th_vars:
-			self.D[th_var] = ths.copy()
+			self.D[th_var] = thicknesses.copy()
 	
 	def init_c(self):
 		self.C["in_stock"] = self.X

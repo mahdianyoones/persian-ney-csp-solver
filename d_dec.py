@@ -1,6 +1,7 @@
 from constants import *
+from base import BASE
 
-class D_DEC():
+class D_DEC(BASE):
 	'''Implements diameter decrement consistency.
 	
 	 0.5 <= D2 - D1 <= 1
@@ -23,44 +24,40 @@ class D_DEC():
 
 	def __init__(self, csp):
 		self.csp = csp
-	
-	def var_i(self, var):
-		if var[0] in {"R", "D", "L"}:
-			return int(var[1])
-		else:
-			return int(var[2])
-	
-	def var_name(self, var):
-		if len(var) == 2:
-			return var[0]
-		else:
-			return var[0:2]
-	
-	def _establish(self, last_max, start):
+		self.ddiff = csp.spec["ddiff"]	
+
+	def remove_illegals(self, di, last_max, impacted):
+		for diameter in self.csp.D[di].copy():
+			if diameter > last_max - self.ddiff["min"]:
+				impacted.add(di)
+				self.csp.D[di].remove(diameter)
+
+	def _establish(self, asmnt, last_max, start):
 		impacted = set([])
-		ddiff = self.csp.spec["ddiff"]	
 		for i in range(start, 8): # curvar up to D7
 			di = "D"+str(i)
-			for v in self.csp.D[di].copy():
-				upper = last_max - ddiff["min"]
-				if v > upper:
-					impacted.add(di)
-					self.csp.D[di].remove(v)
+			if di in asmnt.assigned:
+				if asmnt.assignment[di] > last_max - self.ddiff["min"]:
+					return (CONTRADICTION, set([]))
+				break 							# the rest are OK
+			self.remove_illegals(di, last_max, impacted)
 			if len(impacted) == 0:
-				break # stop propagating nothing!
+				break 							# the rest won't change
 			if len(self.csp.D[di]) == 0:
 				return (CONTRADICTION, set([]))
 			last_max = max(self.csp.D[di])
-		if len(impacted) > 0:
-			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, None)
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, None)
+		return (DOMAINS_REDUCED, impacted)
 		
 	def b_update(self, asmnt):
-		d = sorted(self.csp.D["D1"])
-		last_max = max(self.csp.D["D1"])
-		return self._establish(last_max, 2)		
+		if "D1" in asmnt.assigned:
+			last_max = asmnt.assignment["D1"]
+		else:
+			last_max = max(self.csp.D["D1"])
+		return self._establish(asmnt, last_max, 2)		
 					
 	def establish(self, asmnt, curvar, value):
 		last_max = value
 		var_i = self.var_i(curvar)
-		return self._establish(last_max, var_i+1)
+		return self._establish(asmnt, last_max, var_i+1)

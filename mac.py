@@ -6,6 +6,7 @@ from same_thr import SAME_THR
 from l1_half_l2 import L1_HALF_L2
 from in_stock import IN_STOCK
 from constants import *
+from log import logger
 
 class MAC():
 	'''Implements MAC through special consistency algorithms.
@@ -143,25 +144,30 @@ class MAC():
 		'''
 		reduced = set([curvar])
 		_reduced = set([])
-		self.csp.backup_d()					
+		d_backup = self.csp.D.copy()
 		while len(reduced) > 0:
 			curvar = reduced.pop()
 			neighborhood = self.neighborhood(curvar)
-			my_cs = neighborhood.keys()
-			for c in my_cs:
+			for c, _vars in neighborhood.items():
 				alg_ref = self.alg_ref[c]
 				if value != None:
 					cresult = alg_ref.establish(asmnt, curvar, value)
 				else:
 					cresult = alg_ref.b_update(asmnt)
 				if cresult[0] == CONTRADICTION:
-					self.csp.revert_d()
-					return (FAILURE, cresult[1])
+					self.csp.D = d_backup.copy()
+					logger.log(a=curvar,b=value,c=cresult,d=self.csp.D,\
+						e=d_backup,f=c,g=_vars,r=None)
+					return cresult
 				elif cresult[0] == DOMAINS_INTACT:
+					logger.log(a=curvar,b=value,c=cresult,d=self.csp.D,\
+						e=d_backup,f=c,g=_vars,r=None)
 					continue
 				elif cresult[0] == DOMAINS_REDUCED:
 					reduced.update(cresult[1])
-					_reduced.update(cresult[1])
+					logger.log(a=curvar,b=value,c=cresult,d=self.csp.D,\
+						e=d_backup,f=c,g=_vars,r=reduced)
+					_reduced.update(reduced)
 			value = None
 		# All domains have survived consistency.
 		return (SUCCESS, _reduced)

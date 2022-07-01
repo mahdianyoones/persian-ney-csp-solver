@@ -1,28 +1,17 @@
 from constants import *
+from base import BASE
 
-class IN_STOCK():
+class IN_STOCK(BASE):
 	'''Establishes consistency W.R.T. in_stock constraint.'''
 
 	def __init__(self, csp):
 		self.csp = csp
-	
-	def var_i(self, var):
-		if var[0] in {"R", "D", "L"}:
-			return var[1]
-		else:
-			return var[2]
-	
-	def var_name(self, var):
-		if len(var) == 2:
-			return var[0]
-		else:
-			return var[0:2]
-		
+			
 	def filters_impacted(self, asmnt, curvar, value):
 		'''Builds filters dictionary and detects impacted variables.'''
 		i = self.var_i(curvar)
-		_vars = {"R"+i, "TH"+i, "D"+i}
-		node = asmnt.nodes[i]
+		_vars = {"R"+str(i), "TH"+str(i), "D"+str(i)}
+		node = asmnt.nodes[str(i)]
 		filters = {}
 		impacted = set({})
 		for var in _vars:
@@ -33,6 +22,8 @@ class IN_STOCK():
 				filters[var_name] = asmnt.assignment[var]
 			else:
 				impacted.add(var)
+		if len(filters)+len(impacted) != 3:
+			raise Exception("Wrong filters and impacted ", filters, impacted)
 		return (filters, impacted)
 	
 	def update_thrd(self, filters, impacted):
@@ -55,6 +46,7 @@ class IN_STOCK():
 		
 	def update_l(self, filters, i, node):
 		'''Updates an L variable using the given filters.'''
+		i = str(i)
 		if node["L"] == FEATURE_IS_NOT_SET:
 			last_d = self.csp.D["L"+i]
 			new_d = last_d.copy()
@@ -74,9 +66,8 @@ class IN_STOCK():
 			return (DOMAINS_INTACT, None)
 		(filters, impacted) = self.filters_impacted(asmnt, curvar, value)
 		i = self.var_i(curvar)
-		node = asmnt.nodes[i]
+		node = asmnt.nodes[str(i)]
 		self.asmnt = asmnt
-		confset = filters.keys()
 		thrd_res = self.update_thrd(filters, impacted)
 		if thrd_res[0] == CONTRADICTION:
 			return thrd_res

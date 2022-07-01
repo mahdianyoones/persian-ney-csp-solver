@@ -1,7 +1,8 @@
 import csv
 from constants import *
 
-class TREE(object):
+class TREE():
+
 	def __init__(self, key=None, meta=0):
 		self.children = []
 		self.key = key
@@ -26,7 +27,7 @@ class TREE(object):
 				return child
 		return NODE_NOT_FOUND
 
-class CATALOG(object):
+class CATALOG():
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
 
@@ -71,7 +72,7 @@ class CATALOG(object):
 		for index, paths in ind2path.items():
 			if path in paths:
 				return index
-		return None
+		raise Exception("No index matches the given filters ", filters)
 	
 	def locate_node(self, index, filters):
 		cursor = self.indices[index]["tree"]
@@ -81,12 +82,12 @@ class CATALOG(object):
 			if cursor == NODE_NOT_FOUND:
 				break
 		return cursor
-			
+	
 	def values(self, key="D", filters={}):
 		'''Returns values for key, given the filters (one or two of D,TH,R)'''
 		index = self.locate_index(filters, key=key)
 		if index == None:
-			raise Exception("Index could not be found.", filters, key)
+			raise Exception("Index was not found.", filters, key)
 		node = self.locate_node(index, filters)
 		if node == NODE_NOT_FOUND:
 			return set([])
@@ -105,18 +106,20 @@ class CATALOG(object):
 			node = self.locate_node(index, filters)
 		if node != NODE_NOT_FOUND:
 			return node.meta # L
-		return 0
-
+		return 0.0
+	
+	def verify_values(self, TH, D, R, L):
+		if type(D) == 0:
+			raise Exception("D is 0", D)
+		if type(L) == 0:
+			raise Exception("L is 0", L)
+	
 	def index(self, TH, D, R, L):
 		'''Adds the given data to all indices.'''
-		vals = {
-			"D": D,
-			"R": R,
-			"TH": TH
-		}
+		self.verify_values(TH, D, R, L)
+		vals = {"D": D, "R": R, "TH": TH}
 		for index in self.indices.values():
 			cursor = index["tree"]
-			root_meta = cursor.meta + L
 			cursor.update_meta(cursor.meta + L)	# root
 			for index_key in index["keys"]:
 				node_key = vals[index_key]
@@ -128,32 +131,21 @@ class CATALOG(object):
 				cursor.update_meta(node_meta)
 					
 	def __init__(self, csvfile):
-		self.indices = {
-			"DRTH":	{
-				"keys": ["D", "R", "TH"],
-				"tree": TREE(),
-			},
-			"DTHR":	{
-				"keys": ["D", "TH", "R"],
-				"tree": TREE(),
-			},
-			"THDR":	{
-				"keys": ["TH", "D", "R"],
-				"tree": TREE(),
-			},
-			"THRD":	{
-				"keys": ["TH", "R", "D"],
-				"tree": TREE(),
-			},
-			"RTHD":	{
-				"keys": ["R", "TH", "D"],
-				"tree": TREE(),
-			},
-			"RDTH":	{
-				"keys": ["R", "D", "TH"],
-				"tree": TREE(),
-			}
+		self.indices = {}
+		ikeys = {
+			("D", "R", "TH"),
+			("D", "TH", "R"),
+			("TH", "D", "R"),
+			("TH", "R", "D"),
+			("R", "TH", "D"),
+			("R", "D", "TH")
 		}
+		for keys in ikeys:
+			index_name = ''.join(keys)
+			self.indices[index_name] = {
+				"keys": keys,
+				"tree": TREE(),			
+			}
 		with open(csvfile) as f:
 			reader = csv.reader(f)
 			for p in reader:
@@ -161,5 +153,5 @@ class CATALOG(object):
 				L = float(p[1]) * 10 # cm -> mm
 				TH = float(p[2])
 				R = float(p[3])
-				D = float(p[4])			
+				D = float(p[4])
 				self.index(TH, D, R, L)

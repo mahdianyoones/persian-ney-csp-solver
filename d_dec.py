@@ -27,28 +27,31 @@ class D_DEC(BASE):
 		self.csp = csp
 		self.ddiff = csp.spec["ddiff"]	
 
-	def remove_illegals(self, di, last_max):
-		dcopy = self.csp.D[di].copy()
+	def remove_illegals(self, asmnt, di, last_max):
+		if di in asmnt.assigned:
+			diameter = asmnt.assignment[di]
+			if diameter > last_max - self.ddiff["min"]:
+				return (CONTRADICTION, {di})
+			else:
+				return (DOMAIN_INTACT, asmnt.assignment[di])
+		dcopy = copy.deepcopy(self.csp.D[di])
 		for diameter in dcopy:
 			if diameter > last_max - self.ddiff["min"]:
 				self.csp.remove_val(di, diameter)
 		if len(dcopy) > len(self.csp.D[di]):
-			return DOMAIN_REDUCED
-		return DOMAIN_INTACT
+			return (DOMAIN_REDUCED, max(self.csp.D[di]))
+		return (DOMAIN_INTACT, max(self.csp.D[di]))
 		
 	def _establish(self, asmnt, last_max, start):
 		impacted = set([])
 		for i in range(start, 8): # curvar up to D7
 			di = "D"+str(i)
-			if di in asmnt.assigned:
-				break 							# the rest are OK
-			if self.remove_illegals(di, last_max) == DOMAIN_REDUCED:
+			rresult = self.remove_illegals(asmnt, di, last_max)
+			if rresult[0] == CONTRADICTION or len(self.csp.D[di]) == 0:
+				return (CONTRADICTION, rresult[1])
+			if rresult[0] == DOMAIN_REDUCED:
 				impacted.add(di)
-			if len(impacted) == 0:
-				break 							# the rest won't change
-			if len(self.csp.D[di]) == 0:
-				return (CONTRADICTION, set([]))
-			last_max = max(self.csp.D[di])
+			last_max = rresult[1]
 		if len(impacted) == 0:
 			return (DOMAINS_INTACT, set([]))
 		return (DOMAINS_REDUCED, impacted)
@@ -63,5 +66,4 @@ class D_DEC(BASE):
 	def establish(self, asmnt, curvar, value):
 		last_max = value
 		var_i = self.var_i(curvar)
-		res = self._establish(asmnt, last_max, var_i+1)
-		return res
+		return self._establish(asmnt, last_max, var_i+1)

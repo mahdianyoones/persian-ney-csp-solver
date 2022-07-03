@@ -5,6 +5,7 @@ from mac import MAC
 from catalog import CATALOG
 from constants import *
 import copy
+from log import logger
 
 class SOLVER():
 
@@ -124,7 +125,9 @@ class SOLVER():
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.
 		'''
+		dback = copy.deepcopy(self.csp.D)		
 		bresult = self.mac.b_update(self.asmnt)
+		logger.log3(dback, self.csp.D, self.csp.X, bresult)
 		if bresult == CONTRADICTION:
 			return (ibresult, set([]))
 		return self.dfs()
@@ -142,6 +145,8 @@ class SOLVER():
 		in the next phase of the project.
 		'''
 		self.nodes += 1
+		if self.nodes > 100:
+			exit()
 		if self.asmnt.is_complete():
 			return (SUCCESS, None)
 		curvar = self.select_var()
@@ -173,10 +178,13 @@ class SOLVER():
 			if result[2] == curvar:
 				confset = result[1]
 				self.absorb_confset(curvar, confset)	# backjumped
+				logger.log5(curvar)
 				continue							# Try next value
 			else:
+				logger.log4(curvar, result[2])
 				return result						# Jumped over curvar
 		# domain exhausted
+		logger.log6(curvar)
 		confset = self.asmnt.assigned
 		self.learn_c(confset, curvar)
 		if len(self.confset[curvar]) > 0:

@@ -126,7 +126,31 @@ class MAC():
 				if curvar in _vars:
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
-
+	
+	def b_update(self, asmnt, _vars=set([])):
+		if len(_vars) == 0:
+			constraints = set(self.csp.C.keys())
+		else:
+			constraints = set([])
+			for _var in _vars:
+				neighborhood = self.neighborhood(_var)
+				constraints.update(set(neighborhood.keys()))
+		impacted = set([])
+		while len(constraints) > 0:
+			c = constraints.pop()
+			bresult = self.alg_ref[c].b_update(asmnt)
+			if bresult[0] == CONTRADICTION:
+				return bresult
+			if bresult[0] == DOMAINS_REDUCED:
+				impacted.update(bresult[1])
+				for rvar in bresult[1]:
+					neighborhood = self.neighborhood(rvar)
+					impacted_cs = neighborhood.keys()
+					constraints.update(set(impacted_cs))
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, set([]))
+		return (DOMAINS_REDUCED, impacted)
+		
 	def establish(self, asmnt, curvar, value):
 		'''Establishes consistency for curvar neighbors and returns a conflict set.
 		
@@ -142,32 +166,23 @@ class MAC():
 		detect if there is an oppotunity to reduce the domain of variables
 		W.R.T. curvar.
 		'''
-		reduced = set([curvar])
-		_reduced = set([])
-		d_backup = self.csp.D.copy()
-		while len(reduced) > 0:
-			curvar = reduced.pop()
-			neighborhood = self.neighborhood(curvar)
-			for c, _vars in neighborhood.items():
-				alg_ref = self.alg_ref[c]
-				if value != None:
-					cresult = alg_ref.establish(asmnt, curvar, value)
-				else:
-					cresult = alg_ref.b_update(asmnt)
-				if cresult[0] == CONTRADICTION:
-					self.csp.D = d_backup.copy()
-					logger.log(a=curvar,b=value,c=cresult,d=self.csp.D,\
-						e=d_backup,f=c,g=_vars,r=None)
-					return cresult
-				elif cresult[0] == DOMAINS_INTACT:
-					logger.log(a=curvar,b=value,c=cresult,d=self.csp.D,\
-						e=d_backup,f=c,g=_vars,r=None)
-					continue
-				elif cresult[0] == DOMAINS_REDUCED:
-					reduced.update(cresult[1])
-					logger.log(a=curvar,b=value,c=cresult,d=self.csp.D,\
-						e=d_backup,f=c,g=_vars,r=reduced)
-					_reduced.update(reduced)
-			value = None
-		# All domains have survived consistency.
-		return (SUCCESS, _reduced)
+		neighborhood = self.neighborhood(curvar)
+		cs = set(neighborhood.keys())
+		logger.log1(curvar, value, cs, asmnt)
+		impacted = set([])
+		for c in cs:
+			dback = self.csp.D.copy()
+			eresult = self.alg_ref[c].establish(asmnt, curvar, value)
+			logger.log2(dback, self.csp.D, c, eresult)
+			if eresult[0] == DOMAINS_REDUCED:
+				dback = self.csp.D.copy()
+				bresult = self.b_update(asmnt, eresult[1])
+				logger.log3(dback, self.csp.D, eresult[1], bresult)
+				if bresult[0] == CONTRADICTION:
+					return bresult
+				impacted.update(eresult[1], bresult[1])
+			elif eresult[0] == CONTRADICTION:
+				return eresult
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, set([]))
+		return (DOMAINS_REDUCED, impacted)

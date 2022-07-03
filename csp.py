@@ -10,7 +10,7 @@ class CSP():
 		self.X = self.l_vars.union(self.d_vars, self.th_vars, self.r_vars)
 		self.C = {}
 		self.D = {}
-		self.d_backup = [] # order matters
+		self.d_backup = {} # order matters
 		self.R = {} 		# Relations for learned constraints
 		self.init_d()
 		self.unary()
@@ -18,6 +18,9 @@ class CSP():
 	
 	def update_d(self, var, new_domain):
 		self.D[var] = new_domain
+	
+	def remove_val(self, var, val):
+		self.D[var].remove(val)
 		
 	def backup_d(self):
 		self.d_backup = self.D.copy()

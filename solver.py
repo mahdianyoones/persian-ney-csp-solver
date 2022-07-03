@@ -124,11 +124,9 @@ class SOLVER():
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.
 		'''
-		domains_backup = self.csp.D.copy()
-		for var in self.csp.X:
-			cresult = self.mac.establish(self.asmnt, var, None)
-			if cresult[0] == CONTRADICTION:
-				return (FAILURE, None)
+		bresult = self.mac.b_update(self.asmnt)
+		if bresult == CONTRADICTION:
+			return (ibresult, set([]))
 		return self.dfs()
 
 	def dfs(self):
@@ -162,13 +160,14 @@ class SOLVER():
 				confset = cresult[1]
 				self.accum_confset(curvar, confset)
 				self.learn_c(curvar, confset)
+				self.csp.D = d_backup.copy()			
 				continue
 			self.asmnt.assign(curvar, value)
 			result = self.dfs()						# Try future
 			if result[0] == SUCCESS:					# Future would be bright
 				return result						
 			self.asmnt.unassign(curvar)				# Future failed!
-			self.csp.D = d_backup	
+			self.csp.D = d_backup.copy()
 			if result[1] == None:
 				continue							# backtracked
 			if result[2] == curvar:
@@ -210,9 +209,6 @@ result = solver.backtrack_search()
 if result[0] == SUCCESS:
 	print("Found a solution: ", solver.asmnt.assignment)
 	print("Nodes: ", solver.nodes)
-	solver.csp.print_ds(solver.csp.X)
 else:
-	print("Failed. No solution has been found!")
-	print("Nodes: ", solver.nodes)	
-	solver.csp.print_ds(solver.csp.X)
-	print(solver.asmnt.assignment)
+	print("No solution has been found!")
+	print("Nodes: ", solver.nodes)

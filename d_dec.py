@@ -26,28 +26,30 @@ class D_DEC(BASE):
 		self.csp = csp
 		self.ddiff = csp.spec["ddiff"]	
 
-	def remove_illegals(self, di, last_max, impacted):
-		for diameter in self.csp.D[di].copy():
+	def remove_illegals(self, di, last_max):
+		dcopy = self.csp.D[di].copy()
+		for diameter in dcopy:
 			if diameter > last_max - self.ddiff["min"]:
-				impacted.add(di)
-				self.csp.D[di].remove(diameter)
-
+				self.csp.remove_val(di, diameter)
+		if len(dcopy) > len(self.csp.D[di]):
+			return DOMAIN_REDUCED
+		return DOMAIN_INTACT
+		
 	def _establish(self, asmnt, last_max, start):
 		impacted = set([])
 		for i in range(start, 8): # curvar up to D7
 			di = "D"+str(i)
 			if di in asmnt.assigned:
-				if asmnt.assignment[di] > last_max - self.ddiff["min"]:
-					return (CONTRADICTION, set([]))
 				break 							# the rest are OK
-			self.remove_illegals(di, last_max, impacted)
+			if self.remove_illegals(di, last_max) == DOMAIN_REDUCED:
+				impacted.add(di)
 			if len(impacted) == 0:
 				break 							# the rest won't change
 			if len(self.csp.D[di]) == 0:
 				return (CONTRADICTION, set([]))
 			last_max = max(self.csp.D[di])
 		if len(impacted) == 0:
-			return (DOMAINS_INTACT, None)
+			return (DOMAINS_INTACT, set([]))
 		return (DOMAINS_REDUCED, impacted)
 		
 	def b_update(self, asmnt):
@@ -60,4 +62,5 @@ class D_DEC(BASE):
 	def establish(self, asmnt, curvar, value):
 		last_max = value
 		var_i = self.var_i(curvar)
-		return self._establish(asmnt, last_max, var_i+1)
+		res = self._establish(asmnt, last_max, var_i+1)
+		return res

@@ -3,9 +3,9 @@ from base import BASE
 
 class ASSIGNMENT(BASE):
 
-	def __init__(self, csp):
+	def init_all(self):
 		self.assignment = {}
-		self.unassigned = csp.X.copy()
+		self.unassigned = self.csp.X.copy()
 		self.assigned = [] # order matters
 		self.nodes = {}
 		for i in [1, 2, 3, 4, 5, 6, 7]:			
@@ -16,6 +16,10 @@ class ASSIGNMENT(BASE):
 				"L": 	FEATURE_IS_NOT_SET
 			}
 	
+	def __init__(self, csp):
+		self.csp = csp
+		self.init_all()
+			
 	def is_complete(self):
 		if len(self.unassigned) == 0:
 			return True
@@ -30,7 +34,10 @@ class ASSIGNMENT(BASE):
 		var_i = self.var_i(var)
 		var_name = self.var_name(var)
 		self.nodes[str(var_i)][var_name] = FEATURE_IS_SET
-		
+	
+	def unassign_all(self):
+		self.init_all()
+	
 	def unassign(self, var):
 		del self.assignment[var]
 		self.unassigned.add(var)

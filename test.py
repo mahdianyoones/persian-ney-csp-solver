@@ -192,7 +192,6 @@ class TestL1_HALF_L2(unittest.TestCase):
 class TestIN_STOCK(unittest.TestCase):
 
 	def stock_3(self, catalog, csp, asmnt, in_stock):
-		csp.revert_d()
 		res = in_stock.establish(asmnt, "TH1", 3)
 		asmnt.assign("TH1", 3)
 		res = in_stock.establish(asmnt, "R1", 0.5)
@@ -204,7 +203,6 @@ class TestIN_STOCK(unittest.TestCase):
 		self.assertEqual(csp.D["L1"]["max"], 55)
 		
 	def stock_2(self, catalog, csp, asmnt, in_stock):
-		csp.revert_d()
 		res = in_stock.establish(asmnt, "TH1", 3)
 		asmnt.assign("TH1", 3)
 		res = in_stock.establish(asmnt, "R1", 1)
@@ -212,7 +210,6 @@ class TestIN_STOCK(unittest.TestCase):
 		self.assertEqual({18}, csp.D["D1"])
 		
 	def stock_1(self, catalog, csp, asmnt, in_stock):
-		csp.print_ds(csp.X)
 		res = in_stock.establish(asmnt, "TH1", 3.5)
 		self.assertEqual(res[0], CONTRADICTION)
 		
@@ -223,11 +220,11 @@ class TestIN_STOCK(unittest.TestCase):
 		in_stock = IN_STOCK(csp)
 		csp.backup_d()
 		self.stock_1(catalog, csp, asmnt, in_stock)
+		asmnt.unassign_all()
 		csp.revert_d()
-		csp.backup_d()
 		self.stock_2(catalog, csp, asmnt, in_stock)
+		asmnt.unassign_all()
 		csp.revert_d()
-		csp.backup_d()
 		self.stock_3(catalog, csp, asmnt, in_stock)
 
 class TestSAMETHR(unittest.TestCase):
@@ -259,19 +256,46 @@ class TestHOLES(unittest.TestCase):
 
 class TestMAC(unittest.TestCase):
 
+	def mac1(self, csp, asmnt, mac):
+		res = mac.establish(asmnt, "R1", 0)				
+		asmnt.assign("R1", 0)
+		other_rs = {"R2", "R3", "R4", "R5", "R6", "R7"}
+		self.assertTrue(other_rs.issubset(res[1]))
+		for i in range(2, 8):
+			ri = "R"+str(i)
+			self.assertTrue(len(csp.D[ri]) == 1)
+			self.assertEqual(csp.D[ri], {0})
+			
+	def mac2(self, csp, asmnt, mac):
+		res = mac.establish(asmnt, "TH1", 2)				
+		asmnt.assign("TH1", 2)
+		other_ths = {"TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
+		self.assertTrue(other_ths.issubset(res[1]))
+		for i in range(2, 8):
+			thi = "TH"+str(i)
+			self.assertTrue(len(csp.D[thi]) == 1)
+			self.assertEqual(csp.D[thi], {2})
+	
+	def mac3(self, csp, asmnt, mac):
+		res = mac.establish(asmnt, "D1", 18)
+		asmnt.assign("D1", 18)
+		other_ds = {"D2", "D3", "D4", "D5", "D6", "D7"}
+		self.assertTrue(other_ds.issubset(res[1]))
+		last_max = 18
+		for i in range(2, 8):
+			di = "D"+str(i)
+			for val in csp.D[di]:
+				self.assertTrue(val <= last_max - csp.spec["ddiff"]["min"])
+			last_max = max(csp.D[di])
+
 	def test_mac(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)
 		mac = MAC(csp)
+		self.mac1(csp, asmnt, mac)
+		self.mac2(csp, asmnt, mac)
+		self.mac3(csp, asmnt, mac)
 		
-		csp.print_ds(csp.X)
-		res = mac.establish(asmnt, "R1", 0)
-		csp.print_ds(res[1])
-		asmnt.assign("R1", 0)
-		res = mac.establish(asmnt, "TH1", 2)
-		csp.print_ds(res[1])
-		asmnt.assign("TH1", 2)		
-
 if __name__ == '__main__':
 	unittest.main()

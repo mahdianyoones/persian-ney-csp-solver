@@ -1,4 +1,5 @@
 from constants import *
+import copy
 
 class LOG():
 
@@ -25,8 +26,8 @@ class LOG():
 				a = after = d[v]
 				diff = str((b["max"]-b["min"])-(a["max"]-a["min"]))
 			else:
-				before = set(sorted(dback[v]))
-				after = set(sorted(d[v]))
+				before = dback[v]
+				after = d[v]
 				diff = len(before) - len(after)
 			msg += "      "+v+" ----> shed " + str(diff) + " values. \n\n"
 #			msg += "        before => " + str(before) + "\n\n"

@@ -1,5 +1,6 @@
 from constants import *
 from base import BASE
+import copy
 
 class D_DEC(BASE):
 	'''Implements diameter decrement consistency.

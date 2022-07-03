@@ -1,5 +1,6 @@
 from constants import *
 from base import BASE
+import copy
 
 class IN_STOCK(BASE):
 	'''Establishes consistency W.R.T. in_stock constraint.'''
@@ -49,7 +50,7 @@ class IN_STOCK(BASE):
 		i = str(i)
 		if node["L"] == FEATURE_IS_NOT_SET:
 			last_d = self.csp.D["L"+i]
-			new_d = last_d.copy()
+			new_d = copy.deepcopy(last_d)
 			new_d["max"] = self.csp.catalog.get_l(filters)
 			if new_d["max"] < new_d["min"]:
 				return (CONTRADICTION, set([]))

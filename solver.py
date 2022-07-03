@@ -4,7 +4,7 @@ from assignment import ASSIGNMENT
 from mac import MAC
 from catalog import CATALOG
 from constants import *
-from log import logger
+import copy
 
 class SOLVER():
 
@@ -145,7 +145,7 @@ class SOLVER():
 		if self.asmnt.is_complete():
 			return (SUCCESS, None)
 		curvar = self.select_var()
-		domain = self.csp.D[curvar].copy() # Domain of curvar is never empty here
+		domain = copy.deepcopy(self.csp.D[curvar]) # Domain of curvar is never empty here
 		value = None
 		offset = 0
 		while True:
@@ -154,20 +154,20 @@ class SOLVER():
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
-			d_backup = self.csp.D.copy()
+			d_backup = copy.deepcopy(self.csp.D)
 			cresult = self.mac.establish(self.asmnt, curvar, value)
 			if cresult[0] == CONTRADICTION:			# Future would fail
 				confset = cresult[1]
 				self.accum_confset(curvar, confset)
 				self.learn_c(curvar, confset)
-				self.csp.D = d_backup.copy()			
+				self.csp.D = copy.deepcopy(d_backup)
 				continue
 			self.asmnt.assign(curvar, value)
 			result = self.dfs()						# Try future
 			if result[0] == SUCCESS:					# Future would be bright
 				return result						
 			self.asmnt.unassign(curvar)				# Future failed!
-			self.csp.D = d_backup.copy()
+			self.csp.D = copy.deepcopy(d_backup)
 			if result[1] == None:
 				continue							# backtracked
 			if result[2] == curvar:

@@ -1,3 +1,5 @@
+import copy
+
 class CSP():
 
 	def __init__(self, catalog, spec):
@@ -21,12 +23,6 @@ class CSP():
 	
 	def remove_val(self, var, val):
 		self.D[var].remove(val)
-		
-	def backup_d(self):
-		self.d_backup = self.D.copy()
-		
-	def revert_d(self):
-		self.D = self.d_backup.copy()
 	
 	def print_ds(self, _vars):
 		print()
@@ -58,11 +54,11 @@ class CSP():
 		thicknesses = self.catalog.values("TH")
 		roundnesses = self.catalog.values("R")
 		for d_var in self.d_vars:
-			self.D[d_var] = diameters.copy()
+			self.D[d_var] = copy.deepcopy(diameters)
 		for r_var in self.r_vars:
-			self.D[r_var] = roundnesses.copy()
+			self.D[r_var] = copy.deepcopy(roundnesses)
 		for th_var in self.th_vars:
-			self.D[th_var] = thicknesses.copy()
+			self.D[th_var] = copy.deepcopy(thicknesses)
 	
 	def init_c(self):
 		self.C["in_stock"] = self.X

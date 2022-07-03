@@ -1,11 +1,12 @@
 from constants import *
 from base import BASE
+import copy
 
 class ASSIGNMENT(BASE):
 
 	def init_all(self):
 		self.assignment = {}
-		self.unassigned = self.csp.X.copy()
+		self.unassigned = copy.deepcopy(self.csp.X)
 		self.assigned = [] # order matters
 		self.nodes = {}
 		for i in [1, 2, 3, 4, 5, 6, 7]:			

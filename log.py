@@ -9,7 +9,7 @@ class LOG():
 	def log2(self, curvar, value, asmnt):
 		msg = "\n"
 		msg += "    Assigned " + curvar + " : " + str(value) + "\n\n"
-		for v in asmnt.assigned:
+		for v in sorted(asmnt.assigned):
 			msg += "        " + v + " : " + str(asmnt.assignment[v])
 			msg += "\n"
 		print(msg, file=self.f)
@@ -20,14 +20,12 @@ class LOG():
 		msg += " => " + dir_res[0]
 		if dir_res[0] == CONTRADICTION:
 			msg += "  due to  " + dir_res[2] + "\n"
-		#elif dir_res[0] == DOMAINS_REDUCED:
-			#msg += "\n\n"
-			#msg += self.add_domain_diff(dback, d, dir_res[1])
-		#else:
+		#msg += "\n"
+		#msg += self.add_domain_diff(dback, d, dir_res[1])
 		print(msg, file=self.f)			
 	
 	def add_domain_diff(self, dback, d, _vars):
-		msg = ""
+		msg = "\n\n"
 		for v in sorted(_vars):
 			if v[0] == "L":
 				b = before = dback[v]
@@ -52,9 +50,8 @@ class LOG():
 		msg += "  =>  "+ indir_res[0]
 		if indir_res[0] == CONTRADICTION:
 			msg += "\n              due to  " + indir_res[2]
-			msg += ", cs :  " + str(indir_res[1]) + "\n\n"
-		#elif indir_res[0] == DOMAINS_REDUCED:
-		#	msg += self.add_domain_diff(dback, d, indir_res[1])
+			msg += ", cs :  " + str(indir_res[1]) + "\n"
+		#msg += self.add_domain_diff(dback, d, indir_res[1])
 		print(msg, file=self.f)
 			
 	def log4(self, curvar, jump_target):
@@ -64,12 +61,12 @@ class LOG():
 		print(msg, file=self.f)
 		
 	def log5(self, curvar):
-		msg = "\n\n"
+		msg = "\n"
 		msg += "Jumped to " + curvar
 		print(msg, file=self.f)
 
 	def log6(self, curvar):
-		msg = "\n\n"
+		msg = "\n"
 		msg += curvar + " exhausted."
 		print(msg, file=self.f)
 

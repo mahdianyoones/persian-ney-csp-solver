@@ -145,7 +145,7 @@ class SOLVER():
 		in the next phase of the project.
 		'''
 		self.nodes += 1
-		if self.nodes > 100:
+		if self.nodes > 10000:
 			exit()
 		if self.asmnt.is_complete():
 			return (SUCCESS, None)
@@ -154,11 +154,11 @@ class SOLVER():
 		value = None
 		offset = 0
 		while True:
+			value = self.next_val(curvar, domain, offset)
 			if curvar == "L2":
 				offset += 2
 			else:
 				offset += 1
-			value = self.next_val(curvar, domain, offset)
 			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break

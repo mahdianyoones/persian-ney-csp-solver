@@ -300,7 +300,9 @@ class TestMAC(unittest.TestCase):
 
 	def mac4(self, csp, asmnt, mac):
 		res = mac.b_update(asmnt)
-		
+		print(mac.csp.D["L1"])
+		print(mac.csp.D["L2"])
+		mac.establish(asmnt, )
 		
 	def test_mac(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")

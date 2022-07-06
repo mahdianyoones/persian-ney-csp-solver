@@ -35,7 +35,7 @@ class IN_STOCK(BASE):
 			current_domain = self.csp.D[var]
 			new_domain = new_domain.intersection(current_domain)
 			if len(new_domain) == 0:
-				return (CONTRADICTION, set([]))
+				return (CONTRADICTION, set([]), "in_stock")
 			if new_domain == current_domain:
 				impacted.remove(var)
 			else:
@@ -53,7 +53,7 @@ class IN_STOCK(BASE):
 			new_d = copy.deepcopy(last_d)
 			new_d["max"] = self.csp.catalog.get_l(filters)
 			if new_d["max"] < new_d["min"]:
-				return (CONTRADICTION, set([]))
+				return (CONTRADICTION, set([]), "in_stock")
 			if new_d["max"] < last_d["max"]:			
 				self.csp.update_d("L"+i, new_d)
 				return (DOMAINS_REDUCED, "L"+i)

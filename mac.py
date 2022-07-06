@@ -169,21 +169,11 @@ class MAC():
 		'''
 		neighborhood = self.neighborhood(curvar)
 		cs = set(neighborhood.keys())
-		logger.log1(curvar, value, cs, asmnt)
 		impacted = set([])
 		for c in cs:
-			dback = copy.deepcopy(self.csp.D)
 			eresult = self.alg_ref[c].establish(asmnt, curvar, value)
-			logger.log2(dback, self.csp.D, c, eresult)
 			if eresult[0] == DOMAINS_REDUCED:	
 				impacted.update(eresult[1])
-				dback = copy.deepcopy(self.csp.D)
-				bresult = self.b_update(asmnt, eresult[1])
-				if bresult[0] == CONTRADICTION:
-					return bresult
-				if bresult[0] == DOMAINS_REDUCED:
-					impacted.update(bresult[1])
-				logger.log3(dback, self.csp.D, eresult[1], bresult)
 			elif eresult[0] == CONTRADICTION:
 				return eresult
 		if len(impacted) == 0:

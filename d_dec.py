@@ -31,7 +31,7 @@ class D_DEC(BASE):
 		if di in asmnt.assigned:
 			diameter = asmnt.assignment[di]
 			if diameter > last_max - self.ddiff["min"]:
-				return (CONTRADICTION, {di})
+				return (CONTRADICTION, {di}, "d_dec")
 			else:
 				return (DOMAIN_INTACT, asmnt.assignment[di])
 		dcopy = copy.deepcopy(self.csp.D[di])
@@ -48,7 +48,7 @@ class D_DEC(BASE):
 			di = "D"+str(i)
 			rresult = self.remove_illegals(asmnt, di, last_max)
 			if rresult[0] == CONTRADICTION or len(self.csp.D[di]) == 0:
-				return (CONTRADICTION, rresult[1])
+				return (CONTRADICTION, rresult[1], "d_dec")
 			if rresult[0] == DOMAIN_REDUCED:
 				impacted.add(di)
 			last_max = rresult[1]

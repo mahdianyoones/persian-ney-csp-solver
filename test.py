@@ -153,11 +153,14 @@ class TestL1_HALF_L2(unittest.TestCase):
 		L2 = csp.D["L2"]
 		self.assertTrue(L2["min"] == L1["min"] * 2)
 		self.assertTrue(L2["max"] == L1["max"] * 2)
-
+		
 	def half_2(self, catalog, csp, asmnt, half):
-		half.establish(asmnt, "L1", 25)
+		res = half.establish(asmnt, "L1", 25)
+		L1 = csp.D["L1"]
 		L2 = csp.D["L2"]
+		self.assertTrue(L2["min"] == 50)
 		self.assertTrue(L2["max"] == 50)
+		self.assertEqual(res[1], {"L2"}) # L2 only is expected to be impacted		
 	
 	def half_3(self, catalog, csp, asmnt, half):
 		csp.D["L1"] = {"min": 30, "max": 100}
@@ -184,9 +187,16 @@ class TestL1_HALF_L2(unittest.TestCase):
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)		
 		half = L1_HALF_L2(csp)
+		csp.backup_d()
 		self.half_1(catalog, csp, asmnt, half)
+		asmnt.unassign_all()		
+		csp.revert_d()
 		self.half_2(catalog, csp, asmnt, half)
+		asmnt.unassign_all()		
+		csp.revert_d()
 		self.half_3(catalog, csp, asmnt, half)
+		asmnt.unassign_all()		
+		csp.revert_d()
 		self.half_4(catalog, csp, asmnt, half)
 
 class TestIN_STOCK(unittest.TestCase):
@@ -288,14 +298,26 @@ class TestMAC(unittest.TestCase):
 				self.assertTrue(val <= last_max - csp.spec["ddiff"]["min"])
 			last_max = max(csp.D[di])
 
+	def mac4(self, csp, asmnt, mac):
+		res = mac.b_update(asmnt)
+		
+		
 	def test_mac(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)
 		mac = MAC(csp)
+		csp.backup_d()
 		self.mac1(csp, asmnt, mac)
+		asmnt.unassign_all()
+		csp.revert_d()
 		self.mac2(csp, asmnt, mac)
+		asmnt.unassign_all()
+		csp.revert_d()
 		self.mac3(csp, asmnt, mac)
+		asmnt.unassign_all()
+		csp.revert_d()
+		self.mac4(csp, asmnt, mac)
 		
 if __name__ == '__main__':
 	unittest.main()

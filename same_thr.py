@@ -52,7 +52,7 @@ class SAME_THR():
 		for imvar in impacted.copy():
 			domain = self.csp.D[imvar]
 			if not value in domain:
-				return (CONTRADICTION, set([]))
+				return (CONTRADICTION, set([]), "same_thr")
 			if len(domain) == 1: # no change
 				impacted.remove(imvar)
 				continue

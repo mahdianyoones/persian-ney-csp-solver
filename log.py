@@ -6,20 +6,24 @@ class LOG():
 	def __init__(self):
 		self.f = open("log.log", "w")
 	
-	def log1(self, curvar, value, cs, asmnt):
-		msg = "Establishing " + curvar + " : " + str(value) + "\n\n"
-		_assignments = ""
+	def log2(self, curvar, value, asmnt):
+		msg = "\n"
+		msg += "    Assigned " + curvar + " : " + str(value) + "\n\n"
 		for v in asmnt.assigned:
-			_assignments += "    "+v+" : "+str(asmnt.assignment[v]) + "\n"
-		msg += "  Assignments => \n\n" + _assignments + "\n\n"
-		msg += "  Constraints => " + str(cs) + "\n\n"
+			msg += "        " + v + " : " + str(asmnt.assignment[v])
+			msg += "\n"
 		print(msg, file=self.f)
 	
-	def log2(self, dback, d, c, eresult):
-		msg = "    Applied " + c + " => " + eresult[0]
-		if eresult[0] == DOMAINS_REDUCED:
-			msg += "\n"
-			msg += self.add_domain_diff(dback, d, eresult[1])
+	def log1(self, dback, d, var, val, dir_res):
+		msg = ""
+		msg += "Established " + var + " : " + str(val)
+		msg += " => " + dir_res[0]
+		if dir_res[0] == CONTRADICTION:
+			msg += "  due to  " + dir_res[2] + "\n"
+		#elif dir_res[0] == DOMAINS_REDUCED:
+			#msg += "\n\n"
+			#msg += self.add_domain_diff(dback, d, dir_res[1])
+		#else:
 		print(msg, file=self.f)			
 	
 	def add_domain_diff(self, dback, d, _vars):
@@ -42,22 +46,31 @@ class LOG():
 		return msg
 	
 	
-	def log3(self, dback, d, _vars, bresult):
-		msg = "     Bounds updated for " + str(sorted(_vars)) 
-		msg += " => " + bresult[0] + "\n\n"
-		if bresult[0] == DOMAINS_REDUCED:
-			msg += self.add_domain_diff(dback, d, bresult[1])
+	def log3(self, dback, d, _vars, indir_res):
+		msg = "\n"
+		msg += "    Bounds updated for " + str(sorted(_vars))
+		msg += "  =>  "+ indir_res[0]
+		if indir_res[0] == CONTRADICTION:
+			msg += "\n              due to  " + indir_res[2]
+			msg += ", cs :  " + str(indir_res[1]) + "\n\n"
+		#elif indir_res[0] == DOMAINS_REDUCED:
+		#	msg += self.add_domain_diff(dback, d, indir_res[1])
 		print(msg, file=self.f)
 			
 	def log4(self, curvar, jump_target):
-		msg = "Jumped over "+curvar+"   -   target -> "+jump_target+"\n"
+		msg = "\n\n"
+		msg += "Jumped over " + curvar
+		msg += "  target -> " + jump_target
 		print(msg, file=self.f)
 		
 	def log5(self, curvar):
-		msg = "Jumped to "+curvar+"\n"
+		msg = "\n\n"
+		msg += "Jumped to " + curvar
 		print(msg, file=self.f)
 
 	def log6(self, curvar):
-		print(curvar+" exhausted.\n", file=self.f)
+		msg = "\n\n"
+		msg += curvar + " exhausted."
+		print(msg, file=self.f)
 
 logger = LOG()

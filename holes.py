@@ -1,4 +1,5 @@
 from constants import *
+import copy
 
 class HOLES():
 	'''Establishes consistency W.R.T h1, h2, h3, h4, h5, h6 constraints.
@@ -162,7 +163,7 @@ class HOLES():
 			elif li in self.asmnt.assigned:
 				domains[i] = {"min": assignment[li],"max": assignment[li]}
 			else:
-				domains[i] = self.csp.D[li]
+				domains[i] = copy.deepcopy(self.csp.D[li])
 		return domains
 	
 	def b_update(self, asmnt):
@@ -182,7 +183,7 @@ class HOLES():
 			li = "L"+str(i)
 			if uppers[i] < lowers[i]:
 				confset = set([cv for cv in _confset if cv in asnd])
-				return (CONTRADICTION, confset)
+				return (CONTRADICTION, confset, "holes")
 			if uppers[i] < domains[i]["max"]:
 				domains[i]["max"] = uppers[i]
 				self.csp.update_d(li, domains[i])

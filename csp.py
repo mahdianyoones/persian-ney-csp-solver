@@ -21,6 +21,12 @@ class CSP():
 	def update_d(self, var, new_domain):
 		self.D[var] = new_domain
 	
+	def backup_d(self):
+		self.d_backup = copy.deepcopy(self.D)
+
+	def revert_d(self):
+		self.D = copy.deepcopy(self.d_backup)
+		
 	def remove_val(self, var, val):
 		self.D[var].remove(val)
 	

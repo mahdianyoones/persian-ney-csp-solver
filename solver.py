@@ -5,23 +5,35 @@ from mac import MAC
 from catalog import CATALOG
 from constants import *
 import copy
-from log import logger
+from log import LOG
 
 class SOLVER():
 
 	def __init__(self, csvfile, spec):
-		self.nodes = 0
 		self.catalog = CATALOG(csvfile)
 		self.spec = spec
-		self.csp = CSP(self.catalog, self.spec)
-		self.asmnt = ASSIGNMENT(self.csp)		
-		self.confset = {}
+		self.csp = CSP(self.catalog, self.spec)	
+		self.asmnt = ASSIGNMENT(self.csp)			
+		self.l = LOG(self.csp, self.asmnt)
 		self.mac = MAC(self.csp)
 		self.learned_cs = {} # learned constraints	
-		self.R = {}	
+		self.R = {}
+		self.confset = {}
+		self.init_confset()	
+		self.sc = 0 # solutions counter
+		self.stats = {
+			"assigns": 0,
+			"jumpovers": 0,
+			"backjumps": 0,
+			"contradictions": 0,
+			"nodes": 0,
+			"learned_cs": 0
+		}
+
+	def init_confset(self):
 		for var in self.csp.X:
 			self.confset[var] = [] # order matters
-			
+	
 	def accum_confset(self, curvar, confset):
 		'''Accumulates the conflict set for curvar.
 		
@@ -47,8 +59,6 @@ class SOLVER():
 		if len(confset) == 0:
 			return
 		assigned = self.asmnt.assigned # time sorted
-		if len(assigned) == 0:
-			raise Exception("Confset & empty assignment.", curvar, confset)
 		for cfv in [v for v in assigned if v in confset and v != curvar]:
 			if not cfv in self.confset[curvar]: # prevent duplicates
 				self.confset[curvar].append(cfv)
@@ -91,6 +101,7 @@ class SOLVER():
 		members are tuples like (D1, value), (TH1, value), ... . No-goods are
 		added to the relations (R) for the new constraint.
 		'''
+		return
 		assigned = self.asmnt.assigned # order matters
 		confvars = [var for var in assigned if var in confset and var != curvar]
 		constraint = ""
@@ -102,6 +113,7 @@ class SOLVER():
 		assignment = self.asmnt.assignment
 		no_good = [(var, assignment[var]) for var in assigned if var in confvars]
 		self.R[constraint].add(tuple(no_good))
+		self.stats["learned_cs"] += 1
 
 	def next_val(self, curvar, domain, offset):
 		'''Returns the next value in the domain curvar W.R.T. offset.
@@ -125,11 +137,10 @@ class SOLVER():
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.
 		'''
-		dback = copy.deepcopy(self.csp.D)		
 		bresult = self.mac.b_update(self.asmnt)
-		logger.log3(dback, self.csp.D, self.csp.X, bresult)
 		if bresult == CONTRADICTION:
-			return (ibresult, set([]))
+			print("\n\nSearch stopped!")
+			return
 		return self.dfs()
 
 	def dfs(self):
@@ -144,14 +155,13 @@ class SOLVER():
 		adding this contradiction to a new constraint may help optimization 
 		in the next phase of the project.
 		'''
-		self.nodes += 1
-		if self.nodes > 10000:
-			exit()
+		self.stats["nodes"] += 1
 		if self.asmnt.is_complete():
+			self.l.log_solution(self.stats)
+			print(self.asmnt.assignment)
 			return (SUCCESS, None)
 		curvar = self.select_var()
-		domain = copy.deepcopy(self.csp.D[curvar]) # Domain of curvar is never empty here
-		value = None
+		domain = copy.deepcopy(self.csp.D[curvar]) # is never empty
 		offset = 0
 		while True:
 			value = self.next_val(curvar, domain, offset)
@@ -159,44 +169,37 @@ class SOLVER():
 				offset += 2
 			else:
 				offset += 1
-			# TODO: check if this value violates a learned constraint
 			if value == DOMAIN_EXHAUSTED:
 				break
 			dback = copy.deepcopy(self.csp.D)
-			indir_res = (DOMAINS_INTACT, None)
-			dir_res = self.mac.establish(self.asmnt, curvar, value)
-			logger.log1(dback, self.csp.D, curvar, value, dir_res)
-			confset = dir_res[1]
+			macres = self.mac.establish(self.asmnt, curvar, value)
 			self.asmnt.assign(curvar, value)
-			if dir_res[0] == DOMAINS_REDUCED:
-				dbefore = copy.deepcopy(self.csp.D)		
-				indir_res = self.mac.b_update(self.asmnt, dir_res[1])
-				logger.log3(dbefore, self.csp.D, dir_res[1], indir_res)				
-				confset = indir_res[1]
-			if dir_res[0] == CONTRADICTION or indir_res[0] == CONTRADICTION:
-				self.accum_confset(curvar, confset)
-				self.learn_c(curvar, confset)
+			self.stats["assigns"] += 1
+			if macres[0] == DOMAINS_REDUCED:
+				macres = self.mac.b_update(self.asmnt, macres[1])
+			if macres[0] == CONTRADICTION:
+				self.accum_confset(curvar, macres[1])
+				self.learn_c(curvar, macres[1])
 				self.csp.D = copy.deepcopy(dback)
 				self.asmnt.unassign(curvar)
+				self.stats["contradictions"] += 1
 				continue
-			logger.log2(curvar, value, self.asmnt)
-			result = self.dfs()						# Try future
-			if result[0] == SUCCESS:					# Future would be bright
-				return result						
-			self.asmnt.unassign(curvar)				# Future failed!
+			result = self.dfs()
+			if result[0] == SUCCESS:
+				self.sc += 1
+			self.asmnt.unassign(curvar)
 			self.csp.D = copy.deepcopy(dback)
 			if result[1] == None:
 				continue							# backtracked
 			if result[2] == curvar:
+				self.stats["backjumps"] += 1
 				confset = result[1]
 				self.absorb_confset(curvar, confset)	# backjumped
-				logger.log5(curvar)
-				continue							# Try next value
+				continue
 			else:
-				logger.log4(curvar, result[2])
-				return result						# Jumped over curvar
+				self.stats["jumpovers"] += 1
+				return result						# jumping over curvar
 		# domain exhausted
-		logger.log6(curvar)
 		confset = self.asmnt.assigned
 		self.learn_c(confset, curvar)
 		if len(self.confset[curvar]) > 0:
@@ -225,10 +228,4 @@ class SOLVER():
 		return mrv_var
 
 solver = SOLVER("measures_of_drained_pieces.csv", spec)
-result = solver.backtrack_search()
-if result[0] == SUCCESS:
-	print("Found a solution: ", solver.asmnt.assignment)
-	print("Nodes: ", solver.nodes)
-else:
-	print("No solution has been found!")
-	print("Nodes: ", solver.nodes)
+solver.backtrack_search()

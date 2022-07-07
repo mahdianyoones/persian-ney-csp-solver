@@ -14,13 +14,7 @@ class D_DEC(BASE):
 	 
 	 0.5 and 1 are subject to ney_spec.
 	 
-	 Inconsistent values can be removed from all D variables in one go.		
-	 
-	 Bound propagation is done this way:
-	 	remove from Di if 
-	 		value < min(Di-1) - 1 
-	 		or 
-	 		value > max(Di-1) - 0.5
+	 Inconsistent values can be removed from all D variables in one go.
 	'''
 
 	def __init__(self, csp):
@@ -31,14 +25,15 @@ class D_DEC(BASE):
 		if di in asmnt.assigned:
 			diameter = asmnt.assignment[di]
 			if diameter > last_max - self.ddiff["min"]:
-				return (CONTRADICTION, {di}, "d_dec")
+				return (CONTRADICTION, set([]), "d_dec")
 			else:
 				return (DOMAIN_INTACT, asmnt.assignment[di])
-		dcopy = copy.deepcopy(self.csp.D[di])
-		for diameter in dcopy:
+		reduced = False
+		for diameter in self.csp.D[di].copy():
 			if diameter > last_max - self.ddiff["min"]:
-				self.csp.remove_val(di, diameter)
-		if len(dcopy) > len(self.csp.D[di]):
+				self.csp.D[di].remove(diameter)
+				reduced = True
+		if reduced:
 			return (DOMAIN_REDUCED, max(self.csp.D[di]))
 		return (DOMAIN_INTACT, max(self.csp.D[di]))
 		
@@ -48,7 +43,7 @@ class D_DEC(BASE):
 			di = "D"+str(i)
 			rresult = self.remove_illegals(asmnt, di, last_max)
 			if rresult[0] == CONTRADICTION or len(self.csp.D[di]) == 0:
-				return (CONTRADICTION, rresult[1], "d_dec")
+				return (CONTRADICTION, set([]), "d_dec")
 			if rresult[0] == DOMAIN_REDUCED:
 				impacted.add(di)
 			last_max = rresult[1]

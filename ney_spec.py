@@ -11,6 +11,6 @@ spec = {
 	"holed":			10,						# holes diameter
 	"topd":			{"min": 18, "max": 24},		# diamter at top
 	"minl":			20,						# minimum chunk length
-	"hmarg":			10,						# minimum hole/hole and hole/junction space
+	"hmarg":			7,						# minimum hole/hole and hole/junction space
 	"ddiff":			{"min": 0.5, "max": 1.5},	# diameter difference between adjacent nodes
 }

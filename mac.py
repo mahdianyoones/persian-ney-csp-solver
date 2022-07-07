@@ -6,7 +6,6 @@ from same_thr import SAME_THR
 from l1_half_l2 import L1_HALF_L2
 from in_stock import IN_STOCK
 from constants import *
-from log import logger
 import copy
 
 class MAC():

@@ -10,8 +10,8 @@ from log import LOG
 class SOLVER():
 
 	def statkeys(self):
-		keys = {"assigns", "jumpovers", "backjumps", "direct_contradictions"}
-		keys.update({"backtracks", "nodes", "learned", "learned_tuples"})
+		keys = {"assigns", "jumpovers", "direct_contradictions"}
+		keys.update({"backtracks", "nodes", "backjumps"})
 		keys.update({"solutions", "indirect_contradictions"})
 		return keys
 
@@ -113,20 +113,20 @@ class SOLVER():
 		self.R[constraint].add(tuple(no_good))
 		self.stats["learned_tuples"] += 1
 
-	def value(self, curvar, domain):
+	def value(self, curvar, domain, offset):
 		'''Returns the next value in the domain curvar W.R.T. offset.
 		
 		This is a utility function.
 		'''		
 		if curvar[0] == "L":
-			if self.offset > domain["max"] - domain["min"]:
+			if offset > domain["max"] - domain["min"]:
 				value = DOMAIN_EXHAUSTED
 			else:
-				value = domain["min"] + self.offset
+				value = domain["min"] + offset
 		else:
 			value = DOMAIN_EXHAUSTED if len(domain) == 0 else domain.pop()
-		self.offset += 2 if curvar == "L2" else 1
-		return value
+		offset += 2 if curvar == "L2" else 1
+		return (value, offset)
 		
 	def find(self):
 		'''Runs MAC for all variables first and then calls DFS.
@@ -183,13 +183,14 @@ class SOLVER():
 		self.stats["nodes"] += 1
 		if len(self.asmnt.unassigned) == 0: # solution
 			self.l.solution(self.stats)
-			self.stats["solutions"] += 1			
+			self.stats["solutions"] += 1
+			print(self.stats)			
 			return (SOLUTION, None)
 		curvar = self.select()
 		domain = copy.deepcopy(self.csp.D[curvar])
-		self.offset = 0
+		offset = 0
 		while True:
-			value = self.value(curvar, domain)				
+			(value, offset) = self.value(curvar, domain, offset)				
 			if value == DOMAIN_EXHAUSTED:
 				return self.retreat(curvar)
 			dback = copy.deepcopy(self.csp.D)

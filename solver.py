@@ -184,7 +184,6 @@ class SOLVER():
 		if len(self.asmnt.unassigned) == 0: # solution
 			self.l.solution(self.stats)
 			self.stats["solutions"] += 1
-			print(self.stats)			
 			return (SOLUTION, None)
 		curvar = self.select()
 		domain = copy.deepcopy(self.csp.D[curvar])

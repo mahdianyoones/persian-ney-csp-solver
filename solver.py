@@ -11,7 +11,7 @@ class SOLVER():
 
 	def statkeys(self):
 		keys = {"assigns", "jumpovers", "backjumps", "direct_contradictions"}
-		keys.update({"nodes", "learned", "learned_tuples"})
+		keys.update({"backtracks", "nodes", "learned", "learned_tuples"})
 		keys.update({"solutions", "indirect_contradictions"})
 		return keys
 
@@ -26,6 +26,7 @@ class SOLVER():
 		self.R = {}				             # tuples for learned consts
 		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.stats = {statkey: 0 for statkey in self.statkeys()}
+		self.offset = 0
 
 	def accumulate(self, curvar, confset):
 		'''Accumulates the conflict set for curvar.
@@ -147,18 +148,14 @@ class SOLVER():
 		dir_res = self.mac.direct(self.asmnt, curvar, value)
 		self.asmnt.assign(curvar, value)
 		self.stats["assigns"] += 1
-		if dir_res[0] == DOMAINS_INTACT:
-			return (CONSISTENT_ASSIGNMENT, set([]))
 		if dir_res[0] == CONTRADICTION:
 			self.stats["direct_contradictions"] += 1
 			return (INCONSISTENT_ASSIGNMENT, dir_res[1])
 		if dir_res[0] == DOMAINS_REDUCED:
-			reduced_vars = dir_res[1]
-			indir_res = self.mac.indirect(self.asmnt, reduced_vars)
+			indir_res = self.mac.indirect(self.asmnt, dir_res[1])
 			if indir_res[0] == CONTRADICTION:
 				self.stats["indirect_contradictions"] += 1
-				confset = dir_res[1].union(indir_res[1])
-				return (INCONSISTENT_ASSIGNMENT, confset)
+				return (INCONSISTENT_ASSIGNMENT, indir_res[1])
 		return (CONSISTENT_ASSIGNMENT, set([]))
 	
 	def retreat(self, curvar):
@@ -184,13 +181,12 @@ class SOLVER():
 		in the next phase of the project.
 		'''
 		self.stats["nodes"] += 1
-		if self.stats["nodes"] % 1000 == 0:
-			print("Visited ", self.stats["nodes"], " nodes.")
-			print(self.stats)
 		if len(self.asmnt.unassigned) == 0: # solution
 			self.l.solution(self.stats)
+			self.stats["solutions"] += 1			
 			return (SOLUTION, None)
-		(curvar, domain) = self.select()
+		curvar = self.select()
+		domain = copy.deepcopy(self.csp.D[curvar])
 		self.offset = 0
 		while True:
 			value = self.value(curvar, domain)				
@@ -199,19 +195,19 @@ class SOLVER():
 			dback = copy.deepcopy(self.csp.D)
 			assign_res = self.assign(curvar, value)
 			if assign_res[0] == INCONSISTENT_ASSIGNMENT:
-				self.asmnt.unassign(curvar)
 				self.accumulate(curvar, assign_res[1])
+				self.asmnt.unassign(curvar)
 				self.csp.D = copy.deepcopy(dback)
 				continue
 			dfs_res = self.dfs()
 			self.asmnt.unassign(curvar)
 			self.csp.D = copy.deepcopy(dback)
 			if dfs_res[0] == SOLUTION:
-				self.stats["solutions"] += 1
 				continue
 			if dfs_res[0] == SEARCH_SPACE_EXHAUSTED:
 				return # termination
 			if dfs_res[0] == BACKTRACK:
+				self.stats["backtracks"] += 1
 				continue
 			if dfs_res[0] == BACKJUMP:
 				if dfs_res[2] != curvar:
@@ -239,7 +235,7 @@ class SOLVER():
 			if d_size < mrv:
 				mrv_var = var
 				mrv = d_size
-		return (mrv_var, copy.deepcopy(self.csp.D[mrv_var]))
+		return mrv_var
 
 solver = SOLVER("measures_of_drained_pieces.csv", spec)
 print(solver.find())

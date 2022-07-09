@@ -37,7 +37,8 @@ class D_DEC(BASE):
 				diameter = asmnt.assignment[di]
 				if diameter > last_max - self.ddiff["min"]:
 					return (CONTRADICTION, set([]), "d_dec")
-				break
+				last_max = asmnt.assignment[di]
+				continue
 			rresult = self.remove_illegals(asmnt, di, last_max)
 			if rresult == DOMAIN_INTACT:
 				break

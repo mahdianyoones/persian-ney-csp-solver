@@ -23,8 +23,6 @@ class ASSIGNMENT(BASE):
 			
 	def assign(self, var, val):
 		self.assignment[var] = val
-		if not var in self.unassigned:
-			raise Exception(var, "is already assigned.")
 		self.unassigned.remove(var)
 		self.assigned.append(var) # order matters
 		var_i = self.var_i(var)

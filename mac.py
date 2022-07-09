@@ -127,7 +127,7 @@ class MAC():
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
 	
-	def b_update(self, asmnt, _vars=set([])):
+	def indirect(self, asmnt, _vars=set([])):
 		if len(_vars) == 0:
 			constraints = set(self.csp.C.keys())
 		else:
@@ -151,7 +151,7 @@ class MAC():
 			return (DOMAINS_INTACT, set([]))
 		return (DOMAINS_REDUCED, impacted)
 		
-	def establish(self, asmnt, curvar, value):
+	def direct(self, asmnt, curvar, value):
 		'''Establishes consistency for curvar neighbors and returns a conflict set.
 		
 		If the domain of a neighbor changes, neighbors of that neighbor are also

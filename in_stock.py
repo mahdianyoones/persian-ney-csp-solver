@@ -23,11 +23,9 @@ class IN_STOCK(BASE):
 				filters[var_name] = asmnt.assignment[var]
 			else:
 				impacted.add(var)
-		if len(filters)+len(impacted) != 3:
-			raise Exception("Wrong filters and impacted ", filters, impacted)
 		return (filters, impacted)
 	
-	def update_thrd(self, filters, impacted):
+	def update_thrd(self, filters, impacted, i):
 		'''Updates impacted variables and returns success/contradiction.'''
 		for var in impacted.copy():
 			var_name = self.var_name(var)
@@ -63,13 +61,13 @@ class IN_STOCK(BASE):
 		return (DOMAINS_INTACT, None)
 	
 	def establish(self, asmnt, curvar, value):
-		if self.var_name(curvar) == "L":
+		if curvar[0] == "L":
 			return (DOMAINS_INTACT, None)
 		(filters, impacted) = self.filters_impacted(asmnt, curvar, value)
 		i = self.var_i(curvar)
 		node = asmnt.nodes[str(i)]
 		self.asmnt = asmnt
-		thrd_res = self.update_thrd(filters, impacted)
+		thrd_res = self.update_thrd(filters, impacted, i)
 		if thrd_res[0] == CONTRADICTION:
 			return thrd_res
 		l_res = self.update_l(filters, i, node)

@@ -9,7 +9,7 @@ class LOG():
 		self.s_counter = 0
 		self.f = open("log.log", "w")
 	
-	def log_solution(self, stats):
+	def solution(self, stats):
 		self.s_counter += 1
 		msg = "\n"+str(self.s_counter)+"\n\n"+str(self.asmnt.assignment)
 		msg += "\n"

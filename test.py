@@ -267,7 +267,7 @@ class TestHOLES(unittest.TestCase):
 class TestMAC(unittest.TestCase):
 
 	def mac1(self, csp, asmnt, mac):
-		res = mac.establish(asmnt, "R1", 0)				
+		res = mac.direct(asmnt, "R1", 0)				
 		asmnt.assign("R1", 0)
 		other_rs = {"R2", "R3", "R4", "R5", "R6", "R7"}
 		self.assertTrue(other_rs.issubset(res[1]))
@@ -277,7 +277,7 @@ class TestMAC(unittest.TestCase):
 			self.assertEqual(csp.D[ri], {0})
 			
 	def mac2(self, csp, asmnt, mac):
-		res = mac.establish(asmnt, "TH1", 2)				
+		res = mac.direct(asmnt, "TH1", 2)				
 		asmnt.assign("TH1", 2)
 		other_ths = {"TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
 		self.assertTrue(other_ths.issubset(res[1]))
@@ -287,7 +287,7 @@ class TestMAC(unittest.TestCase):
 			self.assertEqual(csp.D[thi], {2})
 	
 	def mac3(self, csp, asmnt, mac):
-		res = mac.establish(asmnt, "D1", 18)
+		res = mac.direct(asmnt, "D1", 18)
 		asmnt.assign("D1", 18)
 		other_ds = {"D2", "D3", "D4", "D5", "D6", "D7"}
 		self.assertTrue(other_ds.issubset(res[1]))
@@ -299,10 +299,10 @@ class TestMAC(unittest.TestCase):
 			last_max = max(csp.D[di])
 
 	def mac4(self, csp, asmnt, mac):
-		res = mac.b_update(asmnt)
+		res = mac.indirect(asmnt)
 		print(mac.csp.D["L1"])
 		print(mac.csp.D["L2"])
-		mac.establish(asmnt, )
+		#mac.direct(asmnt, )
 		
 	def test_mac(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")

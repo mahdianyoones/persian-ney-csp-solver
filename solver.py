@@ -10,9 +10,9 @@ from log import LOG
 class SOLVER():
 
 	def statkeys(self):
-		keys = {"assigns", "jumpovers", "direct_contradictions"}
-		keys.update({"backtracks", "nodes", "backjumps"})
-		keys.update({"solutions", "indirect_contradictions"})
+		keys = {"assigns", "jumpovers", "direct_contradictions",
+			   "backtracks", "nodes", "backjumps", 
+			   "indirect_contradictions"}
 		return keys
 
 	def __init__(self, csvfile, spec):
@@ -26,7 +26,6 @@ class SOLVER():
 		self.R = {}				             # tuples for learned consts
 		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.stats = {statkey: 0 for statkey in self.statkeys()}
-		self.offset = 0
 
 	def accumulate(self, curvar, confset):
 		'''Accumulates the conflict set for curvar.
@@ -183,7 +182,6 @@ class SOLVER():
 		self.stats["nodes"] += 1
 		if len(self.asmnt.unassigned) == 0: # solution
 			self.l.solution(self.stats)
-			self.stats["solutions"] += 1
 			return (SOLUTION, None)
 		curvar = self.select()
 		domain = copy.deepcopy(self.csp.D[curvar])

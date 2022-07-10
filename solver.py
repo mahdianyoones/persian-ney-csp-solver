@@ -3,6 +3,7 @@ from csp import CSP
 from assignment import ASSIGNMENT
 from mac import MAC
 from catalog import CATALOG
+from _select import SELECT
 from constants import *
 import copy
 from log import LOG
@@ -19,7 +20,8 @@ class SOLVER():
 		self.catalog = CATALOG(csvfile)
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)	
-		self.asmnt = ASSIGNMENT(self.csp)			
+		self.asmnt = ASSIGNMENT(self.csp)	
+		self.select = SELECT(self.csp, self.asmnt)		
 		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.mac = MAC(self.csp)
 		self.learned = {} 			             # learned constraints	
@@ -149,7 +151,7 @@ class SOLVER():
 		self.stats["assigns"] += 1
 		if dir_res[0] == CONTRADICTION:
 			self.stats["direct_contradictions"] += 1
-			#self.l.contradiction("direct", dir_res)
+			self.l.contradiction("direct", dir_res, curvar, value)
 			return (INCONSISTENT_ASSIGNMENT, dir_res[1])
 		if dir_res[0] == DOMAINS_REDUCED:
 			indir_res = self.mac.indirect(self.asmnt, dir_res[1])
@@ -185,7 +187,7 @@ class SOLVER():
 		if len(self.asmnt.unassigned) == 0: # solution
 			self.l.solution(self.stats)
 			return (SOLUTION, None)
-		curvar = self.select()
+		curvar = self.select.next()
 		domain = copy.deepcopy(self.csp.D[curvar])
 		offset = 0
 		while True:
@@ -217,25 +219,6 @@ class SOLVER():
 					self.absorb(curvar, dfs_res[1])
 					self.stats["backjumps"] += 1
 					continue
-
-	def select(self):
-		'''Selects a variable using MRV‌ and degree heurisitcs.'''
-		mrv = float("inf")
-		mrv_var = None
-		degree = ["L2", "L1", "L3", "L4", "L5", "L6", "L7", 
-			"D1", "D2", "D3", "D4", "D5", "D6", "D7",
-			"R1", "R2", "R3", "R4", "R5", "R6", "R7", 
-			"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"]
-		unassigned = self.asmnt.unassigned
-		for var in [dsv for dsv in degree if dsv in unassigned]:
-			if var[0] == "L":
-				d_size = self.csp.D[var]["max"] - self.csp.D[var]["min"]
-			else:
-				d_size = len(self.csp.D[var])
-			if d_size < mrv:
-				mrv_var = var
-				mrv = d_size
-		return mrv_var
 
 solver = SOLVER("measures_of_drained_pieces.csv", spec)
 print(solver.find())

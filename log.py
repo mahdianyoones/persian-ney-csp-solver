@@ -24,6 +24,7 @@ class LOG():
 	
 	def solution(self, stats):
 		self.s_counter += 1
+		print(self.s_counter)
 		formatted = self.format_solution(self.asmnt.assignment)
 		msg = "\n" + str(self.s_counter)
 		msg += "\n\n" + formatted

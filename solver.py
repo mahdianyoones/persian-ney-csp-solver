@@ -20,12 +20,12 @@ class SOLVER():
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)	
 		self.asmnt = ASSIGNMENT(self.csp)			
-		self.l = LOG(self.csp, self.asmnt)
+		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.mac = MAC(self.csp)
 		self.learned = {} 			             # learned constraints	
 		self.R = {}				             # tuples for learned consts
-		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.stats = {statkey: 0 for statkey in self.statkeys()}
+		self.l = LOG(self.csp, self.asmnt, self.confset)
 
 	def accumulate(self, curvar, confset):
 		'''Accumulates the conflict set for curvar.
@@ -149,11 +149,13 @@ class SOLVER():
 		self.stats["assigns"] += 1
 		if dir_res[0] == CONTRADICTION:
 			self.stats["direct_contradictions"] += 1
+			#self.l.contradiction("direct", dir_res)
 			return (INCONSISTENT_ASSIGNMENT, dir_res[1])
 		if dir_res[0] == DOMAINS_REDUCED:
 			indir_res = self.mac.indirect(self.asmnt, dir_res[1])
 			if indir_res[0] == CONTRADICTION:
 				self.stats["indirect_contradictions"] += 1
+				self.l.contradiction("indirect", indir_res, curvar, value)
 				return (INCONSISTENT_ASSIGNMENT, indir_res[1])
 		return (CONSISTENT_ASSIGNMENT, set([]))
 	

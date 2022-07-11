@@ -11,12 +11,11 @@ class IN_STOCK(BASE):
 			
 	def filters_impacted(self, curvar, value):
 		'''Builds filters dictionary and detects impacted variables.'''
-		i = self.var_i(curvar)
-		_vars = {"R"+str(i), "TH"+str(i), "D"+str(i)}
+		i = str(self.var_i(curvar))
 		node = self.asmnt.nodes[str(i)]
 		filters = {}
-		impacted = set({})
-		for var in _vars:
+		impacted = set([])
+		for var in {"R"+i, "TH"+i, "D"+i}:
 			var_name = self.var_name(var)
 			if var == curvar:
 				filters[var_name] = value
@@ -34,7 +33,7 @@ class IN_STOCK(BASE):
 			current_domain = self.csp.D[var]
 			new_domain = new_domain.intersection(current_domain)
 			if len(new_domain) == 0:
-				return (CONTRADICTION, set([]), "in_stock")
+				return (CONTRADICTION, None)
 			if new_domain == current_domain:
 				impacted.remove(var)
 			else:
@@ -43,6 +42,15 @@ class IN_STOCK(BASE):
 			return (DOMAINS_INTACT, None)
 		else:
 			return (DOMAINS_REDUCED, impacted)
+	
+	def confset(self, curvar):
+		curvar_i = self.var_i(curvar)
+		i = str(curvar_i)
+		confset = set([])
+		for v in {"R"+i, "TH"+i, "D"+i}:
+			if v in self.asmnt.assigned:
+				confset.add(v)
+		return confset
 		
 	def update_l(self, filters, i, node):
 		'''Updates an L variable using the given filters.'''
@@ -52,7 +60,7 @@ class IN_STOCK(BASE):
 			new_d = copy.deepcopy(last_d)
 			new_d["max"] = self.csp.catalog.get_l(filters)
 			if new_d["max"] < new_d["min"]:
-				return (CONTRADICTION, set([]), "in_stock")
+				return (CONTRADICTION, None)
 			if new_d["max"] < last_d["max"]:			
 				self.csp.update_d("L"+i, new_d)
 				return (DOMAINS_REDUCED, "L"+i)
@@ -66,13 +74,13 @@ class IN_STOCK(BASE):
 			return (DOMAINS_INTACT, None)
 		(filters, impacted) = self.filters_impacted(curvar, value)
 		i = self.var_i(curvar)
-		node = self.asmnt.nodes[str(i)]
+		node = self.	asmnt.nodes[str(i)]
 		thrd_res = self.update_thrd(filters, impacted, i)
 		if thrd_res[0] == CONTRADICTION:
-			return thrd_res
+			return (CONTRADICTION, self.confset(curvar), "in_stock")
 		l_res = self.update_l(filters, i, node)
 		if l_res[0] == CONTRADICTION:
-			return l_res
+			return (CONTRADICTION, set([]), "in_stock")
 		if l_res[0] == DOMAINS_REDUCED:
 			impacted.add(l_res[1]) # impacted l
 		if len(impacted) > 0:

@@ -128,7 +128,7 @@ class MAC():
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
 	
-	def indirect(self, _vars=set([])):
+	def indirect(self, curvar=None, _vars=set([])):
 		if len(_vars) == 0:
 			constraints = set(self.csp.C.keys())
 		else:

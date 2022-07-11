@@ -14,7 +14,7 @@ class D_DEC(BASE):
 	 
 	 0.5 and 1 are subject to ney_spec.
 	 
-	 Inconsistent values can be removed from all D variables in one go.
+	 Inconsistent values can be removed from all D variables in one go.	 
 	'''
 
 	def __init__(self, csp, asmnt):
@@ -31,6 +31,9 @@ class D_DEC(BASE):
 		return DOMAIN_REDUCED if reduced else DOMAIN_INTACT
 		
 	def _establish(self, last_max, start):
+		'''Removes inconsistent values from all D variables W.R.T. d_dec.
+		
+		(CONTRADICTION, i) means Di variable has run out of values.'''
 		impacted = set([])
 		for i in range(start, 8): # curvar up to D7
 			di = "D"+str(i)
@@ -39,7 +42,7 @@ class D_DEC(BASE):
 				break
 			if rresult == DOMAIN_REDUCED:
 				if len(self.csp.D[di]) == 0:
-					return (CONTRADICTION, None)
+					return (CONTRADICTION, i)
 				impacted.add(di)
 			last_max = max(self.csp.D[di])
 		if len(impacted) == 0:
@@ -56,25 +59,26 @@ class D_DEC(BASE):
 		if res[0] != CONTRADICTION:
 			return res
 		return (CONTRADICTION, set([]), "d_dec")
-
-	def confset(self, curvar_i):
-		i = str(curvar_i)
-		confset = {"D"+i}
-		if "TH"+i in self.asmnt.assigned:
-			confset.add("TH"+i)
-		if "R"+i in self.asmnt.assigned:
-			confset.add("R"+i)
-		return confset
 		
 	def establish(self, curvar, value):
 		'''Establishes direct d_dec consistency after assignment.
 		
-		The conflict occurs between assigned variables and the variable
-		that is being assigned.
+		e.g.
+		
+		If D1 and D2 are assigned and contradiction occurs for D5 (it runs 
+		out of values), confset = {D1, D2}.
+		
+		We cannot tell whether other variables (Rs, Ths, and Ls) are
+		responsible for this contradiction or not.
 		'''
 		last_max = value
 		var_i = self.var_i(curvar)
 		res = self._establish(last_max, var_i+1)
 		if res[0] != CONTRADICTION:
 			return res
-		return (CONTRADICTION, self.confset(var_i), "d_dec")
+		confset = set([])
+		for i in range(1, res[1]):
+			di = "D"+str(i)
+			if di in self.asmnt.assigned:
+				confset.add(di)
+		return (CONTRADICTION, confset, "d_dec")

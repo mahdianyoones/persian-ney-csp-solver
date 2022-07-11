@@ -66,10 +66,11 @@ class L_DEC():
 		in propagation.
 	'''
 
-	def __init__(self, csp):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
+		self.asmnt = asmnt
 	
-	def _establish(self, asmnt, ds, start):		
+	def _establish(self, ds, start):		
 		uppers = [None, None, 0, 0, 0, 0, 0, 0]
 		lowers = [None, None, 0, 0, 0, 0, 0, 0]
 		for i in range(2, 8):
@@ -78,7 +79,7 @@ class L_DEC():
 		impacted = set([])
 		for i in range(start, 8): # 3 to 7
 			li = "L"+str(i)
-			if li in asmnt.assigned:
+			if li in self.asmnt.assigned:
 				# further variables are already consistent via establish
 				break
 			if i < 7: # lower of L7 is not restricted
@@ -97,21 +98,21 @@ class L_DEC():
 			return (DOMAINS_INTACT, None)
 		return (DOMAINS_REDUCED, impacted)
 				
-	def domains(self, asmnt):
-		assignment = asmnt.assignment
+	def domains(self):
+		assignment = self.asmnt.assignment
 		domains = [None, None, 0, 0, 0, 0, 0, 0]
 		for i in range(2, 8):
 			li = "L"+str(i)
-			if li in asmnt.assigned:
+			if li in self.asmnt.assigned:
 				val = assignment[li]
 				domains[i] = {"min": val,"max": val}
 			else:
 				domains[i] = self.csp.D[li]
 		return domains
 
-	def b_update(self, asmnt):
-		ds = self.domains(asmnt)
-		return self._establish(asmnt, ds, 3)
+	def b_update(self):
+		ds = self.domains()
+		return self._establish(ds, 3)
 		
 	def var_i(self, var):
 		if var[0] in {"R", "D", "L"}:
@@ -125,10 +126,10 @@ class L_DEC():
 		else:
 			return var[0:2]
 
-	def establish(self, asmnt, curvar, value):
+	def establish(self, curvar, value):
 		if curvar == "L7":
 			return (DOMAINS_INTACT, None)
-		ds = self.domains(asmnt)
+		ds = self.domains()
 		var_i = self.var_i(curvar)
 		ds[var_i] = {"min": value,"max": value}
-		return self._establish(asmnt, ds, var_i+1)
+		return self._establish(ds, var_i+1)

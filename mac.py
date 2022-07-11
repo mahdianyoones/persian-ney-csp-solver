@@ -82,16 +82,17 @@ class MAC():
 
 
 	'''
-	def __init__(self, csp):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
+		self.asmnt = asmnt
 		self.neighbors = {}
-		self.in_stock = IN_STOCK(csp)
-		self.holes = HOLES(csp)
-		self.len = LEN(csp)
-		self.d_dec = D_DEC(csp)
-		self.l_dec = L_DEC(csp)
-		self.same_thr = SAME_THR(csp)
-		self.l1_half_l2 = L1_HALF_L2(csp)
+		self.in_stock = IN_STOCK(csp, asmnt)
+		self.holes = HOLES(csp, asmnt)
+		self.len = LEN(csp, asmnt)
+		self.d_dec = D_DEC(csp, asmnt)
+		self.l_dec = L_DEC(csp, asmnt)
+		self.same_thr = SAME_THR(csp, asmnt)
+		self.l1_half_l2 = L1_HALF_L2(csp, asmnt)
 		self.alg_ref = {
 			"h1":		self.holes,
 			"h2":		self.holes,
@@ -127,7 +128,7 @@ class MAC():
 					self.neighbors[curvar][constraint] = _vars
 		return self.neighbors[curvar]
 	
-	def indirect(self, asmnt, _vars=set([])):
+	def indirect(self, _vars=set([])):
 		if len(_vars) == 0:
 			constraints = set(self.csp.C.keys())
 		else:
@@ -138,7 +139,7 @@ class MAC():
 		impacted = set([])
 		while len(constraints) > 0:
 			c = constraints.pop()
-			bresult = self.alg_ref[c].b_update(asmnt)
+			bresult = self.alg_ref[c].b_update()
 			if bresult[0] == CONTRADICTION:
 				return bresult
 			if bresult[0] == DOMAINS_REDUCED:
@@ -151,7 +152,7 @@ class MAC():
 			return (DOMAINS_INTACT, set([]))
 		return (DOMAINS_REDUCED, impacted)
 		
-	def direct(self, asmnt, curvar, value):
+	def direct(self, curvar, value):
 		'''Establishes consistency for curvar neighbors and returns a conflict set.
 		
 		If the domain of a neighbor changes, neighbors of that neighbor are also
@@ -170,7 +171,7 @@ class MAC():
 		cs = set(neighborhood.keys())
 		impacted = set([])
 		for c in cs:
-			eresult = self.alg_ref[c].establish(asmnt, curvar, value)
+			eresult = self.alg_ref[c].establish(curvar, value)
 			if eresult[0] == DOMAINS_REDUCED:	
 				impacted.update(eresult[1])
 			elif eresult[0] == CONTRADICTION:

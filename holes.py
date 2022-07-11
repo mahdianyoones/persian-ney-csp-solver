@@ -112,8 +112,9 @@ class HOLES():
 	L1 + L2 + L3 + L4 + L5 + 10 	< h6
 	'''
 	
-	def __init__(self, csp):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
+		self.asmnt = asmnt
 		spec = csp.spec
 		hmarg = spec["hmarg"]
 		holed = self.csp.spec["holed"]
@@ -166,13 +167,12 @@ class HOLES():
 				domains[i] = copy.deepcopy(self.csp.D[li])
 		return domains
 	
-	def b_update(self, asmnt):
+	def b_update(self):
 		'''Updates bounds of L1 to L7.
 		
 		Because of the way h1, h2, h3, ... functions work, passing L0
 		as the curvar makes them update upper bound of all L variables.
 		'''
-		self.asmnt = asmnt		
 		domains = self.domains("L0", None)
 		return self._establish(domains, "L0")
 	
@@ -208,7 +208,6 @@ class HOLES():
 			_confset.update(confset)
 		return self.do_update(uppers, lowers, ds, _confset)		
 		
-	def establish(self, asmnt, curvar, value):
-		self.asmnt = asmnt
+	def establish(self, curvar, value):
 		domains = self.domains(curvar, value)	# domains
 		return self._establish(domains, curvar)

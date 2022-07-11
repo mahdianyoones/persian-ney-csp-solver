@@ -15,16 +15,17 @@ class L1_HALF_L2():
 		upper2 = min(upper2, upper2*2)	
 	'''
 
-	def __init__(self, csp):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
+		self.asmnt = asmnt
 		
-	def b_update(self, asmnt):
+	def b_update(self):
 		'''Updates the bounds of L1 and L2 W.R.T. l1_half_l2.
 		
 		If L1 is in the assignment, L2 is already made consistency
 		in the establish function.
 		'''
-		if "L1" in asmnt.assigned:
+		if "L1" in self.asmnt.assigned:
 			return (DOMAINS_INTACT, set([]))
 		# Adjust L2 if possible
 		d1 = self.csp.D["L1"]
@@ -57,9 +58,9 @@ class L1_HALF_L2():
 		self.csp.update_d("L2", d2)
 		return (DOMAINS_REDUCED, impacted)
 							
-	def establish(self, asmnt, curvar, value):
+	def establish(self, curvar, value):
 		'''Reduces L2 to only one value: L1 * 2.'''
-		if curvar == "L2" or "L2" in asmnt.assigned:
+		if curvar == "L2" or "L2" in self.asmnt.assigned:
 			return (DOMAINS_INTACT, None)
 		new_val = value * 2
 		d1 = self.csp.D["L1"]

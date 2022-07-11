@@ -15,10 +15,11 @@ class SAME_THR():
 	backtracking. No backjumping is possible.
 	'''
 
-	def __init__(self, csp):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
+		self.asmnt = asmnt
 	
-	def b_update(self, asmnt):
+	def b_update(self):
 		'''It might be expensive to check bounds many many times!'''
 		return (DOMAINS_INTACT, None)
 		
@@ -34,9 +35,9 @@ class SAME_THR():
 		else:
 			return var[0:2]
 	
-	def impacted(self, asmnt, var_name, curvar):
+	def impacted(self, var_name, curvar):
 		impacted = set([])
-		for i, node in asmnt.nodes.items():
+		for i, node in self.asmnt.nodes.items():
 			if node[var_name] == FEATURE_IS_SET:
 				return set([])
 			var = var_name+str(i)
@@ -44,9 +45,9 @@ class SAME_THR():
 				impacted.add(var)
 		return impacted
 		
-	def establish(self, asmnt, curvar, value):
+	def establish(self, curvar, value):
 		var_name = self.var_name(curvar)
-		impacted = self.impacted(asmnt, var_name, curvar)
+		impacted = self.impacted(var_name, curvar)
 		if len(impacted) < 6:
 			return (DOMAINS_INTACT, None)
 		for imvar in impacted.copy():

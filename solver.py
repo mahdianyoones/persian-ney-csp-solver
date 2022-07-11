@@ -23,7 +23,7 @@ class SOLVER():
 		self.asmnt = ASSIGNMENT(self.csp)	
 		self.select = SELECT(self.csp, self.asmnt)		
 		self.confset = {v: [] for v in self.csp.X} # order matters
-		self.mac = MAC(self.csp)
+		self.mac = MAC(self.csp, self.asmnt)
 		self.learned = {} 			             # learned constraints	
 		self.R = {}				             # tuples for learned consts
 		self.stats = {statkey: 0 for statkey in self.statkeys()}
@@ -135,7 +135,7 @@ class SOLVER():
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.
 		'''
-		bresult = self.mac.indirect(self.asmnt)
+		bresult = self.mac.indirect()
 		if bresult[0] == CONTRADICTION:
 			print("\n\nSearch stopped!")
 			return
@@ -146,7 +146,7 @@ class SOLVER():
 		
 		If the assignment would cause coontradiction, a conflict set is
 		returned.'''
-		dir_res = self.mac.direct(self.asmnt, curvar, value)
+		dir_res = self.mac.direct(curvar, value)
 		self.asmnt.assign(curvar, value)
 		self.stats["assigns"] += 1
 		if dir_res[0] == CONTRADICTION:
@@ -154,7 +154,7 @@ class SOLVER():
 			self.l.contradiction("direct", dir_res, curvar, value)
 			return (INCONSISTENT_ASSIGNMENT, dir_res[1])
 		if dir_res[0] == DOMAINS_REDUCED:
-			indir_res = self.mac.indirect(self.asmnt, dir_res[1])
+			indir_res = self.mac.indirect(dir_res[1])
 			if indir_res[0] == CONTRADICTION:
 				self.stats["indirect_contradictions"] += 1
 				self.l.contradiction("indirect", indir_res, curvar, value)

@@ -18,21 +18,22 @@ class LEN():
 	where h1 is the length of the Ney.
 	'''
 
-	def __init__(self, csp):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
+		self.asmnt = asmnt
 	
-	def b_update(self, asmnt):
+	def b_update(self):
 		return (DOMAINS_INTACT, None)
 	
-	def establish(self, asmnt, curvar, value):
+	def establish(self, curvar, value):
 		assigned_ls = set([curvar])
 		unassigned_l = None
 		_sum = value
 		for i in range(1, 8):
 			li = "L"+str(i)
-			if li in asmnt.assigned:
+			if li in self.asmnt.assigned:
 				assigned_ls.add(li)
-				_sum += asmnt.assignment[li]
+				_sum += self.asmnt.assignment[li]
 			elif li != curvar:
 				unassigned_l = li
 		if len(assigned_ls) < 6:

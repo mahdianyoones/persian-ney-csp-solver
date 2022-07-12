@@ -9,9 +9,11 @@ from d_dec import D_DEC
 from same_thr import SAME_THR
 from l1_half_l2 import L1_HALF_L2
 from in_stock import IN_STOCK
-from ney_spec import spec
+from ney_spec import specs
 from assignment import ASSIGNMENT
 from csp import CSP
+
+spec = specs["C"]
 
 class TestCatalog(unittest.TestCase):
 
@@ -107,7 +109,7 @@ The initial domains:
 class TestDDEC(unittest.TestCase):
 
 	def d_dec_1(self, csp, asmnt, d_dec):
-		res = d_dec.b_update(asmnt)
+		res = d_dec.b_update()
 		impacted_exp = {"D2", "D3", "D3", "D4", "D5", "D6", "D7"}
 		self.assertEqual(res[1], impacted_exp)		
 		ddiff = csp.spec["ddiff"]
@@ -119,7 +121,7 @@ class TestDDEC(unittest.TestCase):
 			prev_upper = upper
 	
 	def d_dec_2(self, csp, asmnt, d_dec):
-		res = d_dec.establish(asmnt, "D1", 18)
+		res = d_dec.establish("D1", 18)
 		impacted_exp = {"D2", "D3", "D3", "D4", "D5", "D6", "D7"}
 		self.assertEqual(res[1], impacted_exp)
 		ddiff = csp.spec["ddiff"]
@@ -132,14 +134,14 @@ class TestDDEC(unittest.TestCase):
 
 	def d_dec_3(self, csp, asmnt, d_dec):
 		impacted_exp = {"D7"}
-		res = d_dec.establish(asmnt, "D6", 15.0)
+		res = d_dec.establish("D6", 15.0)
 		self.assertEqual(res[1], impacted_exp)
 	
 	def test_d_dec(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)		
-		d_dec = D_DEC(csp)
+		d_dec = D_DEC(csp, asmnt)
 		self.d_dec_1(csp, asmnt, d_dec)
 		self.d_dec_2(csp, asmnt, d_dec)
 		self.d_dec_3(csp, asmnt, d_dec)
@@ -147,7 +149,7 @@ class TestDDEC(unittest.TestCase):
 class TestL1_HALF_L2(unittest.TestCase):
 
 	def half_1(self, catalog, csp, asmnt, half):
-		res = half.b_update(asmnt)
+		res = half.b_update()
 		self.assertEqual(res[1], {"L2"}) # L2 only is expected to be impacted		
 		L1 = csp.D["L1"]
 		L2 = csp.D["L2"]
@@ -155,7 +157,7 @@ class TestL1_HALF_L2(unittest.TestCase):
 		self.assertTrue(L2["max"] == L1["max"] * 2)
 		
 	def half_2(self, catalog, csp, asmnt, half):
-		res = half.establish(asmnt, "L1", 25)
+		res = half.establish("L1", 25)
 		L1 = csp.D["L1"]
 		L2 = csp.D["L2"]
 		self.assertTrue(L2["min"] == 50)
@@ -165,7 +167,7 @@ class TestL1_HALF_L2(unittest.TestCase):
 	def half_3(self, catalog, csp, asmnt, half):
 		csp.D["L1"] = {"min": 30, "max": 100}
 		csp.D["L2"] = {"min": 40, "max": 400}
-		res = half.b_update(asmnt)
+		res = half.b_update()
 		self.assertEqual(res[1], {"L2"}) # L2 only is expected to be impacted
 		L1 = csp.D["L1"]
 		L2 = csp.D["L2"]
@@ -175,7 +177,7 @@ class TestL1_HALF_L2(unittest.TestCase):
 	def half_4(self, catalog, csp, asmnt, half):
 		csp.D["L1"] = {"min": 30, "max": 100}
 		csp.D["L2"] = {"min": 80, "max": 200}
-		res = half.b_update(asmnt)
+		res = half.b_update()
 		self.assertEqual(res[1], {"L1"}) # L2 only is expected to be impacted
 		L1 = csp.D["L1"]
 		L2 = csp.D["L2"]
@@ -186,7 +188,7 @@ class TestL1_HALF_L2(unittest.TestCase):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)		
-		half = L1_HALF_L2(csp)
+		half = L1_HALF_L2(csp, asmnt)
 		csp.backup_d()
 		self.half_1(catalog, csp, asmnt, half)
 		asmnt.unassign_all()		
@@ -202,32 +204,32 @@ class TestL1_HALF_L2(unittest.TestCase):
 class TestIN_STOCK(unittest.TestCase):
 
 	def stock_3(self, catalog, csp, asmnt, in_stock):
-		res = in_stock.establish(asmnt, "TH1", 3)
+		res = in_stock.establish("TH1", 3)
 		asmnt.assign("TH1", 3)
-		res = in_stock.establish(asmnt, "R1", 0.5)
+		res = in_stock.establish("R1", 0.5)
 		asmnt.assign("R1", 0.5)
 		self.assertEqual({18, 19}, csp.D["D1"])
 		self.assertEqual(csp.D["L1"]["max"], 85+55+25)
-		res = in_stock.establish(asmnt, "D1", 19)
+		res = in_stock.establish("D1", 19)
 		asmnt.assign("D1", 19)
 		self.assertEqual(csp.D["L1"]["max"], 55)
 		
 	def stock_2(self, catalog, csp, asmnt, in_stock):
-		res = in_stock.establish(asmnt, "TH1", 3)
+		res = in_stock.establish("TH1", 3)
 		asmnt.assign("TH1", 3)
-		res = in_stock.establish(asmnt, "R1", 1)
+		res = in_stock.establish("R1", 1)
 		self.assertTrue(not "TH1" in res[1])
 		self.assertEqual({18}, csp.D["D1"])
 		
 	def stock_1(self, catalog, csp, asmnt, in_stock):
-		res = in_stock.establish(asmnt, "TH1", 3.5)
+		res = in_stock.establish("TH1", 3.5)
 		self.assertEqual(res[0], CONTRADICTION)
 		
 	def test_stock(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)		
-		in_stock = IN_STOCK(csp)
+		in_stock = IN_STOCK(csp, asmnt)
 		csp.backup_d()
 		self.stock_1(catalog, csp, asmnt, in_stock)
 		asmnt.unassign_all()
@@ -243,9 +245,9 @@ class TestSAMETHR(unittest.TestCase):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)		
-		same_thr = SAME_THR(csp)
-		res = same_thr.establish(asmnt, "R1", 0)
-		res = same_thr.establish(asmnt, "TH1", 2)
+		same_thr = SAME_THR(csp, asmnt)
+		res = same_thr.establish("R1", 0)
+		res = same_thr.establish("TH1", 2)
 		for i in range(2, 8):
 			thi = "TH"+str(i)
 			ri = "R"+str(i)		
@@ -258,8 +260,8 @@ class TestHOLES(unittest.TestCase):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)		
-		holes = HOLES(csp)
-		holes.b_update(asmnt)
+		holes = HOLES(csp, asmnt)
+		holes.b_update()
 		for i in range(1, 6):
 			li = "L" + str(i)
 			self.assertTrue(csp.D[li]["max"] < float("inf"))
@@ -267,7 +269,7 @@ class TestHOLES(unittest.TestCase):
 class TestMAC(unittest.TestCase):
 
 	def mac1(self, csp, asmnt, mac):
-		res = mac.direct(asmnt, "R1", 0)				
+		res = mac.direct("R1", 0)				
 		asmnt.assign("R1", 0)
 		other_rs = {"R2", "R3", "R4", "R5", "R6", "R7"}
 		self.assertTrue(other_rs.issubset(res[1]))
@@ -277,7 +279,7 @@ class TestMAC(unittest.TestCase):
 			self.assertEqual(csp.D[ri], {0})
 			
 	def mac2(self, csp, asmnt, mac):
-		res = mac.direct(asmnt, "TH1", 2)				
+		res = mac.direct("TH1", 2)				
 		asmnt.assign("TH1", 2)
 		other_ths = {"TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
 		self.assertTrue(other_ths.issubset(res[1]))
@@ -287,7 +289,7 @@ class TestMAC(unittest.TestCase):
 			self.assertEqual(csp.D[thi], {2})
 	
 	def mac3(self, csp, asmnt, mac):
-		res = mac.direct(asmnt, "D1", 18)
+		res = mac.direct("D1", 18)
 		asmnt.assign("D1", 18)
 		other_ds = {"D2", "D3", "D4", "D5", "D6", "D7"}
 		self.assertTrue(other_ds.issubset(res[1]))
@@ -302,13 +304,13 @@ class TestMAC(unittest.TestCase):
 		res = mac.indirect(asmnt)
 		print(mac.csp.D["L1"])
 		print(mac.csp.D["L2"])
-		#mac.direct(asmnt, )
+		#mac.direct()
 		
 	def test_mac(self):
 		catalog = CATALOG("measures_of_drained_pieces.csv")
 		csp = CSP(catalog, spec)
 		asmnt = ASSIGNMENT(csp)
-		mac = MAC(csp)
+		mac = MAC(csp, asmnt)
 		csp.backup_d()
 		self.mac1(csp, asmnt, mac)
 		asmnt.unassign_all()

@@ -7,12 +7,11 @@ class LOG():
 		self.csp = csp
 		self.asmnt = asmnt
 		self.confset = confset
-		self.s_counter = 0
-		self.f_solutions = open("solutions.log", "w")
-		self.f_contradictions = open("contradictions.log", "w")
+		self.f_solutions = open("solutions.log", "a")
+		self.f_contradictions = open("contradictions.log", "a")
 	
 	def format_solution(self, a):
-		formatted = ""
+		formatted = "\n"
 		for i in range(1, 8):
 			formatted += "Node "+str(i)+" ("
 			formatted += "D=" + str(a["D"+str(i)]) + ", "
@@ -22,11 +21,10 @@ class LOG():
 			formatted += ")\n"
 		return formatted
 	
-	def solution(self, stats):
-		self.s_counter += 1
-		print(self.s_counter)
+	def solution(self, stats, cook, spec):
+		print(cook, " : ", "\n")
 		formatted = self.format_solution(self.asmnt.assignment)
-		msg = "\n" + str(self.s_counter)
+		print(spec, "\n")
 		msg += "\n\n" + formatted
 		msg += "\n"
 		for key, val in stats.items():

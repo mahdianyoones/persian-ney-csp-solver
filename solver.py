@@ -1,4 +1,4 @@
-from ney_spec import spec
+from ney_spec import specs
 from csp import CSP
 from assignment import ASSIGNMENT
 from mac import MAC
@@ -16,14 +16,15 @@ class SOLVER():
 			   "indirect_contradictions"}
 		return keys
 
-	def __init__(self, csvfile, spec):
+	def __init__(self, csvfile, kook, spec):
 		self.catalog = CATALOG(csvfile)
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)	
-		self.asmnt = ASSIGNMENT(self.csp)	
+		self.asmnt = ASSIGNMENT(self.csp)
 		self.select = SELECT(self.csp, self.asmnt)		
 		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.mac = MAC(self.csp, self.asmnt)
+		self.kook = kook
 		self.learned = {} 			             # learned constraints	
 		self.R = {}				             # tuples for learned consts
 		self.stats = {statkey: 0 for statkey in self.statkeys()}
@@ -137,8 +138,7 @@ class SOLVER():
 		'''
 		bresult = self.mac.indirect()
 		if bresult[0] == CONTRADICTION:
-			print("\n\nSearch stopped!")
-			return
+			return CONTRADICTION
 		return self.dfs()
 	
 	def assign(self, curvar, value):
@@ -185,7 +185,7 @@ class SOLVER():
 		'''
 		self.stats["nodes"] += 1
 		if len(self.asmnt.unassigned) == 0: # solution
-			self.l.solution(self.stats)
+			self.l.solution(self.stats, self.kook, self.spec)
 			return (SOLUTION, None)
 		curvar = self.select.next()
 		domain = copy.deepcopy(self.csp.D[curvar])
@@ -205,9 +205,9 @@ class SOLVER():
 			self.asmnt.unassign(curvar)
 			self.csp.D = copy.deepcopy(dback)
 			if dfs_res[0] == SOLUTION:
-				continue
+				return SOLUTION # termination
 			if dfs_res[0] == SEARCH_SPACE_EXHAUSTED:
-				return # termination
+				return SEARCH_SPACE_EXHAUSTED # termination
 			if dfs_res[0] == BACKTRACK:
 				self.stats["backtracks"] += 1
 				continue
@@ -220,7 +220,10 @@ class SOLVER():
 					self.stats["backjumps"] += 1
 					continue
 
-solver = SOLVER("measures_of_drained_pieces.csv", spec)
-print(solver.find())
-print(solver.stats)
-print(solver.asmnt.assignment)
+for kook, spec in specs.items():
+	solver = SOLVER("measures_of_drained_pieces.csv", kook, spec)
+	if solver.find() == SOLUTION:
+		print(solver.stats)
+		print(solver.asmnt.assignment)
+	else:
+		print("No solution")

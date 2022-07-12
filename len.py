@@ -26,15 +26,15 @@ class LEN():
 		return (DOMAINS_INTACT, None)
 	
 	def establish(self, curvar, value):
-		assigned_ls = set([curvar])
+		assigned_ls = set([])
 		unassigned_l = None
-		_sum = value
+		_sum = 0
 		for i in range(1, 8):
 			li = "L"+str(i)
 			if li in self.asmnt.assigned:
 				assigned_ls.add(li)
 				_sum += self.asmnt.assignment[li]
-			elif li != curvar:
+			else:
 				unassigned_l = li
 		if len(assigned_ls) < 6:
 			return (DOMAINS_INTACT, None)
@@ -44,7 +44,7 @@ class LEN():
 		old_d = self.csp.D[unassigned_l]
 		if new_l < old_d["min"] or new_l > old_d["max"]:
 			confset = assigned_ls
-			return (CONTRADICTION, confset, "len")
+			return (CONTRADICTION, set([]), "len")
 		new_d = {"min": new_l, "max": new_l}
 		self.csp.update_d(unassigned_l, new_d)
 		return (DOMAINS_REDUCED, set([unassigned_l]))

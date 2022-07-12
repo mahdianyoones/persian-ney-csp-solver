@@ -124,7 +124,7 @@ class HOLES():
 			spec["h5"], spec["h6"]]
 	
 	def update_uppers(self, n, var_i, uppers, lows, ds, h, s):
-		confset = set([])	
+		reduced = False
 		for k in range(1, n+1):
 			lk = "L"+str(k)
 			# update all except kth L
@@ -132,8 +132,11 @@ class HOLES():
 				old = ds[k]["max"]
 				_sum = sum([lows[u] for u in range(1, n+1) if u != k])
 				uppers[k] = min(uppers[k], old, h-(_sum + s))
-				confset.update(set(["L"+str(v) for v in range(1, n+1) if v != k]))
-		return confset
+				if uppers[k] < lows[k]:
+					return CONTRADICTION
+				if uppers[k] < old:
+					reduced = True
+		return DOMAINS_REDUCED if reduced else DOMAINS_INTACT
 
 	def var_i(self, var):
 		if var[0] in {"R", "D", "L"}:
@@ -176,22 +179,19 @@ class HOLES():
 		domains = self.domains("L0", None)
 		return self._establish(domains, "L0")
 	
-	def do_update(self, uppers, lowers, domains, _confset):
+	def materialize(self, uppers, lowers, domains):
 		impacted = set([])
 		asnd = self.asmnt.assigned
 		for i in range(1, 6):
 			li = "L"+str(i)
-			if uppers[i] < lowers[i]:
-				confset = set([cv for cv in _confset if cv in asnd])
-				return (CONTRADICTION, confset, "holes")
 			if uppers[i] < domains[i]["max"]:
 				domains[i]["max"] = uppers[i]
-				self.csp.update_d(li, domains[i])
+				self.csp.D[li] = domains[i]
 				impacted.add(li)
 		if len(impacted) > 0:
 			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, None)	
-
+		return (DOMAINS_INTACT, None)
+	
 	def _establish(self, ds, curvar):
 		lowers = [None, 0, 0, 0, 0, 0, 0, 0]	# lowers
 		for i in range(1, 7):
@@ -204,9 +204,11 @@ class HOLES():
 		for ci in [1, 2, 3, 4, 5, 6]:		
 			s = self.spaces[ci]
 			h = self.holes[ci]
-			confset = self.update_uppers(nn[ci], var_i, uppers, lowers, ds, h, s)
-			_confset.update(confset)
-		return self.do_update(uppers, lowers, ds, _confset)		
+			res = self.update_uppers(nn[ci], var_i, uppers, lowers, ds, h, s)
+			if res == CONTRADICTION:
+				confset = {"L"+str(i) for i in range(1, nn[ci]+1)}
+				return (CONTRADICTION, confset, "h"+str(ci))
+		return self.materialize(uppers, lowers, ds)		
 		
 	def establish(self, curvar, value):
 		domains = self.domains(curvar, value)	# domains

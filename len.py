@@ -31,7 +31,10 @@ class LEN():
 		_sum = 0
 		for i in range(1, 8):
 			li = "L"+str(i)
-			if li in self.asmnt.assigned:
+			if li == curvar:
+				assigned_ls.add(curvar)
+				_sum += value
+			elif li in self.asmnt.assigned:
 				assigned_ls.add(li)
 				_sum += self.asmnt.assignment[li]
 			else:

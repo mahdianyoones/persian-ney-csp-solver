@@ -266,6 +266,29 @@ class TestHOLES(unittest.TestCase):
 			li = "L" + str(i)
 			self.assertTrue(csp.D[li]["max"] < float("inf"))
 
+class TestLEN(unittest.TestCase):
+	
+	def test_len(self):
+		catalog = CATALOG("measures_of_drained_pieces.csv")
+		csp = CSP(catalog, spec)
+		asmnt = ASSIGNMENT(csp)		
+		mac = MAC(csp, asmnt)
+		mac.indirect()
+		_len = LEN(csp, asmnt)
+
+		asmnt.assign("L1", 50)
+		asmnt.assign("L2", 90)
+		asmnt.assign("L3", 90)
+		asmnt.assign("L4", 90)
+		asmnt.assign("L5", 90)
+		#asmnt.assign("L6", 90)
+		res = _len.establish("L6", 90)
+		d = csp.D["L7"]
+		self.assertEqual(res[0], DOMAINS_REDUCED)
+		self.assertEqual(res[1], {"L7"})
+		self.assertEqual(d["min"], d["max"])
+		self.assertEqual(d["min"], 24)
+		
 class TestMAC(unittest.TestCase):
 
 	def mac1(self, csp, asmnt, mac):
@@ -301,9 +324,10 @@ class TestMAC(unittest.TestCase):
 			last_max = max(csp.D[di])
 
 	def mac4(self, csp, asmnt, mac):
-		res = mac.indirect(asmnt)
-		print(mac.csp.D["L1"])
-		print(mac.csp.D["L2"])
+		pass
+		#res = mac.indirect(asmnt)
+		#print(mac.csp.D["L1"])
+		#print(mac.csp.D["L2"])
 		#mac.direct()
 		
 	def test_mac(self):

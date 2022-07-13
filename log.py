@@ -1,8 +1,9 @@
 from constants import *
 import os
 import copy
+from base import BASE 
 
-class LOG():
+class LOG(BASE):
 
 	def __init__(self, csp, asmnt, confset):
 		self.csp = csp
@@ -44,18 +45,18 @@ class LOG():
 		msg = "Direct = " + str(self.cstats["direct"]) + "  "
 		msg += "Indirect = " + str(self.cstats["indirect"]) + "\n\n"
 		consts = []
-		for c, cvalue in self.cstats["consts"].items():
-			consts.append(c + " = " + str(cvalue))
+		cs = self.cstats["consts"]
+		_cs = {k: v for k, v in sorted(cs.items(), key=lambda i: i[1])}
+		for c, cvalue in _cs.items():
+			if cvalue > 0:
+				consts.append(c + " = " + str(cvalue))
 		_vars = {"Ds": [], "THs": [], "Rs": [], "Ls": []}
-		for v, vvalue in self.cstats["vars"].items():
-			if v[0] == "L":
-				_vars["Ls"].append(v + " = " + str(vvalue))
-			elif v[0] == "D":
-				_vars["Ds"].append(v + " = " + str(vvalue))
-			elif v[0] == "R":
-				_vars["Rs"].append(v + " = " + str(vvalue))
-			else:
-				_vars["THs"].append(v + " = " + str(vvalue))
+		vs = self.cstats["vars"]
+		_vs = {k: v for k, v in sorted(vs.items(), key=lambda i: i[1])}
+		for v, vvalue in _vs.items():
+			v_name = self.var_name(v)
+			if v in self.asmnt.assigned and vvalue > 0:
+				_vars[v_name+"s"].append(v + " = " + str(vvalue))
 		msg += "Constraints: \n\n" + "  ".join(consts)
 		msg += "\n\nVariables: \n\n"
 		msg += "  ".join(_vars["Ls"]) + "\n\n"

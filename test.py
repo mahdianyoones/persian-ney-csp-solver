@@ -275,17 +275,15 @@ class TestLEN(unittest.TestCase):
 		mac = MAC(csp, asmnt)
 		mac.indirect()
 		_len = LEN(csp, asmnt)
-
 		asmnt.assign("L1", 50)
 		asmnt.assign("L2", 90)
 		asmnt.assign("L3", 90)
 		asmnt.assign("L4", 90)
 		asmnt.assign("L5", 90)
-		#asmnt.assign("L6", 90)
 		res = _len.establish("L6", 90)
-		d = csp.D["L7"]
 		self.assertEqual(res[0], DOMAINS_REDUCED)
 		self.assertEqual(res[1], {"L7"})
+		d = csp.D["L7"]
 		self.assertEqual(d["min"], d["max"])
 		self.assertEqual(d["min"], 24)
 		

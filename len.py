@@ -47,6 +47,8 @@ class LEN():
 		old_d = self.csp.D[unassigned_l]
 		if new_l < old_d["min"] or new_l > old_d["max"]:
 			confset = assigned_ls
+			print(curvar, value, confset)
+			exit()
 			return (CONTRADICTION, confset, "len")
 		new_d = {"min": new_l, "max": new_l}
 		self.csp.D[unassigned_l] = new_d

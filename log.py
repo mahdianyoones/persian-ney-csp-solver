@@ -57,13 +57,13 @@ class LOG(BASE):
 			v_name = self.var_name(v)
 			if v in self.asmnt.assigned and vvalue > 0:
 				_vars[v_name+"s"].append(v + " = " + str(vvalue))
-		msg += "Constraints: \n\n" + "  ".join(consts)
+		msg += "Constraints: \n\n" + "     ".join(consts)
 		msg += "\n\nVariables: \n\n"
-		msg += "  ".join(_vars["Ls"]) + "\n\n"
-		msg += "  ".join(_vars["Ds"]) + "\n\n"
-		msg += "  ".join(_vars["Rs"]) + "\n\n"
-		msg += "  ".join(_vars["THs"]) + "\n\n"
-		msg += "Assigned: " + "  ".join(self.asmnt.assigned)
+		msg += "     ".join(_vars["Ls"]) + "\n\n"
+		msg += "     ".join(_vars["Ds"]) + "\n\n"
+		msg += "     ".join(_vars["Rs"]) + "\n\n"
+		msg += "     ".join(_vars["THs"]) + "\n\n"
+		msg += "Assigned: " + "     ".join(self.asmnt.assigned)
 		return msg
 		
 	def contradiction(self, _type, res, curvar, value):

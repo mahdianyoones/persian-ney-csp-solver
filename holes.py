@@ -1,107 +1,10 @@
 from constants import *
 import copy
+from base import BASE
 
-class HOLES():
-	'''Establishes consistency W.R.T h1, h2, h3, h4, h5, h6 constraints.
-	
-	These relations must hold:
-	
-	 1. L1 + L2 + L3 + 10 < h1	
-	 
-	 	1st hole must fall on node 4
-	 
-	 2. L1 + L2 + L3 + 30 < h2
-	 
-	 	2nd hole must fall on node 4 below 1st hole
-
-	 3. L1 + L2 + L3 + L4 + 10 < h3
-	 
-	 	3rd hole must fall at the beginning of node 5
-
-	 4. L1 + L2 + L3 + L4 + 30 < h4
-
-		4th hole must fall on node 5 below 3rd hole
-
-	 5. L1 + L2 + L3 + L4 + 50 < h5
-	 
-	 	5th hole must fall on node 5 below 4th hole
-
-	 6. L1 + L2 + L3 + L4 + L5 + 10 < h6
-	 
-	 	6th hole must fall on node 6
-	 	
-	 Updates:
-	 
-			1. h1		 	
-
-			 	upper1 = h1 - (lower2 + lower3 + 10)
-				upper2 = h1 - (lower1 + lower3 + 10)
-				upper3 = h1 - (lower1 + lower2 + 10)
-
-			2. h2
-
-				upper1 = h2 - (lower2 + lower3 + 30)
-				upper2 = h2 - (lower1 + lower3 + 30)
-				upper3 = h2 - (lower1 + lower2 + 30)
-			
-			3. h3
-			
-				upper1 = h3 - ( lower2 + lower3 + lower4 + 10)
-				upper2 = h3 - ( lower1 + lower3 + lower4 + 10)
-				upper3 = h3 - ( lower1 + lower2 + lower4 + 10)
-				upper4 = h3 - ( lower1 + lower2 + lower3 + 10)
-			
-			4. h4
-			
-				upper1 = h4 - ( lower2 + lower3 + lower4 + 30)
-				upper2 = h4 - ( lower1 + lower3 + lower4 + 30)
-				upper3 = h4 - ( lower1 + lower2 + lower4 + 30)
-				upper4 = h4 - ( lower1 + lower2 + lower3 + 30)
-					
-			5. h5
-			
-				upper1 = h5 - ( lower2 + lower3 + lower4 + 50)
-				upper2 = h5 - ( lower1 + lower3 + lower4 + 50)
-				upper3 = h5 - ( lower1 + lower2 + lower4 + 50)
-				upper4 = h5 - ( lower1 + lower2 + lower3 + 50)
-			
-			6. h6
-			
-				upper1 = h6 - (lower2+lower3+lower4+lower5+10)
-				upper2 = h6 - (lower1+lower3+lower4+lower5+10)
-				upper3 = h6 - (lower1+lower2+lower4+lower5+10)
-				upper4 = h6 - (lower1+lower2+lower3+lower5+10)
-				upper5 = h6 - (lower1+lower2+lower3+lower4+10)
-			
- 	Propagations:
-
-			due to h1, h2
-
-				lower1 -> 	   upper2, upper3
-				lower2 -> upper1,         upper3
-				lower3 -> upper1, upper2
-			
-			due to h3, h4, h5
-			
-		 		lower1 ->         upper2, upper3, upper4
-		 		lower2 -> upper1,         upper3, upper4
-		 		lower3 -> upper1, upper2,         upper4
-		 		lower4 -> upper1, upper2, upper3
-
-			due to h6
-			
-		 		lower1 ->         upper2, upper3, upper4, upper5
-		 		lower2 -> upper1,         upper3, upper4, upper5
-		 		lower3 -> upper1, upper2,         upper4, upper5
-		 		lower4 -> upper1, upper2, upper3,	       upper5
-		 		lower5 -> upper1, upper2, upper3, upper4
-	
-	Note: "lower1 -> upper2, upper3" means if lower1 changes, upper2 and
-	upper3 are impacted hence must be updated.
-	
-	When the lower bound of an L variable (L1 to L5) reduces, the upper
-	bound of other L variables (L1 to L5) are impacted.
-	
+class HOLES(BASE):
+	'''Provides core consistency algorithm for h1, h2, h3, h4, h5, h6.
+		
 	All relations together:
 	
 	L1 + L2 + L3 + 10 			< h1
@@ -112,10 +15,48 @@ class HOLES():
 	L1 + L2 + L3 + L4 + L5 + 10 	< h6
 	'''
 	
-	def __init__(self, csp, asmnt):
+	def __init__(self, csp, asmnt, h, space, p, o, plowers, cname):
+		self.cname = cname
 		self.csp = csp
 		self.asmnt = asmnt
-		spec = csp.spec
+		self.h = h
+		self.space = space
+		self.participants = p
+		self.others_map = o
+		self.plowers = plowers
+
+	def upper(self, *other_lows):
+		return self.h - (sum(other_lows) + self.space)
+		
+	def lowers(self):
+		lowers = {}
+		for li in self.participants:
+			if li in self.asmnt.assigned:
+				lowers[li] = self.asmnt.assignment[li]
+			else:
+				lowers[li] = self.csp.D[li]["min"]
+		return lowers
+	
+	def _establish(self):
+		confset = set([])
+		impacted = set([])
+		contradiction = False
+		a = self.asmnt.assigned
+		lowers = self.lowers()
+		for L in self.participants:
+			if L in self.asmnt.assigned:
+				continue
+			other_lows = [lowers[otherL] for otherL in self.others_map[L]]
+			upper = self.upper(other_lows)
+			if upper < self.csp.D[L]["min"]
+				confset = {v for v in pmap[L] if v in a}
+				contradiction = True
+				break
+			elif upper < self.csp.D[L]["max"]:
+				self.csp.D[L]["max"] = upper
+				impacted.add(L)
+		return (contradiction, confset, impacted)
+	
 		hmarg = spec["hmarg"]
 		holed = self.csp.spec["holed"]
 		self.spaces = [ None, hmarg * 1, hmarg * 2 + holed * 1, hmarg * 1, 
@@ -123,93 +64,49 @@ class HOLES():
 		self.holes = [None, spec["h1"], spec["h2"], spec["h3"], spec["h4"], 
 			spec["h5"], spec["h6"]]
 	
-	def update_uppers(self, n, var_i, uppers, lows, ds, h, s):
-		reduced = False
-		for k in range(1, n+1):
-			lk = "L"+str(k)
-			# update all except kth L
-			if var_i != k and not lk in self.asmnt.assigned:
-				old = ds[k]["max"]
-				_sum = sum([lows[u] for u in range(1, n+1) if u != k])
-				uppers[k] = min(uppers[k], old, h-(_sum + s))
-				if uppers[k] < lows[k]:
-					return CONTRADICTION
-				if uppers[k] < old:
-					reduced = True
-		return DOMAINS_REDUCED if reduced else DOMAINS_INTACT
-
-	def var_i(self, var):
-		if var[0] in {"R", "D", "L"}:
-			return var[1]
-		else:
-			return var[2]
-	
-	def var_name(self, var):
-		if len(var) == 2:
-			return var[0]
-		else:
-			return var[0:2]
+	def b_update(self, reduced_vars):
+		'''Establishes indirect hole consistency on reduction of L vars.
 		
-	def domains(self, curvar, value):
-		'''Returns the domain of variables participating in the constraints.
+		This indirect consistency for h1 constraint is triggered by updates
+		on the lower bounds of L1, L2, and L3 according to the following:
 		
-		Before any assignment, this consistency algorithm modifies upper
-		bounds using the lower bounds of variables. And, when an assignment
-		happens, the value of that variable is used instead.
+		lower1 -> upper2, upper3
+		lower2 -> upper1, upper3
+		lower3 -> upper1, upper2
+		
+		and similarly for h2, h3, h4, h5, and h6
 		'''
-		assignment = self.asmnt.assignment
-		domains = [None, 0, 0, 0, 0, 0, 0]
-		var_i = self.var_i(curvar)
-		for i in range(1, 7):
-			li = "L"+str(i)
-			if var_i == i and value != None:
-				domains[i] = {"min": value, "max": value}
-			elif li in self.asmnt.assigned:
-				domains[i] = {"min": assignment[li],"max": assignment[li]}
-			else:
-				domains[i] = copy.deepcopy(self.csp.D[li])
-		return domains
-	
-	def b_update(self):
-		'''Updates bounds of L1 to L7.
-		
-		Because of the way h1, h2, h3, ... functions work, passing L0
-		as the curvar makes them update upper bound of all L variables.
-		'''
-		domains = self.domains("L0", None)
-		return self._establish(domains, "L0")
-	
-	def materialize(self, uppers, lowers, domains):
-		impacted = set([])
-		asnd = self.asmnt.assigned
-		for i in range(1, 6):
-			li = "L"+str(i)
-			if uppers[i] < domains[i]["max"]:
-				domains[i]["max"] = uppers[i]
-				self.csp.D[li] = domains[i]
-				impacted.add(li)
-		if len(impacted) > 0:
-			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, None)
-	
-	def _establish(self, ds, curvar):
-		lowers = [None, 0, 0, 0, 0, 0, 0, 0]	# lowers
-		for i in range(1, 7):
-			lowers[i] = ds[i]["min"]
-		inf = float("inf")
-		uppers = [None, inf, inf, inf, inf, inf, inf, inf] # new uppers
-		_confset = set([])
-		nn = [None, 3, 3, 4, 4, 4, 5]
-		var_i = self.var_i(curvar)
-		for ci in [1, 2, 3, 4, 5, 6]:		
-			s = self.spaces[ci]
-			h = self.holes[ci]
-			res = self.update_uppers(nn[ci], var_i, uppers, lowers, ds, h, s)
-			if res == CONTRADICTION:
-				confset = {"L"+str(i) for i in range(1, nn[ci]+1)}
-				return (CONTRADICTION, confset, "h"+str(ci))
-		return self.materialize(uppers, lowers, ds)		
-		
+		triggered = False
+		for reduced_var in reduced_vars:
+			if reduced_var in self.participants:
+				if self.plowers[p] < self.csp.D[p]["min"]:
+					triggered = True
+					break
+		if triggered:
+			(contradiction, confset, impacted) = self._establish()
+			if contradiction:
+				return (CONTRADICTION, set([]), self.cname)
+			if len(impacted) > 0:
+				for p in participants:
+					self.plowers[p] = self.csp.D[p]["min"]
+				return (DOMAINS_REDUCED, impacted)
+		return (DOMAINS_INTACT, set([]))
+			
 	def establish(self, curvar, value):
-		domains = self.domains(curvar, value)	# domains
-		return self._establish(domains, curvar)
+		'''Establishes direct hole consistency on assignment.
+
+		From the relation of h1 constraint L1 + L2 + L3 + 10 < h1, 
+		the following updates are done for upper bounds of L1, L2, and L3:
+		
+	 	upper1 = h1 - (lower2 + lower3 + 10)
+		upper2 = h1 - (lower1 + lower3 + 10)
+		upper3 = h1 - (lower1 + lower2 + 10)
+		
+		and similarly for h2, h3, h4, h5, and h6
+		'''
+		(contradiction, confset, impacted) = self._establish()
+		if contradiction:
+			return (CONTRADICTION, confset, self.cname)
+		if len(impacted) > 0:
+			(DOMAINS_REDUCED, impacted)
+		return (DOMAINS_INTACT, set([]))

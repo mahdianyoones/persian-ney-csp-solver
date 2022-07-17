@@ -1,31 +1,6 @@
 import csv
 from constants import *
-
-class TREE():
-
-	def __init__(self, key=None, meta=0):
-		self.children = []
-		self.key = key
-		self.meta = meta
-		
-	def add_child(self, key=None, meta=0):
-		child = TREE(key, meta)
-		self.children.append(child)
-		return child
-	
-	def update_meta(self, meta):
-		self.meta = meta	
-	
-	def has_child(self, key):
-		if self.get_child(key) != NODE_NOT_FOUND:
-			return True
-		return False
-	
-	def get_child(self, key):
-		for child in self.children:
-			if key == child.key:
-				return child
-		return NODE_NOT_FOUND
+from tree import TREE
 
 class CATALOG():
 	'''
@@ -55,24 +30,54 @@ class CATALOG():
 	* Any combinations of TH, R, and D could be given as filters to both values and getL methods.
 	* Both methods execute in constant time.	
 	'''
+	def __init__(self, csvfile):
+		self.init_indices()
+		self.index_csv(csvfile)
+	
+	def index_csv(self, csvfile):
+		with open(csvfile) as f:
+			reader = csv.reader(f)
+			for p in reader:
+				NO = p[0]
+				L = float(p[1]) * 10 # cm -> mm
+				TH = float(p[2])
+				R = float(p[3])
+				D = float(p[4])
+				self.index(TH, D, R, L)
+	
+	def init_indices(self):
+		self.indices = {}
+		self.path2index = {}
+		keys = ("D", "R", "TH")
+		indices_paths = {
+			(keys[0], keys[1], keys[2]), # D, R, TH
+			(keys[0], keys[2], keys[1]), # D, TH, R
+			(keys[1], keys[0], keys[2]), # R, D, TH
+			(keys[1], keys[2], keys[0]), # R, TH, D
+			(keys[2], keys[0], keys[1]), # TH, D, R
+			(keys[2], keys[1], keys[0]), # TH, R, D
+		}
+		for paths in indices_paths:
+			index_name = ''.join(paths)
+			self.indices[index_name] = {
+				"keys": keys,
+				"tree": TREE(),			
+			}
+			path_combinations = {
+				paths[0],
+				paths[0] + paths[1],
+				paths[0] + paths[1] + paths[2]
+			}
+			for path in path_combinations:
+				if not path in self.path2index:
+					self.path2index[path] = index_name	
+	
 	def locate_index(self, filters, key=""):
 		'''Figures out which index can be used W.R.T. key and filters.'''
-		path = ""
-		for filter_key in filters.keys():
-			path += filter_key
-		path += key
-		ind2path = {
-			"DRTH": set(["D", "DR", "DRTH"]),
-			"DTHR": set(["DTH", "DTHR"]),
-			"RDTH": set(["R", "RD", "RDTH"]),
-			"RTHD": set(["RTH", "RTHD"]),
-			"THRD": set(["TH", "THR", "THRD"]),
-			"THDR": set(["THD", "THDR"]),
-		}
-		for index, paths in ind2path.items():
-			if path in paths:
-				return index
-		raise Exception("No index matches the given filters ", filters)
+		path = "".join(filters.keys()) + key
+		if not path in self.path2index:
+			return None
+		return self.path2index[path]
 	
 	def locate_node(self, index, filters):
 		cursor = self.indices[index]["tree"]
@@ -83,40 +88,30 @@ class CATALOG():
 				break
 		return cursor
 	
-	def values(self, key="D", filters={}):
+	def values(self, key, filters={}):
 		'''Returns values for key, given the filters (one or two of D,TH,R)'''
 		index = self.locate_index(filters, key=key)
 		if index == None:
 			raise Exception("Index was not found.", filters, key)
 		node = self.locate_node(index, filters)
-		if node == NODE_NOT_FOUND:
-			return set([])
-		values = set([])
-		for child in node.children:
-			values.add(child.key)
-		return values		
+		return node.children_keys if node != NODE_NOT_FOUND else set([])
 	
 	def get_l(self, filters={}):
 		'''Given the filters, searchs in indices for L.'''
 		if filters == {}:
-			index = "DRTH" 				# any index would do
+			index = self.indices[0] 			# any index would do
 			node = self.indices[index]["tree"] # root
 		else:
 			index = self.locate_index(filters)
 			node = self.locate_node(index, filters)
-		if node != NODE_NOT_FOUND:
-			return node.meta # L
-		return 0.0
+		return node.meta if node != NODE_NOT_FOUND else 0.0
 	
-	def verify_values(self, TH, D, R, L):
+	def index(self, TH, D, R, L):
+		'''Adds the given chunk data to all indices.'''
 		if type(D) == 0:
 			raise Exception("D is 0", D)
 		if type(L) == 0:
 			raise Exception("L is 0", L)
-	
-	def index(self, TH, D, R, L):
-		'''Adds the given data to all indices.'''
-		self.verify_values(TH, D, R, L)
 		vals = {"D": D, "R": R, "TH": TH}
 		for index in self.indices.values():
 			cursor = index["tree"]
@@ -127,31 +122,4 @@ class CATALOG():
 					cursor = cursor.add_child(node_key, 0)
 				else:
 					cursor = cursor.get_child(node_key)
-				node_meta = cursor.meta + L
-				cursor.update_meta(node_meta)
-					
-	def __init__(self, csvfile):
-		self.indices = {}
-		ikeys = {
-			("D", "R", "TH"),
-			("D", "TH", "R"),
-			("TH", "D", "R"),
-			("TH", "R", "D"),
-			("R", "TH", "D"),
-			("R", "D", "TH")
-		}
-		for keys in ikeys:
-			index_name = ''.join(keys)
-			self.indices[index_name] = {
-				"keys": keys,
-				"tree": TREE(),			
-			}
-		with open(csvfile) as f:
-			reader = csv.reader(f)
-			for p in reader:
-				NO = p[0]
-				L = float(p[1]) * 10 # cm -> mm
-				TH = float(p[2])
-				R = float(p[3])
-				D = float(p[4])
-				self.index(TH, D, R, L)
+				cursor.update_meta(cursor.meta + L)

@@ -205,9 +205,9 @@ class SOLVER():
 			self.asmnt.unassign(curvar)
 			self.csp.D = copy.deepcopy(dback)
 			if dfs_res[0] == SOLUTION:
-				return SOLUTION # termination
+				return SOLUTION
 			if dfs_res[0] == SEARCH_SPACE_EXHAUSTED:
-				return SEARCH_SPACE_EXHAUSTED # termination
+				return SEARCH_SPACE_EXHAUSTED
 			if dfs_res[0] == BACKTRACK:
 				self.stats["backtracks"] += 1
 				continue
@@ -222,8 +222,9 @@ class SOLVER():
 
 for kook, spec in specs.items():
 	solver = SOLVER("measures_of_drained_pieces.csv", kook, spec)
-	if solver.find() == SOLUTION:
+	res = solver.find()
+	if res == SOLUTION:
 		print(solver.stats)
 		print(solver.asmnt.assignment)
 	else:
-		print("No solution")
+		print("No solution", res)

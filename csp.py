@@ -14,9 +14,9 @@ class CSP():
 		self.D = {}
 		self.d_backup = {} # order matters
 		self.R = {} 		# Relations for learned constraints
-		self.init_d()
+		self.init_domains()
 		self.unary()
-		self.init_c()
+		self.init_constraints()
 	
 	def update_d(self, var, new_domain):
 		self.D[var] = new_domain
@@ -35,22 +35,25 @@ class CSP():
 	
 	def revert_d(self):
 		self.D = copy.deepcopy(self.d_backup)
-		
+	
 	def unary(self):
 		'''Makes variables unary consistent.'''
 		topd = self.spec["topd"]
 		holed = self.spec["holed"]
 		hmarg = self.spec["hmarg"]
+		# Applying diameter range for D1
 		for diam in self.D["D1"].copy():
 			if diam < topd["min"] or diam > topd["max"]:
 				self.D["D1"].remove(diam)
+		# Applying minimum chunk length for all L vars
 		for l_var in self.l_vars:
 			self.D[l_var]["min"] = self.spec["minl"]
+		# Increasing min of some Ls to contain holes and margins
 		self.D["L6"]["min"] = hmarg * 2 + holed * 1 # 1 hole
 		self.D["L5"]["min"] = hmarg * 4 + holed * 3 # 3 holes
 		self.D["L4"]["min"] = hmarg * 3 + holed * 2 # 2 holes
 	
-	def init_d(self):
+	def init_domains(self):
 		for l_var in self.l_vars:
 			self.D[l_var] = {"min": 0, "max": float("inf")}
 		diameters = self.catalog.values("D")
@@ -63,7 +66,7 @@ class CSP():
 		for th_var in self.th_vars:
 			self.D[th_var] = copy.deepcopy(thicknesses)
 	
-	def init_c(self):
+	def init_constraints(self):
 		self.C["in_stock"] = self.X
 		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
 		self.C["same_th"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}

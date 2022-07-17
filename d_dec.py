@@ -21,44 +21,40 @@ class D_DEC(BASE):
 		self.csp = csp
 		self.ddiff = csp.spec["ddiff"]
 		self.asmnt = asmnt	
-
-	def remove_illegals(self, di, last_max):
-		reduced = False
-		for diameter in self.csp.D[di].copy():
-			if diameter > last_max - self.ddiff["min"]:
-				self.csp.D[di].remove(diameter)
-				reduced = True
-		return DOMAIN_REDUCED if reduced else DOMAIN_INTACT
 		
-	def _establish(self, last_max, start):
-		'''Removes inconsistent values from all D variables W.R.T. d_dec.
-		
-		(CONTRADICTION, i) means Di variable has run out of values.'''
+	def _establish(self):
+		'''Removes inconsistent values from all D variables W.R.T. d_dec.'''
 		impacted = set([])
-		for i in range(start, 8): # curvar up to D7
+		confset = set([])
+		contradiction = False
+		for i in range(1, 8):
 			di = "D"+str(i)
-			rresult = self.remove_illegals(di, last_max)
-			if rresult == DOMAIN_INTACT:
+			if di in self.asmnt.assigned:
+				confset.add(di)
+				last_max = self.asmnt.assignment[di]
+				continue
+			reduced = False
+			for diameter in self.csp.D[di].copy():
+				if diameter > last_max - self.ddiff["min"]:
+					self.csp.D[di].remove(diameter)
+					impacted.add(di)
+					reduced = True
+			if not reduced:
 				break
-			if rresult == DOMAIN_REDUCED:
-				if len(self.csp.D[di]) == 0:
-					return (CONTRADICTION, i)
-				impacted.add(di)
+			if len(self.csp.D[di]) == 0:
+				contradiction = True
+				break
 			last_max = max(self.csp.D[di])
-		if len(impacted) == 0:
-			return (DOMAINS_INTACT, set([]))
-		return (DOMAINS_REDUCED, impacted)
+		return (contradiction, confset, impacted)
 	
 	def b_update(self):
 		'''Establishes indirect d_dec consistency.'''
-		if "D1" in self.asmnt.assigned:
-			last_max = self.asmnt.assignment["D1"]
-		else:
-			last_max = max(self.csp.D["D1"])
-		res = self._establish(last_max, 2)
-		if res[0] != CONTRADICTION:
-			return res
-		return (CONTRADICTION, set([]), "d_dec")
+		(contradiction, confset, impacted) = self._establish()
+		if contradiction:
+			return (CONTRADICTION, set([]), "d_dec")
+		if len(impacted) > 0:
+			(DOMAINS_REDUCED, impacted)	
+		return (DOMAINS_INTACT, set([]))
 		
 	def establish(self, curvar, value):
 		'''Establishes direct d_dec consistency after assignment.
@@ -71,14 +67,9 @@ class D_DEC(BASE):
 		We cannot tell whether other variables (Rs, Ths, and Ls) are
 		responsible for this contradiction or not.
 		'''
-		last_max = value
-		var_i = self.var_i(curvar)
-		res = self._establish(last_max, var_i+1)
-		if res[0] != CONTRADICTION:
-			return res
-		confset = set([])
-		for i in range(1, res[1]):
-			di = "D"+str(i)
-			if di in self.asmnt.assigned:
-				confset.add(di)
-		return (CONTRADICTION, confset, "d_dec")
+		(contradiction, confset, impacted) = self._establish()
+		if contradiction:
+			return (CONTRADICTION, confset, "d_dec")
+		if len(impacted) > 0:
+			(DOMAINS_REDUCED, impacted)
+		return (DOMAINS_INTACT, set([]))

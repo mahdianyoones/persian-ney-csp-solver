@@ -20,8 +20,8 @@ class SELECT():
 		consistency algorithms.'''
 		self.impact = {}
 		for i in range(1, 8):
-			self.impact["TH"+str(i)] = 7 * 10    # due to same_thr
-			self.impact["R"+str(i)] = 7 * 10     # due to same_thr
+			self.impact["TH"+str(i)] = 7 * 10    # due to same_th
+			self.impact["R"+str(i)] = 7 * 10     # due to same_r
 			self.impact["D"+str(i)] = (8 - i) * 5 # due to d_dec
 			self.impact["L"+str(i)] = 8 - i # due to l_dec, len, and holes
 			
@@ -32,8 +32,8 @@ class SELECT():
 		self.init_impact()
 			
 	def next(self):
-		max_rank = float("-inf")
-		best_var_d_size = float("inf")
+		best_rank = float("-inf")
+		best_size = float("inf")
 		best_var = None
 		u = self.asmnt.unassigned
 		for v in u:
@@ -42,12 +42,12 @@ class SELECT():
 			else:
 				d_size = len(self.csp.D[v])
 			rank = self.impact[v] + self.degree[v]
-			if rank > max_rank:
-				max_rank = rank
+			if rank > best_rank:
+				best_rank = rank
 				best_var = v
-				best_var_d_size = d_size
-			elif rank == max_rank and best_var_d_size > d_size:
-				max_rank = rank
+				best_size = d_size
+			elif rank == best_rank and best_size > d_size:
+				best_rank = rank
 				best_var = v
-				best_var_d_size = d_size
+				best_size = d_size
 		return best_var

@@ -65,18 +65,33 @@ class CSP():
 			self.D[r_var] = copy.deepcopy(roundnesses)
 		for th_var in self.th_vars:
 			self.D[th_var] = copy.deepcopy(thicknesses)
-	
+
 	def init_constraints(self):
-		self.C["in_stock"] = self.X
-		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
 		self.C["same_th"] = {"TH1", "TH2", "TH3", "TH4", "TH5", "TH6", "TH7"}
 		self.C["same_r"] = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
-		self.C["l_dec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
 		self.C["d_dec"] = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+		self.C["in_stock"] = self.d_vars.union(self.th_vars, self.r_vars)
 		self.C["l1_half_l2"] = {"L1", "L2"}
+		self.C["l_dec"] = {"L2", "L3", "L4", "L5", "L6", "L7"}
 		self.C["h1"] = {"L1", "L2", "L3"}
 		self.C["h2"] = {"L1", "L2", "L3"}
 		self.C["h3"] = {"L1", "L2", "L3", "L4"}
 		self.C["h4"] = {"L1", "L2", "L3", "L4"}
 		self.C["h5"] = {"L1", "L2", "L3", "L4"}
-		self.C["h6"] = {"L1", "L2", "L3", "L4", "L5"}	
+		self.C["h6"] = {"L1", "L2", "L3", "L4", "L5"}
+		self.C["len"] = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+		self.constraint_orders = {
+			"same_th": 1, # goes frist
+			"same_r": 2,
+			"d_dec": 3,
+			"in_stock": 4,
+			"l1_half_l2": 5,
+			"l_dec": 6,
+			"h1": 7,
+			"h2": 8,
+			"h3": 9,
+			"h4": 10,
+			"h5": 11,
+			"h6": 12,
+			"len": 13
+		}		

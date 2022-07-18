@@ -75,9 +75,8 @@ class L1_HALF_L2(BASE):
 			d2 = self.csp.D["L2"]
 			(contradiction, impacted) = self.adjust_L1(d2)
 			impacted = set(["L1"])
-			
 		if contradiction:
-			return (CONTRADICTION, reduced_vars, "l1_half_l2")
+			return (CONTRADICTION, set([]), "l1_half_l2")
 		if impacted:
 			return (DOMAINS_REDUCED, impacted)
 		return (DOMAINS_INTACT, set([]))

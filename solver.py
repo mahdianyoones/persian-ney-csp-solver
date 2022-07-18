@@ -7,6 +7,8 @@ from _select import SELECT
 from constants import *
 import copy
 from log import LOG
+from conflict import CONFLICT
+from backjump import BACKJUMP
 
 class SOLVER():
 
@@ -21,99 +23,13 @@ class SOLVER():
 		self.spec = spec
 		self.csp = CSP(self.catalog, self.spec)	
 		self.asmnt = ASSIGNMENT(self.csp)
+		self.conflict = CONFLICT(self.asmnt, self.csp)
+		self.backjump = BACKJUMP(asmnt, self.conflict)
 		self.select = SELECT(self.csp, self.asmnt)		
-		self.confset = {v: [] for v in self.csp.X} # order matters
 		self.mac = MAC(self.csp, self.asmnt)
 		self.kook = kook
-		self.learned = {} 			             # learned constraints	
-		self.R = {}				             # tuples for learned consts
 		self.stats = {statkey: 0 for statkey in self.statkeys()}
-		self.l = LOG(self.csp, self.asmnt, self.confset)
-
-	def accumulate(self, curvar, confset):
-		'''Accumulates the conflict set for curvar.
-		
-		Conflict set must be sorted based on the time of assignment.
-		The core notion of a conflict set is to create a time machine where
-		order of variables in the set must follow the order of variables in 
-		the assignment.
-		
-		Example:
-		
-		D1 -> R1 -> TH1 -> L1 (if failes due to TH1 and D1)
-		
-		confset[L1] = [D1, TH1] so that jump happens to TH1 not D1
-		
-		Jumping must happen to the near past not distant past.
-		
-		Why would we repeat a long history? Why not jump to yesterday and
-		make a tiny difference and quicky proceed to today?
-		
-		If we jumped to the last year instead, we would have to to live a
-		full year again to see if that solves the issue or not!
-		'''
-		if len(confset) == 0:
-			return
-		a = self.asmnt.assigned # time sorted
-		for cfv in [v for v in a if v in confset and v != curvar]:
-			if not cfv in self.confset[curvar]: # prevent duplicates
-				self.confset[curvar].append(cfv)
-
-	def absorb(self, curvar, confset):
-		'''Absorbs conflict set from jump origin.
-		
-		Current variable incorporates in itself the conflict set of the
-		variable that has failed in the future.
-		
-		This failure in the future happens due to legal assignments at
-		some time in the past. Conflict set provides a time machine
-		to travel back to the time when people made good moves, but
-		future proves it wrong!
-		
-		People may not be able to see the effect of their actions far enough
-		because it takes too much time to consider every scenario.
-		'''
-		for cfv in [v for v in confset if v != curvar]:
-			if not cfv in self.confset[curvar]:
-				self.confset[curvar].append(cfv) # order matters
-
-	def learn(self, curvar, value, confset):
-		'''Adds new constraint or new values to a learned constraint.
-		
-		Confset contains all variables that participate in a violated
-		constraint. The variables that participate in the new constraints
-		include all the variables in the conflict set except curvar.
-		
-		For example, if the conflict set is {D1, TH1, R1}, and curvar = R1,
-		we build a new constraint on D1 and TH1 only, since these new 
-		learned constraints are to target LEGAL assignments that contradict
-		all values of R1.
-		
-		i.e. an assignment to D1 and TH1 has caused contradiction for R1; 
-		hence, we need to prevent this very valid assignment to D1 and TH1
-		from ever happening again.
-		
-		This LEGAL-yet-must-prevented assignment forms a no-good set where
-		members are tuples like (D1, value), (TH1, value), ... . No-goods are
-		added to the relations (R) for the new constraint.
-		'''
-		return
-		if len(confset) == 0:
-			return
-		confvars = [v for v in self.asmnt.assigned if v in confset]
-		constraint = "".join(confvars)
-		if not constraint in self.learned:
-			self.stats["learned"] += 1
-			self.learned[constraint] = confvars
-			self.R[constraint] = set([])
-		no_good = []
-		for v in confvars:
-			if v in self.asmnt.assigned:
-				no_good.append((v, self.asmnt.assignment[v]))
-			elif v == curvar:
-				no_good.append((curvar, value))
-		self.R[constraint].add(tuple(no_good))
-		self.stats["learned_tuples"] += 1
+		self.l = LOG(self.csp, self.asmnt)
 
 	def value(self, curvar, domain, offset):
 		'''Returns the next value in the domain curvar W.R.T. offset.
@@ -136,8 +52,8 @@ class SOLVER():
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.
 		'''
-		bresult = self.mac.indirect()
-		if bresult[0] == CONTRADICTION:
+		res = self.mac.indirect()
+		if res[0] == CONTRADICTION:
 			return CONTRADICTION
 		return self.dfs()
 	
@@ -145,7 +61,11 @@ class SOLVER():
 		'''Tries assigning curvar: value.
 		
 		If the assignment would cause coontradiction, a conflict set is
-		returned.'''
+		returned.
+		
+		Note: If the contradiction occurs due to indirect consistency
+		maintenance, no conflict set is returned. In fact, only curvar
+		is responsible for this inconsistency.'''
 		dir_res = self.mac.direct(curvar, value)
 		self.asmnt.assign(curvar, value)
 		self.stats["assigns"] += 1
@@ -158,19 +78,9 @@ class SOLVER():
 			if indir_res[0] == CONTRADICTION:
 				self.stats["indirect_contradictions"] += 1
 				self.l.contradiction("indirect", indir_res, curvar, value)
-				return (INCONSISTENT_ASSIGNMENT, indir_res[1])
+				return (INCONSISTENT_ASSIGNMENT, set([]))
 		return (CONSISTENT_ASSIGNMENT, set([]))
-	
-	def retreat(self, curvar):
-		'''Decides to backjump or backtrack in case an assignment fails.'''
-		if len(self.asmnt.assigned) == 0:
-			return (SEARCH_SPACE_EXHAUSTED, None)
-		if len(self.confset[curvar]) > 0:
-			jump_target = self.confset[curvar][-1]
-			confset = self.confset[curvar]
-			return (BACKJUMP, confset, jump_target)
-		return (BACKTRACK, None)				
-	
+		
 	def dfs(self):
 		'''Recursively assigns values to variables to find a solution.
 		
@@ -193,21 +103,19 @@ class SOLVER():
 		while True:
 			(value, offset) = self.value(curvar, domain, offset)				
 			if value == DOMAIN_EXHAUSTED:
-				return self.retreat(curvar)
+				return self.backjump.retreat(curvar)
 			dback = copy.deepcopy(self.csp.D)
 			assign_res = self.assign(curvar, value)
 			if assign_res[0] == INCONSISTENT_ASSIGNMENT:
-				self.accumulate(curvar, assign_res[1])
+				self.conflict.accumulate(curvar, assign_res[1])
 				self.asmnt.unassign(curvar)
 				self.csp.D = copy.deepcopy(dback)
 				continue
 			dfs_res = self.dfs()
 			self.asmnt.unassign(curvar)
 			self.csp.D = copy.deepcopy(dback)
-			if dfs_res[0] == SOLUTION:
-				return SOLUTION
-			if dfs_res[0] == SEARCH_SPACE_EXHAUSTED:
-				return SEARCH_SPACE_EXHAUSTED
+			if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
+				return dfs_res[0]
 			if dfs_res[0] == BACKTRACK:
 				self.stats["backtracks"] += 1
 				continue
@@ -216,7 +124,7 @@ class SOLVER():
 					self.stats["jumpovers"] += 1
 					return dfs_res
 				else:
-					self.absorb(curvar, dfs_res[1])
+					self.conflict.absorb(curvar, dfs_res[1])
 					self.stats["backjumps"] += 1
 					continue
 

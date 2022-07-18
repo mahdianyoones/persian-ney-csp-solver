@@ -5,10 +5,9 @@ from base import BASE
 
 class LOG(BASE):
 
-	def __init__(self, csp, asmnt, confset):
+	def __init__(self, csp, asmnt):
 		self.csp = csp
 		self.asmnt = asmnt
-		self.confset = confset
 		self.cstats = {"vars": {}, "consts": {}, 
 			"direct": 0, "indirect": 0}
 		for v in csp.X:

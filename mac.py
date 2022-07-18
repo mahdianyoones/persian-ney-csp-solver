@@ -1,4 +1,9 @@
-from holes import HOLES
+from h1 import H1
+from h2 import H2
+from h3 import H3
+from h4 import H4
+from h5 import H5
+from h6 import H6
 from len import LEN
 from l_dec import L_DEC
 from d_dec import D_DEC
@@ -87,19 +92,24 @@ class MAC():
 		self.asmnt = asmnt
 		self.neighbors = {}
 		self.in_stock = IN_STOCK(csp, asmnt)
-		self.holes = HOLES(csp, asmnt)
+		self.h1 = H1(csp, asmnt)
+		self.h2 = H2(csp, asmnt)
+		self.h3 = H3(csp, asmnt)
+		self.h4 = H4(csp, asmnt)
+		self.h5 = H5(csp, asmnt)
+		self.h6 = H6(csp, asmnt)
 		self.len = LEN(csp, asmnt)
 		self.d_dec = D_DEC(csp, asmnt)
 		self.l_dec = L_DEC(csp, asmnt)
 		self.same_thr = SAME_THR(csp, asmnt)
 		self.l1_half_l2 = L1_HALF_L2(csp, asmnt)
 		self.alg_ref = {
-			"h1":		self.holes,
-			"h2":		self.holes,
-			"h3":		self.holes,
-			"h4":		self.holes,
-			"h5":		self.holes,
-			"h6":		self.holes,
+			"h1":		self.h1,
+			"h2":		self.h2,
+			"h3":		self.h3,
+			"h4":		self.h4,
+			"h5":		self.h5,
+			"h6":		self.h6,
 			"l1_half_l2":	self.l1_half_l2,
 			"in_stock": 	self.in_stock,
 			"same_th":	self.same_thr,
@@ -109,73 +119,71 @@ class MAC():
 			"len":		self.len
 		}
 
-	def neighborhood(self, curvar):
+	def var_constraints(self, curvar):
 		'''Returns variables that share a constraint with curvar.
 		
-		Returns a dictionary of this format:
-		{
-			"constraint 1": {a set of neighbors connected via constraint 1},
-			"constraint 2": {a set of neighbors connected via constraint 2},
-			...
-		}
+		Returns a list of constraints that curvar participates in.
+		This list is sorted based on the degree that consistency
+		algorithms impact varaibles. 
 		
-		To boost performace, neighbors are cached in self.neighbors.
-		'''
+		To boost performace, neighbors are cached in self.neighbors.'''
+		# c S.F. constraint
+		# vc S.F. variable constraints
 		if not curvar in self.neighbors:
-			self.neighbors[curvar] = {}
-			for constraint, _vars in self.csp.C.items():
-				if curvar in _vars:
-					self.neighbors[curvar][constraint] = _vars
+			o = self.csp.constraint_orders
+			self.neighbors[curvar] = [] # order matters
+			for c, participants in self.csp.C.items(): 
+				if curvar in _vars and not c in self.neighbors[curvar]:
+					self.neighbors[curvar].append(c)
+			vc = self.neighbors[curvar] 
+			self.neighbors[curvar] = sorted(vc, key=lambda c: o[c])
 		return self.neighbors[curvar]
+
+	def indirect(self, reduced_vars):
+	'''Establishes indirect consistency for reduced_vars.
 	
-	def indirect(self, curvar=None, _vars=set([])):
-		if len(_vars) == 0:
-			constraints = set(self.csp.C.keys())
-		else:
-			constraints = set([])
-			for _var in _vars:
-				neighborhood = self.neighborhood(_var)
-				constraints.update(set(neighborhood.keys()))
+	If the consistency spills over other variables, they are also checked.
+	i.e. it establishes consistency for all varaibles recursively.'''
+		# psvars S.F. participanting variables
+		# rpvars S.F. reduced participanting variables
 		impacted = set([])
-		while len(constraints) > 0:
-			c = constraints.pop()
-			bresult = self.alg_ref[c].b_update()
-			if bresult[0] == CONTRADICTION:
-				return bresult
-			if bresult[0] == DOMAINS_REDUCED:
-				impacted.update(bresult[1])
-				for rvar in bresult[1]:
-					neighborhood = self.neighborhood(rvar)
-					impacted_cs = neighborhood.keys()
-					constraints.update(set(impacted_cs))
-		if len(impacted) == 0:
-			return (DOMAINS_INTACT, set([]))
-		return (DOMAINS_REDUCED, impacted)
+		i = 0
+		while i < len(reduced_vars):
+			constraints = self.var_constraints(reduced_vars[i])
+			i += 1
+			for constraint in constraints:
+				psvars = self.csp.C[constraints]
+				rpvars = reduced_vars.intersection(psvars)
+				res = self.alg_ref[constraint].b_update(rpvars)
+				if res[0] == CONTRADICTION:
+					return res
+				if res[0] == DOMAINS_REDUCED:
+					impacted.update(res[1])
+					reduced_vars.update(res[1])
+		if len(impacted) > 0:
+			return (DOMAINS_REDUCED, impacted)
+		return (DOMAINS_INTACT, set([]))
 		
 	def direct(self, curvar, value):
-		'''Establishes consistency for curvar neighbors and returns a conflict set.
+		'''Establishes direct consistency for curvar neighbors.
 		
-		If the domain of a neighbor changes, neighbors of that neighbor are also
-		checked for reduction.
+		returns a conflict set in case of contradiction or a set of
+		variables whose domains have been reduced.
 		
-		curvar is the variable which neighbors are to be made consistent.
-		Before search, bounds on varaibles needs to be made consistent.
-		Therefore, this method is called for all variables one by one with
-		value = None. 
+		If the domain of a neighbor changes, no further action is taken.
 		
-		Individual consistency algorithms (i.e. other methods of this class),
-		detect if there is an oppotunity to reduce the domain of variables
-		W.R.T. curvar.
-		'''
-		neighborhood = self.neighborhood(curvar)
-		cs = set(neighborhood.keys())
+		Individual consistency algorithms, detect if there is an oppotunity
+		to reduce the domain of their involved variables W.R.T. curvar.
+		
+		Constraints that have bigger impacts are checked first.'''
+		curvar_constraints = self.var_constraints(curvar)
 		impacted = set([])
-		for c in cs:
-			eresult = self.alg_ref[c].establish(curvar, value)
-			if eresult[0] == DOMAINS_REDUCED:	
-				impacted.update(eresult[1])
-			elif eresult[0] == CONTRADICTION:
-				return eresult
-		if len(impacted) == 0:
-			return (DOMAINS_INTACT, set([]))
-		return (DOMAINS_REDUCED, impacted)
+		for c in curvar_constraints:
+			res = self.alg_ref[c].establish(curvar, value)
+			if res[0] == DOMAINS_REDUCED:	
+				impacted.update(res[1])
+			elif res[0] == CONTRADICTION:
+				return res
+		if len(impacted) > 0:
+			return (DOMAINS_REDUCED, impacted)
+		return (DOMAINS_INTACT, set([]))

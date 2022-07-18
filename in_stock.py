@@ -33,7 +33,7 @@ class IN_STOCK(BASE):
 		a = self.asmnt.assigned
 		node = self.asmnt.nodes[i]
 		filters = {}
-		confset = {}
+		set_vars = {}
 		for f, fstatus in node.items():
 			if f != "L" and fstatus == FEATURE_IS_SET:
 				fvar = f+str(i)
@@ -80,15 +80,12 @@ class IN_STOCK(BASE):
 		checked_Is = {}
 		_impacted = {}
 		for reduced_var in reduced_vars:
-			var_name = self.var_name(reduced_var)
-			if var_name == "L":
-				continue
 			var_i = self.var_i(reduced_var)
 			if var_i in checked_Is:
 				continue
 			(contradiction, confset, impacted) = self._establish(var_i)
 			if contradiction:
-				return (CONTRADICTION, confset, "in_stock")
+				return (CONTRADICTION, set([]), "in_stock")
 			if len(impacted) > 0:
 				_impacted.update(impacted)
 		if len(_impacted) > 0:
@@ -103,9 +100,6 @@ class IN_STOCK(BASE):
 		
 		The filter parameter is built using the values in the assignments.
 		'''
-		var_name = self.var_name(curvar)
-		if var_name == "L":
-			return (DOMAINS_INTACT, None)
 		curvar_i = self.var_i(curvar)
 		(contradiction, confset, impacted) = self._establish(curvar_i)
 		if contradiction:

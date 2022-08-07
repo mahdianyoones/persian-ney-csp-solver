@@ -45,10 +45,10 @@ class L_DEC(BASE):
 	'''
 
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.asmnt = asmnt
+		self.__csp = csp
+		self.__asmnt = asmnt
 	
-	def _establish(self, start_var):
+	def __establish(self, start_var):
 	'''Establishes both indirect and direct l_dec consistency.
 	
 		lower3 = max(lower3, 2/3 lower2)

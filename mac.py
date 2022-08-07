@@ -88,38 +88,26 @@ class MAC():
 
 	'''
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.asmnt = asmnt
-		self.neighbors = {}
-		self.in_stock = IN_STOCK(csp, asmnt)
-		self.h1 = H1(csp, asmnt)
-		self.h2 = H2(csp, asmnt)
-		self.h3 = H3(csp, asmnt)
-		self.h4 = H4(csp, asmnt)
-		self.h5 = H5(csp, asmnt)
-		self.h6 = H6(csp, asmnt)
-		self.len = LEN(csp, asmnt)
-		self.d_dec = D_DEC(csp, asmnt)
-		self.l_dec = L_DEC(csp, asmnt)
-		self.same_thr = SAME_THR(csp, asmnt)
-		self.l1_half_l2 = L1_HALF_L2(csp, asmnt)
-		self.alg_ref = {
-			"h1":		self.h1,
-			"h2":		self.h2,
-			"h3":		self.h3,
-			"h4":		self.h4,
-			"h5":		self.h5,
-			"h6":		self.h6,
-			"l1_half_l2":	self.l1_half_l2,
-			"in_stock": 	self.in_stock,
-			"same_th":	self.same_thr,
-			"same_r":		self.same_thr,
-			"l_dec":		self.l_dec,
-			"d_dec":		self.d_dec,
-			"len":		self.len
+		self.__csp = csp
+		self.__asmnt = asmnt
+		self.__neighbors = {}
+		self.__alg_refs = {
+			"h1":		H1(csp, asmnt),
+			"h2":		H2(csp, asmnt),
+			"h3":		H3(csp, asmnt),
+			"h4":		H4(csp, asmnt),
+			"h5":		H5(csp, asmnt),
+			"h6":		H6(csp, asmnt),
+			"l1_half_l2":	sL1_HALF_L2(csp, asmnt),
+			"in_stock": 	IN_STOCK(csp, asmnt),
+			"same_th":	self.__same_thr,
+			"same_r":		self.__same_thr,
+			"l_dec":		L_DEC(csp, asmnt),
+			"d_dec":		D_DEC(csp, asmnt),
+			"len":		LEN(csp, asmnt)
 		}
 
-	def var_constraints(self, curvar):
+	def __var_constraints(self, var):
 		'''Returns variables that share a constraint with curvar.
 		
 		Returns a list of constraints that curvar participates in.
@@ -164,7 +152,7 @@ class MAC():
 			return (DOMAINS_REDUCED, impacted)
 		return (DOMAINS_INTACT, set([]))
 		
-	def direct(self, curvar, value):
+	def direct(self, var, value):
 		'''Establishes direct consistency for curvar neighbors.
 		
 		returns a conflict set in case of contradiction or a set of

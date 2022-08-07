@@ -8,15 +8,17 @@ class BACKJUMP():
 	occured.'''
 
 	def __init__(self, asmnt, conflict):
-		self.asmnt = asmnt
-		self.conflict = conflict
+		self.__asmnt = asmnt
+		self.__conflict = conflict
 		
 	def retreat(self, curvar):
 		'''Decides to backjump or backtrack in case an assignment fails.'''
-		if len(self.asmnt.assigned) == 0:
+		if self.__asmnt.acount() == 0:
 			return (SEARCH_SPACE_EXHAUSTED, None)
-		if len(self.conflict.confset[curvar]) > 0:
-			jump_target = self.conflict.confset[curvar][-1]
-			confset = self.conflict.confset[curvar]
+		if self.__conflict.has(curvar):
+			jump_target = self.__conflict.last(curvar)
+			#jump_target = self.conflict.confset[curvar][-1]
+			confset = self.__conflict.getset(curvar)
+			#confset = self.conflict.confset[curvar]
 			return (BACKJUMP, confset, jump_target)
 		return (BACKTRACK, None)

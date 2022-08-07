@@ -6,10 +6,10 @@ class L1_HALF_L2(BASE):
 	'''Implements consistency algorithm for l1_half_l2 constraint.'''
 
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.asmnt = asmnt
+		self.__csp = csp
+		self.__asmnt = asmnt
 	
-	def adjust_L2(self, d1):
+	def __adjust_L2(self, d1):
 		d2 = self.csp.D["L2"]
 		lowers = {1: d1["min"], 2: d2["min"]}
 		uppers = {1: d1["max"], 2: d2["max"]}
@@ -26,7 +26,7 @@ class L1_HALF_L2(BASE):
 			impacted = True
 		return (contradiction, impacted)
 
-	def adjust_L1(self, d2):
+	def __adjust_L1(self, d2):
 		d1 = self.csp.D["L1"]	
 		lowers = {1: d1["min"], 2: d2["min"]}
 		uppers = {1: d1["max"], 2: d2["max"]}

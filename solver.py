@@ -19,19 +19,19 @@ class SOLVER():
 		return keys
 
 	def __init__(self, csvfile, kook, spec):
-		self.catalog = CATALOG(csvfile)
-		self.spec = spec
-		self.csp = CSP(self.catalog, self.spec)	
-		self.asmnt = ASSIGNMENT(self.csp)
-		self.conflict = CONFLICT(self.asmnt, self.csp)
-		self.backjump = BACKJUMP(asmnt, self.conflict)
-		self.select = SELECT(self.csp, self.asmnt)		
-		self.mac = MAC(self.csp, self.asmnt)
-		self.kook = kook
-		self.stats = {statkey: 0 for statkey in self.statkeys()}
-		self.l = LOG(self.csp, self.asmnt)
+		self.__catalog = CATALOG(csvfile)
+		self.__spec = spec
+		self.__csp = CSP(self.catalog, self.spec)	
+		self.__asmnt = ASSIGNMENT(self.csp)
+		self.__conflict = CONFLICT(self.asmnt, self.csp)
+		self.__backjump = BACKJUMP(asmnt, self.conflict)
+		self.__select = SELECT(self.csp, self.asmnt)		
+		self.__mac = MAC(self.csp, self.asmnt)
+		self.__kook = kook
+		self.__stats = {statkey: 0 for statkey in self.statkeys()}
+		self.__l = LOG(self.csp, self.asmnt)
 
-	def value(self, curvar, domain, offset):
+	def __value(self, curvar, domain, offset):
 		'''Returns the next value in the domain curvar W.R.T. offset.
 		
 		This is a utility function.
@@ -57,7 +57,7 @@ class SOLVER():
 			return CONTRADICTION
 		return self.dfs()
 	
-	def assign(self, curvar, value):
+	def __assign(self, curvar, value):
 		'''Tries assigning curvar: value.
 		
 		If the assignment would cause coontradiction, a conflict set is
@@ -81,7 +81,7 @@ class SOLVER():
 				return (INCONSISTENT_ASSIGNMENT, set([]))
 		return (CONSISTENT_ASSIGNMENT, set([]))
 		
-	def dfs(self):
+	def __dfs(self):
 		'''Recursively assigns values to variables to find a solution.
 		
 		When the domain of a variable is exhausted without any solution

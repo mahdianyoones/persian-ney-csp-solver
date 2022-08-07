@@ -18,11 +18,11 @@ class D_DEC(BASE):
 	'''
 
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.ddiff = csp.spec["ddiff"]
-		self.asmnt = asmnt	
+		self.__csp = csp
+		self.__ddiff = csp.spec["ddiff"]
+		self.__asmnt = asmnt	
 		
-	def _establish(self):
+	def __establish(self):
 		'''Removes inconsistent values from all D variables W.R.T. d_dec.'''
 		impacted = set([])
 		confset = set([])

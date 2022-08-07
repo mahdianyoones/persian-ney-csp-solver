@@ -3,7 +3,7 @@ class SELECT():
 	
 	MRV is used as a tie breaker.'''
 	
-	def init_degree(self):
+	def __init_degree(self):
 		'''Fills the degrees dictionary dynamically.'''
 		self.degree = {}
 		for v in self.csp.X:
@@ -13,7 +13,7 @@ class SELECT():
 					d += 1
 			self.degree[v] = d
 	
-	def init_impact(self):
+	def __init_impact(self):
 		'''Defines how big is the reduction impact of variables.
 		
 		These numbers are based on the nature of constraints and 
@@ -26,10 +26,10 @@ class SELECT():
 			self.impact["L"+str(i)] = 8 - i # due to l_dec, len, and holes
 			
 	def __init__(self, csp, asmnt):
-		self.asmnt = asmnt
-		self.csp = csp
-		self.init_degree()
-		self.init_impact()
+		self.__asmnt = asmnt
+		self.__csp = csp
+		self.__init_degree()
+		self.__init_impact()
 			
 	def next(self):
 		best_rank = float("-inf")

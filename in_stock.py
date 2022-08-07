@@ -6,10 +6,10 @@ class IN_STOCK(BASE):
 	'''Establishes consistency W.R.T. in_stock constraint.'''
 
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.asmnt = asmnt
+		self.__csp = csp
+		self.__asmnt = asmnt
 		
-	def _establish(self, i):
+	def __establish(self, i):
 		'''Establishes consistency for node i.
 		
 		If ith node is consistent W.R.T. in_stock constraint, it means that

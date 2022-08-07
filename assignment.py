@@ -5,19 +5,19 @@ import copy
 class ASSIGNMENT(BASE):
 
 	def __init__(self, csp):
-		self.csp = csp
-		self.assignment = {}
-		self.unassigned = copy.deepcopy(self.csp.X)
-		self.assigned = [] # order matters
-		self.nodes = {}
+		self.__csp = csp
+		self.__assignment = {}
+		self.__unassigned = copy.deepcopy(self.csp.X)
+		self.__assigned = [] # order matters
+		self.__nodes = {}
 		for i in [1, 2, 3, 4, 5, 6, 7]:			
-			self.nodes[str(i)] = {
+			self.__nodes[str(i)] = {
 				"D": 	FEATURE_IS_NOT_SET, 
 				"R": 	FEATURE_IS_NOT_SET, 
 				"TH": 	FEATURE_IS_NOT_SET,
 				"L": 	FEATURE_IS_NOT_SET
 			}
-				
+	
 	def assign(self, var, val):
 		if var in self.assigned or var in self.assignment:
 			raise Exception(var, " is already assigned.")
@@ -28,18 +28,21 @@ class ASSIGNMENT(BASE):
 		var_name = self.var_name(var)
 		self.nodes[str(var_i)][var_name] = FEATURE_IS_SET
 	
-	def unassign_all(self):
+	def unall(self):
 		self.assignment = {}
 		self.unassigned = copy.deepcopy(self.csp.X)
 		self.assigned = [] # order matters
 		self.nodes = {}
 		for i in [1, 2, 3, 4, 5, 6, 7]:			
-			self.nodes[str(i)] = {
+			self.__nodes[str(i)] = {
 				"D": 	FEATURE_IS_NOT_SET, 
 				"R": 	FEATURE_IS_NOT_SET, 
 				"TH": 	FEATURE_IS_NOT_SET,
 				"L": 	FEATURE_IS_NOT_SET
 			}
+	
+	def acount(self):
+		pass
 	
 	def unassign(self, var):
 		if var in self.unassigned:

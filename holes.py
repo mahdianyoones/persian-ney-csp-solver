@@ -16,19 +16,19 @@ class HOLES(BASE):
 	'''
 	
 	def __init__(self, csp, asmnt, h, space, p, o, plowers, cname):
-		self.cname = cname
-		self.csp = csp
-		self.asmnt = asmnt
-		self.h = h
-		self.space = space
-		self.participants = p
-		self.others_map = o
-		self.plowers = plowers
+		self.__cname = cname
+		self.__csp = csp
+		self.__asmnt = asmnt
+		self.__h = h
+		self.__space = space
+		self.__participants = p
+		self.__others_map = o
+		self.__plowers = plowers
 
-	def upper(self, *other_lows):
+	def __upper(self, *other_lows):
 		return self.h - (sum(other_lows) + self.space)
 		
-	def lowers(self):
+	def __lowers(self):
 		lowers = {}
 		for li in self.participants:
 			if li in self.asmnt.assigned:
@@ -37,7 +37,7 @@ class HOLES(BASE):
 				lowers[li] = self.csp.D[li]["min"]
 		return lowers
 	
-	def _establish(self):
+	def __establish(self):
 		confset = set([])
 		impacted = set([])
 		contradiction = False

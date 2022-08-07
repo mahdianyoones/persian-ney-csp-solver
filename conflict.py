@@ -1,9 +1,15 @@
 class CONFLICT():
 
 	def __init__(self, asmnt, csp):
-		self.asmnt = asmnt
-		self.confset = {v: [] for v in csp.X} # order matters
+		self.__asmnt = asmnt
+		self.__confsets = {v: [] for v in csp.X} # order matters
 
+	def has(self, var):
+		pass
+		
+	def last(self, var):
+		pass
+		
 	def accumulate(self, curvar, confset):
 		'''Accumulates the conflict set for curvar.
 		

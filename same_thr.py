@@ -5,8 +5,8 @@ class SAME_THR(BASE):
 	'''Applies same thickness and roundness constraints.'''
 
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.asmnt = asmnt
+		self.__csp = csp
+		self.__asmnt = asmnt
 	
 	def b_update(self, reduced_vars):
 		'''Establishes indirect consistency W.R.T. same_th and same_r.

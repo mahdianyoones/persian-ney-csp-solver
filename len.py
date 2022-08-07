@@ -8,8 +8,8 @@ class LEN(BASE):
 	be found. It enforces the overall length of the Ney.'''
 
 	def __init__(self, csp, asmnt):
-		self.csp = csp
-		self.asmnt = asmnt
+		self.__csp = csp
+		self.__asmnt = asmnt
 	
 	def b_update(self, reduced_vars):
 		return (DOMAINS_INTACT, set([]))

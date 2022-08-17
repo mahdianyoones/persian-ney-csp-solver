@@ -12,42 +12,121 @@ class CSP():
 		self.__X = self.l_vars.union(self.d_vars, self.th_vars, self.r_vars)
 		self.__C = {}
 		self.__D = {}
-		self.__d_backup = {} # order matters
+		self.__domains_backup = [] # order matters
 		self.__init_domains()
 		self.__unary()
 		self.__init_constraints()
+		self.__assignment = {}
+		self.__unassigned = copy.deepcopy(self.__X)
+		self.__assigned = [] # order matters
+		self.__nodes = {}
+		for i in [1, 2, 3, 4, 5, 6, 7]:			
+			self.__nodes[str(i)] = {
+				"D": 	FEATURE_IS_NOT_SET, 
+				"R": 	FEATURE_IS_NOT_SET, 
+				"TH": 	FEATURE_IS_NOT_SET,
+				"L": 	FEATURE_IS_NOT_SET
+			}
 	
-	def update_d(self, var, new_domain):
-		self.D[var] = new_domain
+	def get_spec(self, key):
+		return self.__spec[key]
+	
+	def get_node(self, i):
+		return self.__nodes[i]
 		
-	def print_ds(self, _vars):
-		print()
-		for var in sorted(_vars):
-			if var[0] == "L":
-				print(var, ": [", self.D[var]["min"], "...", self.D[var]["max"], "]")
-			else:
-				print(var, ": ", sorted(self.D[var]))
-		print()
+	def update_domain(self, var, new_domain):
+		self.__D[var] = new_domain
 	
-	def backup_d(self):
-		self.d_backup = copy.deepcopy(self.D)
+	def backup_domains(self):
+		self.__domains_backups.append(copy.deepcopy(self.__D))
 	
-	def revert_d(self):
-		self.D = copy.deepcopy(self.d_backup)
+	def revert_domains(self):
+		self.__D = copy.deepcopy(self.__domains_backups.pop())
+	
+	def get_assignment(self):
+		return self.__assignment
+	
+	def assigned_count(self):
+		return len(self.__assigned)
+	
+	def unassigned_count(self):
+		return len(self.__unassigned)
+		
+	def assign(self, var, val):
+		self.__assignment[var] = val
+		self.__unassigned.remove(var)
+		self.__assigned.append(var) # order matters
+		var_i = self.var_i(var)
+		var_name = self.var_name(var)
+		self.__nodes[str(var_i)][var_name] = FEATURE_IS_SET
+	
+	def unall(self):
+		self.assignment = {}
+		self.unassigned = copy.deepcopy(self.csp.X)
+		self.assigned = [] # order matters
+		self.nodes = {}
+		for i in [1, 2, 3, 4, 5, 6, 7]:			
+			self.__nodes[str(i)] = {
+				"D": 	FEATURE_IS_NOT_SET, 
+				"R": 	FEATURE_IS_NOT_SET, 
+				"TH": 	FEATURE_IS_NOT_SET,
+				"L": 	FEATURE_IS_NOT_SET
+			}
+	
+	def get_variables(self):
+		return self.__X
+	
+	def get_domains(self):
+		return self.__D
+	
+	def get_domain(self, var):
+		return self.__D[var]
+	
+	def get_participants(self, constraint):
+		return self.__C[constraint]
+	
+	def unassign(self, var):
+		if var in self.unassigned:
+			raise Exception(var, " is already unassigned.")
+		del self.assignment[var]
+		self.unassigned.add(var)
+		del self.assigned[self.assigned.index(var)]
+		var_i = self.var_i(var)
+		var_name = self.var_name(var)
+		self.nodes[str(var_i)][var_name] = FEATURE_IS_NOT_SET
+		
+		self.__assignment = {}
+		self.__unassigned = copy.deepcopy(self.csp.X)
+		self.__assigned = [] # order matters
+		self.__nodes = {}
+		for i in [1, 2, 3, 4, 5, 6, 7]:			
+			self.__nodes[str(i)] = {
+				"D": 	FEATURE_IS_NOT_SET, 
+				"R": 	FEATURE_IS_NOT_SET, 
+				"TH": 	FEATURE_IS_NOT_SET,
+				"L": 	FEATURE_IS_NOT_SET
+			}
+				
+	def __d1_diameters(self, d1, topd):
+		'''Returns the diameters allowed for D1.
+		
+		This is a mathematical function.'''
+		diameters = set([])
+		for diam in d1:
+			if diam >= topd["min"] and diam <= topd["max"]:
+				diameters.add(diam)
+		return diameters		
 	
 	def __unary(self):
 		'''Makes variables unary consistent.'''
-		topd = self.spec["topd"]
 		holed = self.spec["holed"]
 		hmarg = self.spec["hmarg"]
-		# Applying diameter range for D1
-		for diam in self.D["D1"].copy():
-			if diam < topd["min"] or diam > topd["max"]:
-				self.D["D1"].remove(diam)
-		# Applying minimum chunk length for all L vars
+		topd = self.spec["topd"]
+		self.D["D1"] = self.__d1_diameters(self.D["D1"], topd)
+		# minimum chunk length
 		for l_var in self.l_vars:
 			self.D[l_var]["min"] = self.spec["minl"]
-		# Increasing min of some Ls to contain holes and margins
+		# nodes should contain holes and margins
 		self.D["L6"]["min"] = hmarg * 2 + holed * 1 # 1 hole
 		self.D["L5"]["min"] = hmarg * 4 + holed * 3 # 3 holes
 		self.D["L4"]["min"] = hmarg * 3 + holed * 2 # 2 holes

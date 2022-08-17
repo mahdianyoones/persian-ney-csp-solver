@@ -16,46 +16,72 @@ class D_DEC(BASE):
 	 
 	 Inconsistent values can be removed from all D variables in one go.	 
 	'''
-
-	def __init__(self, csp, asmnt):
+	
+	def __init__(self, csp):
 		self.__csp = csp
-		self.__ddiff = csp.spec["ddiff"]
-		self.__asmnt = asmnt	
+		self.__ddiffmin = csp.spec["ddiff"]["min"]
+	
+	def __inconsistents(self, dall, ddiffmin, assignment):
+		'''Returns inconsistent values of D1 to D7 W.R.T. d_dec.
 		
-	def __establish(self):
-		'''Removes inconsistent values from all D variables W.R.T. d_dec.'''
-		impacted = set([])
-		confset = set([])
-		contradiction = False
+		This is a mathematical function.'''
+		incons = {}
 		for i in range(1, 8):
-			di = "D"+str(i)
-			if di in self.asmnt.assigned:
-				confset.add(di)
-				last_max = self.asmnt.assignment[di]
+			di = "D" + str(i)
+			incons[di] = set([])
+			if di in assignment:
+				last_max = assignment[di]
 				continue
 			reduced = False
-			for diameter in self.csp.D[di].copy():
-				if diameter > last_max - self.ddiff["min"]:
-					self.csp.D[di].remove(diameter)
-					impacted.add(di)
+			for diameter in dall[di]:
+				if diameter > last_max - ddiff_min:
+					incons[di].add(diameter)
 					reduced = True
 			if not reduced:
 				break
-			if len(self.csp.D[di]) == 0:
-				contradiction = True
+			if len(incons[di]) == len(dall[di]):
 				break
-			last_max = max(self.csp.D[di])
-		return (contradiction, confset, impacted)
+			last_max = max(dall[di])
+		return incons
+	
+	def __confset(self, incons, dall, assignment):
+		'''Checks if a contradiction has occured and returns a conflit set.
+		
+		This is a mathematical function.'''
+		confset = set([])
+		contra = False
+		for di, values in incons.items():
+			if len(values) == len(dall[di]):
+				contra = True
+				break
+			if di in assignment:
+				confset.add(di)
+		return (contra, confset)
+	
+	def __establish(self):
+		'''Removes inconsistent values from all D variables W.R.T. d_dec.'''
+		a = self.csp.get_assignment()
+		incons = self.__inconsistents(self.csp.D, self.__ddiffmin, a)
+		(contra, confset) = self.__confset(incons, self.csp.D. a)
+		if contra:
+			(True, confset, set([]))
+		impacted = set([])
+		for di, values in incons.items():
+			if len(values) > 0:
+				impacted.add(di)
+				reduced_d = self.csp.D[di].difference(values)
+				self.csp.update_d(di, reduced_d)
+		return (False, set([]), impacted)
 	
 	def b_update(self):
 		'''Establishes indirect d_dec consistency.'''
-		(contradiction, confset, impacted) = self._establish()
-		if contradiction:
+		(contr, confset, impacted) = self._establish()
+		if contra:
 			return (CONTRADICTION, set([]), "d_dec")
 		if len(impacted) > 0:
-			(DOMAINS_REDUCED, impacted)	
+			return (DOMAINS_REDUCED, impacted)
 		return (DOMAINS_INTACT, set([]))
-		
+	
 	def establish(self, curvar, value):
 		'''Establishes direct d_dec consistency after assignment.
 		
@@ -67,8 +93,8 @@ class D_DEC(BASE):
 		We cannot tell whether other variables (Rs, Ths, and Ls) are
 		responsible for this contradiction or not.
 		'''
-		(contradiction, confset, impacted) = self._establish()
-		if contradiction:
+		(contra, confset, impacted) = self._establish()
+		if contra:
 			return (CONTRADICTION, confset, "d_dec")
 		if len(impacted) > 0:
 			(DOMAINS_REDUCED, impacted)

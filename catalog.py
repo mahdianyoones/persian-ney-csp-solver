@@ -10,18 +10,16 @@ class TREE():
 		self.__meta = meta
 
 	def add_child(self, key, meta=0):
-		if key in self.children_keys:
-			raise Exception("Already has the child ", keys, "!")
 		child = TREE(key, meta)
-		self.children.append(child)
-		self.children_keys.add(key)
+		self.__children.append(child)
+		self.__children_keys.add(key)
 		return child
 
 	def update_meta(self, meta):
 		self.meta = meta	
 	
 	def has_child(self, key):
-		return key in self.children_keys
+		return key in self.__children_keys
 	
 	def meta(self):
 		return self.__meta
@@ -32,7 +30,7 @@ class TREE():
 		for child in self.children:
 			if key == child.key:
 				return child
-				
+	
 class CATALOG():
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
@@ -64,8 +62,8 @@ class CATALOG():
 	def __init__(self, csvfile):
 		self.__indices = {}
 		self.__path_to_idx = {}	
-		self.init_indices()
-		self.index_csv(csvfile)
+		self.__init_indices()
+		self.__index_csv(csvfile)
 	
 	def __index_csv(self, csvfile):
 		with open(csvfile) as f:

@@ -7,12 +7,23 @@ class LEN(BASE):
 	This is probably the last constraint before a solution can
 	be found. It enforces the overall length of the Ney.'''
 
-	def __init__(self, csp, asmnt):
+	def __init__(self, csp):
 		self.__csp = csp
-		self.__asmnt = asmnt
 	
 	def b_update(self, reduced_vars):
 		return (DOMAINS_INTACT, set([]))
+	
+	def __L7(self, A, D, total_len):
+		'''Calculates the length of L7.
+		
+		This is a mathematical function.'''
+		L7 = total_len - A["L1"]+A["L2"]+A["L3"]+A["L4"]+A["L5"]+A["L6"]
+		if L7 < D["L7"]["min"] or L7 > D["L7"]["max"]:
+			return CONTRADICTION
+		return L7	
+	
+	def __has_impact(self, curvar):
+		return curvar == "L6"
 	
 	def establish(self, curvar, value):
 	'''Establishes direct consistency for len.
@@ -22,20 +33,16 @@ class LEN(BASE):
 	L7 = len - (L1 + L2 + L3 + L4 + L5 + L6)
 	
 	where len is the length of the Ney.'''
-		if curvar != "L6":
+		if not self.__has_impact(curvar):
 			return (DOMAINS_INTACT, set([]))
-		_sum = 0
-		for i in range(1, 7): # L1 through L6
-			li = "L"+str(i)
-			if not li in self.asmnt.assigned:
-				raise Exception("Problem in select order!")
-			_sum += self.asmnt.assignment[li]
-		L7 = self.csp.spec["len"] - _sum # L7 = len - (L1+L2+L3+L4+L5+L6)
-		d7 = self.csp.D["L7"]
-		if L7 < d7["min"] or L7 > d7["max"]:
+		total_len = self.csp.get_spec("len")
+		A = self.csp.get_assignment()
+		D = self.csp.get_domains()
+		L7 = self.__L7(A, D, total_len)
+		if L7 == CONTRADICTION:
 			confset = {"L1", "L2", "L3", "L4", "L5", "L6"}
 			return (CONTRADICTION, confset, "len")
-		if d7["min"] == L7:
+		if D["L7"]["min"] == L7:
 			return (DOMAINS_INTACT, set([]))
-		self.csp.D["L7"] = {"min": L7, "max": L7}
+		self.csp.update_d("L7", {"min": L7, "max": L7})
 		return (DOMAINS_REDUCED, {"L7"})

@@ -31,14 +31,89 @@ class H1(HOLES):
 		if any lower changes.
 	'''
 	
-	def __init__(self, csp, asmnt):
-		h = self.csp.spec["h1"]
-		space = self.csp.spec["hmarg"] * 1
-		p = {"L1", "L2", "L3"} 	# participants
-		o = {				# others_map
+	def __init__(self, csp):
+		self.__csp = csp		
+		self.__h = csp.get_spec("h1")
+		self.__space = csp.get_spec["hmarg"] * 1
+		self.__impact_map = {
 			"L1": {"L2", "L3"},
 			"L2": {"L1", "L3"},
-			"L3": {"L1", "L2"}		
+			"L3": {"L1", "L2"}
 		}
-		self.plowers = pl = {"L1": 0, "L2": 0, "L3": 0}
-		super().__init__(csp, asmnt, h, space, p, o, self.plowers, "h1")
+	
+	def __lowers(self, A, D):
+		'''A mathematical function.'''
+		lowers = {}
+		for var in {"L1", "L2", "L3"}:
+			if var in A:
+				lowers[var] = A[var]
+			else:
+				lowers[var] = D[var]["min"]
+		return lowers
+	
+	def __impactables(self, A, curvar, imap):
+		'''A mathematical function.'''
+		ims = {}
+		for var in imap[curvar]:
+			if not var in A:
+				ims.add(var)
+		return ims
+	
+	def __new_uppers(self, lowers, ims, h, s):
+		'''A mathematical function.'''
+		ups = {}
+		if "L1" in ims:
+			ups["L1"] = h - (lowers["L2"] + lowers["L3"] + s)
+		if "L2" in ims:
+			ups["L2"] = h - (lowers["L1"] + lowers["L3"] + s)
+		if "L3" in ims:
+			ups["L3"] = h - (lowers["L1"] + lowers["L2"] + s)
+		return ups
+	
+	def __confset(self, ims):
+		return {"h1", "h2", "h3"}.difference(ims)	
+	
+	def b_update(self, reduced_vars):
+		'''Establishes h1 indirect consistency.'''
+		A = self.__csp.get_assignment()
+		ims = set([])
+		for reduced_var in reduced_vars:
+			_ims = self.__impactables(A, reduced_var, self.__impact_map)
+			ims.update(_ims)
+		return self.__establish(A, ims)
+	
+	def __establish(A, ims):
+		if len(ims) == 0:
+			return (DIMAINS_INTACT, set([]))
+		D = self.__csp.get_domains()
+		lowers = self.__lowers(A, D)
+		h = self.__h
+		s = self.__space
+		new_uppers = self.__new_uppers(lowers, ims, h, s)
+		impacted = set([])
+		for var, new_upper in new_uppers.items():
+			if new_upper < D[var]["min"]:
+				return (CONTRADICTION, self.__confset(ims), "h1")
+			if new_upper < D[var]["max"]:
+				impacted.add(var)
+				new_domain = {"min": D[var]["min"], "max": new_upper}
+				self.__csp.update_d(var, new_domain)
+		if len(impacted) == 0:
+			return (DOMAINS_REDUCED, impacted)
+		return (DOMAINS_INTACT, set([]))
+				
+	def establish(self, curvar, value):
+		'''Establishes h1 direct consistency.
+
+		The following inequality must hold:
+		L1 + L2 + L3 + 10 < h1.
+		
+		From the above, the following updates are done:
+		
+	 	upper1 = h1 - (lower2 + lower3 + 10)
+		upper2 = h1 - (lower1 + lower3 + 10)
+		upper3 = h1 - (lower1 + lower2 + 10)
+		'''
+		A = self.__csp.get_assignment()
+		ims = self.__impactables(A, curvar, self.__impact_map)
+		return self.__establish(A, ims)

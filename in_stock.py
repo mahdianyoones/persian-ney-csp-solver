@@ -1,15 +1,65 @@
 from constants import *
 from base import BASE
-import copy
 
 class IN_STOCK(BASE):
 	'''Establishes consistency W.R.T. in_stock constraint.'''
 
-	def __init__(self, csp, asmnt):
+	def __init__(self, csp):
 		self.__csp = csp
-		self.__asmnt = asmnt
+		self.__node_vars = {
+			1: {"R1", "TH1", "D1"},
+			2: {"R2", "TH2", "D2"},
+			3: {"R3", "TH3", "D3"},
+			4: {"R4", "TH4", "D4"},
+			5: {"R5", "TH5", "D5"},
+			6: {"R6", "TH6", "D6"},
+			7: {"R7", "TH7", "D7"},
+		}
+	
+	def __filters(self, A, node_vars):
+		'''Build filters using the assigned var/value pairs.
 		
-	def __establish(self, i):
+		This is a mathematical function.'''
+		filters = {}
+		for node_var in node_vars:
+			if node_var in A:
+				filters[node_var] = A[node_var]
+		return filters
+	
+	def __impactables(self, A, var_i, node_vars, filters):
+		'''Returns the set of vars whose domains might reduce.
+		
+		This is a mathematical function.'''
+		ims = {}
+		Lvar = "L" + var_i
+		if not Lvar in A:
+			ims.add(Lvar)
+		ims.update(node_vars.difference(filters))
+		return ims
+		
+	def __var_in_stock(self, var, D, filters, catalog):
+		'''Checkes whether the domain of var exhausts W.R.T. in stock.
+		
+		If some values remain, the new legal domain is returned.
+		This is a mathematical function.'''
+		cur_domain = D[var]
+		if var[0] == "L":
+			new_L = catalog.get_l(filters)
+			if new_L < cur_domain["min"]:
+				return CONTRADICTION
+			if new_L == cur_domain["max"]:
+				return DOMAIN_INTACT
+			new_domain = {"min": cur_domain["min"], "max": new_L}
+		else:
+			new_domain = catalog.values(var, filters)
+			new_domain = new_domain.intersection(cur_domain)
+			if len(new_domain) == 0:
+				return CONTRADICTION			
+			if len(new_domain) == len(current_domain):
+				return DOMAIN_INTACT
+		return new_domain
+		
+	def __establish(self, curvar):
 		'''Establishes consistency for node i.
 		
 		If ith node is consistent W.R.T. in_stock constraint, it means that
@@ -27,44 +77,25 @@ class IN_STOCK(BASE):
 		For instance, in the above example, if TH4 or L4 runs out of values,
 		the conflict set is D4 and R4.
 		'''
-		contradiction = False
-		confset = set([])
+		A = self.__csp.get_assignment()
+		D = self.__csp.get_domains()
+		catalog = self.csp.catalog
+		var_i = self.var_i(curvar)
+		node_vars = self.__node_vars[var_i]
+		filters = self.__filters(A, node_vars)
+		impactables = self.__impactables(A, var_i, node_vars, filters)
 		impacted = set([])
-		a = self.asmnt.assigned
-		node = self.asmnt.nodes[i]
-		filters = {}
-		set_vars = {}
-		for f, fstatus in node.items():
-			if f != "L" and fstatus == FEATURE_IS_SET:
-				fvar = f+str(i)
-				filters[f] = self.asmnt.assignment[fvar]
-				set_vars.add(fvar)
-		for f, fstatus in node.items():
-			if fstatus == FEATURE_IS_SET:
-				continue
-			notset_var = f+str(i)
-			current_domain = self.csp.D[notset_var]
-			if f == "L":
-				new_L = self.csp.catalog.get_l(filters)
-				if new_L < current_domain["min"]:
-					contradiction = True
-					break
-				if new_L < current_domain["max"]:
-					self.csp.D[notset_var]["max"] = new_L
-					impacted.add(notset_var)
-			else:
-				new_domain = self.csp.catalog.values(notset_var, filters)
-				new_domain = new_domain.intersection(current_domain)
-				if len(new_domain) == 0:
-					contradiction = True
-					break
-				elif len(new_domain) < len(current_domain):
-					self.csp.D[notset_var] = new_domain
-					impacted.add(notset_var)
-		if contradiction:
-			confset = set_vars
-		return (contradiction, confset, impacted)
-	
+		for var in impactables:
+			new_domain = self.__var_in_stock(var, D, filters, catalog)
+			if new_domain == CONTRADICTION:
+				return (CONTRADICTION, filters, "in_stock")
+			if new_domain != DOMAIN_INTACT:
+				self.__csp.update_d(var, new_domain)
+				impacted.add(var)
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, set([]))
+		return (DOMAINS_REDUCED, impacted)
+		
 	def b_update(self, reduced_vars):
 		'''Establishes indirect consistency for in_stock constraint.
 		
@@ -77,20 +108,7 @@ class IN_STOCK(BASE):
 		However, L variables do not impact any varaible W.R.T. this
 		constant.
 		'''
-		checked_Is = {}
-		_impacted = {}
-		for reduced_var in reduced_vars:
-			var_i = self.var_i(reduced_var)
-			if var_i in checked_Is:
-				continue
-			(contradiction, confset, impacted) = self._establish(var_i)
-			if contradiction:
-				return (CONTRADICTION, set([]), "in_stock")
-			if len(impacted) > 0:
-				_impacted.update(impacted)
-		if len(_impacted) > 0:
-			return (DOMAINS_REDUCED, _impacted)
-		return (DOMAINS_INTACT, set([]))
+		return self._establish(reduced_vars[0])		
 	
 	def establish(self, curvar, value):
 		'''Makes sure the given chunk exists in the stock using catalog.
@@ -100,10 +118,4 @@ class IN_STOCK(BASE):
 		
 		The filter parameter is built using the values in the assignments.
 		'''
-		curvar_i = self.var_i(curvar)
-		(contradiction, confset, impacted) = self._establish(curvar_i)
-		if contradiction:
-			return (CONTRADICTION, confset, "in_stock")
-		if len(impacted) > 0:
-			(DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, set([]))
+		return self._establish(curvar)

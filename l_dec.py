@@ -44,12 +44,44 @@ class L_DEC(BASE):
 		in propagation.
 	'''
 
-	def __init__(self, csp, asmnt):
+	def __init__(self, csp):
 		self.__csp = csp
-		self.__asmnt = asmnt
 	
+	def __getprevs(self, A, D, start_var):
+		if start_var in A:
+			lprev = A[start_var]["min"]
+			uprev = A[start_var]["max"]
+		else:
+			lprev = D[start_var]["min"]
+			uprev =  = D[start_var]["max"]
+		return (lprev, uprev)
+	
+	def __newbounds(self, A, D, start_var):
+		'''Returns new consistent bounds W.R.T. length decrement.
+	
+		This is a mathematical function.'''
+		(lprev, uprev) = self.__getprevs(A, D, start_var)
+		start_i = self.var_i(start_var)
+		newbounds = {}		
+		for i in range(start_i + 1, 8):
+			li = "L" + str(i)
+			lower = D[li]["min"]
+			if i < 7:
+				lower = max(D[Li]["min"], math.ceil(2/3 * lprev))
+			upper = min(D[Li]["max"], uprev - 1)
+			if lower < D[li]["min"] or lower > D[li]["max"]:
+				return CONTRADICTION
+			if upper < D[li]["min"] or upper > D[li]["max"]:
+				return CONTRADICTION	
+			if lower == D[li]["min"] and upper == D[li]["max"]:
+				break
+			newbounds[li] = {"min": lower, "max": upper}
+			lprev = lower
+			uprev = upper
+		return newbounds
+					
 	def __establish(self, start_var):
-	'''Establishes both indirect and direct l_dec consistency.
+		'''Establishes both indirect and direct l_dec consistency.
 	
 		lower3 = max(lower3, 2/3 lower2)
 		upper3 = min(upper3, upper2 - 1)
@@ -63,59 +95,35 @@ class L_DEC(BASE):
 		lower6 = max(lower6, 2/3 lower5)
 		upper6 = min(upper6, upper5 - 1)
 		
-		upper7 = min(upper7, upper6 - 1)'''
+		upper7 = min(upper7, upper6 - 1)
 		
-		impacted = set([])
-		contradiction = False
-		start_i = self.var_i(start_var)
-		asmnt = self.asmnt.assignment
-		if start_var in self.asmnt.assigned:
-			lower_prev = asmnt[start_var]["min"]
-			upper_prev = asmnt[start_var]["max"]
-		else:
-			lower_prev = self.csp.D[start_var]["min"]
-			upper_prev =  = self.csp.D[start_var]["max"]
-		for i in range(start_i+1, 8):
-			li = "L"+str(i)
-			di = self.csp.D[li]
-			if i < 7:				
-				loweri = max(di["min"], math.ceil(2/3 * dprev["min"]))
-				if loweri < di["min"] or loweri > di["max"]:
-					contradiction = True
-					break
-				if loweri > di["min"]:
-					self.csp.D[li]["min"] = loweri
-					impacted.add(li)
-					lower_prev = loweri
-				else:
-					break
-			upperi = min(di["max"], upper_prev - 1)
-			if upperi < di["min"] or upperi > di["max"]:
-				contradiction = True
-				break
-			if upperi < di["max"]:
-				self.csp.D[li]["max"] = upperi
-				impacted.add(li)
-				upper_prev = upperi
-			elif not li in impacted: # its lower bound might have changed
-				break
-		return (contradiction, impacted)
+		This is a mutable shell function.'''
+		A = self.csp.get_assignment()
+		D = self.csp.get_domains()
+		newbounds = self.__newbounds(A, D, start_var)
+		if newbounds == CONTRADICTION:
+			return (CONTRADICTION, set([]), "l_dec")
+		impacted = set(newbounds.keys())
+		if len(impacted) == 0:
+			return (DOMAINS_INTACT, set([]))
+		for Li, new_domain in newbounds.items():
+			self.csp.update_d(Li, new_domain)
+		return (DOMAINS_REDUCED, impacted)
 		
 	def b_update(self, reduced_vars):
-	'''Establishes indirect consistency W.R.T. l_dec constraint.
-	
-	if, say, L4, L5, and L6 are reduced, establishing consistency for L4 only
-	makes L5 and L6 consistency also fall into place.'''
+		'''Establishes indirect consistency W.R.T. l_dec constraint.
+		
+		if, say, L4, L5, and L6 are reduced, establishing consistency
+		just for L4 makes consistency of L5 and L6 fall into place.'''
 		reduced_sorted = sorted(reduced_vars)
-		(contradiction, impacted) self._establish(reduced_sorted[0])
-		if contradiction:
-			return (CONTRADICTION, set([]), "l_dec")
-		if len(impacted) > 0:
-			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, set([]))		
+		start_var = reduced_sorted[0]
+		return self.__establish(start_var)
 
+	def __has_impact(self, curvar):
+		return curvar != "L7"
+		
 	def establish(self, curvar, value):
-	'''Establishes direct consistency W.R.T. l_dec constraint.
+		'''Establishes direct consistency W.R.T. l_dec constraint.
 	
 		upper3 = min(upper3, L2 - 1)
 		upper4 = min(upper4, upper3 - 1)
@@ -126,13 +134,7 @@ class L_DEC(BASE):
 		lower3 = max(lower3, 2/3 * L2)
 		lower4 = max(lower4, 2/3 lower3)
 		lower5 = max(lower5, 2/3 lower4)
-		lower6 = max(lower6, 2/3 lower5)	
-	'''
-		if curvar == "L7":
+		lower6 = max(lower6, 2/3 lower5)'''
+		if not self.__has_impact(curvar):
 			return (DOMAINS_INTACT, None)
-		(contradiction, impacted) = self._establish(curvar)
-		if contradiction:
-			return (CONTRADICTION, {curvar}, "l_dec")
-		if len(impacted) > 0:
-			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, set([]))
+		return self.__establish(curvar)

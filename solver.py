@@ -1,51 +1,101 @@
 from ney_spec import specs
 from csp import CSP
-from assignment import ASSIGNMENT
 from mac import MAC
 from catalog import CATALOG
-from _select import SELECT
+from selct import SELECT
 from constants import *
 import copy
-from log import LOG
-from conflict import CONFLICT
-from backjump import BACKJUMP
 
 class SOLVER():
-
-	def statkeys(self):
-		keys = {"assigns", "jumpovers", "direct_contradictions",
-			   "backtracks", "nodes", "backjumps", 
-			   "indirect_contradictions"}
-		return keys
 
 	def __init__(self, csvfile, kook, spec):
 		self.__catalog = CATALOG(csvfile)
 		self.__spec = spec
-		self.__csp = CSP(self.catalog, self.spec)	
-		self.__asmnt = ASSIGNMENT(self.csp)
-		self.__conflict = CONFLICT(self.asmnt, self.csp)
-		self.__backjump = BACKJUMP(asmnt, self.conflict)
-		self.__select = SELECT(self.csp, self.asmnt)		
-		self.__mac = MAC(self.csp, self.asmnt)
-		self.__kook = kook
-		self.__stats = {statkey: 0 for statkey in self.statkeys()}
-		self.__l = LOG(self.csp, self.asmnt)
+		self.__csp = CSP(self.catalog, self.spec)
+		X = self.__csp.get_X()
+		self.__confsets = {v: [] for v in X} # order matters		
+		self.__select = SELECT(self.csp)		
+		self.__mac = MAC(self.csp)
 
-	def __value(self, curvar, domain, offset):
-		'''Returns the next value in the domain curvar W.R.T. offset.
+	def __confvars(self, A, inconsistents, confset, curvar):
+		'''Decides which variables can be added to the conflict set.
 		
-		This is a utility function.
-		'''		
-		if curvar[0] == "L":
-			if offset > domain["max"] - domain["min"]:
-				value = DOMAIN_EXHAUSTED
-			else:
-				value = domain["min"] + offset
-		else:
-			value = DOMAIN_EXHAUSTED if len(domain) == 0 else domain.pop()
-		offset += 2 if curvar == "L2" else 1
-		return (value, offset)
+		This is a mathematical function.'''
+		confvars = []
+		for var in A:
+			if not var in confvars:
+				continue
+			if var == curvar:
+				continue
+			if var in confset: # prevent duplicates
+				continue
+			confvars.append(var)
+		return confvars
 		
+	def __accumulate(self, curvar, inconsistents):
+		'''Accumulates the conflict set for curvar.
+		
+		Conflict set must be sorted based on the time of assignment.
+		The core notion of a conflict set is to create a time machine where
+		order of variables in the set must follow the order of variables in 
+		the assignment.
+		
+		Example:
+		
+		D1 -> R1 -> TH1 -> L1 (if failes due to TH1 and D1)
+		
+		confset[L1] = [D1, TH1] so that jump happens to TH1 not D1
+		
+		Jumping must happen to the near past not distant past.
+		
+		Why would we repeat a long history? Why not jump to yesterday and
+		make a tiny difference and quicky proceed to today?
+		
+		If we jumped to the last year instead, we would have to to live a
+		full year again to see if that solves the issue or not!
+		'''
+		if len(inconsistents) == 0:
+			return
+		A = self.__csp.get_assignment() # time sorted
+		confset = self.__confsets[curvar]		
+		confvars = self.__confvars(A, inconsistents, confset, curvar)
+		if len(confvars) > 0:
+			self.__confsets[curvar].extend(confvars)
+
+	def __absorb(self, curvar, inconsistents):
+		'''Absorbs conflict set from jump origin.
+		
+		Current variable incorporates in itself the conflict set of the
+		variable that has failed in the future.
+		
+		This failure in the future happens due to legal assignments at
+		some time in the past. Conflict set provides a time machine
+		to travel back to the time when people made good moves, but
+		future proves it wrong!
+		
+		People may not be able to see the effect of their actions far enough
+		because it takes too much time to consider every scenario.
+		'''
+		if len(inconsistents) == 0:
+			return
+		A = self.__csp.get_assignment() # time sorted
+		confset = self.__confsets[curvar]		
+		confvars = self.__confvars(A, inconsistents, confset, curvar)
+		if len(confvars) > 0:
+			self.__confsets[curvar].extend(confvars)
+				
+	def __retreat(self, curvar, confsets, ac):
+		'''Decides to backjump or backtrack in case an assignment fails.
+		
+		This is a mathematical function.'''
+		if self.__csp.assigned_count() == 0:
+			return (SEARCH_SPACE_EXHAUSTED, None)
+		if curvar in self.__confsets:
+			jump_target = self.__confsets[curvar][-1]
+			confset = self.__confsets[curvar]
+			return (BACKJUMP, confset, jump_target)
+		return (BACKTRACK, None)
+						
 	def find(self):
 		'''Runs MAC for all variables first and then calls DFS.
 		
@@ -68,16 +118,11 @@ class SOLVER():
 		is responsible for this inconsistency.'''
 		dir_res = self.mac.direct(curvar, value)
 		self.asmnt.assign(curvar, value)
-		self.stats["assigns"] += 1
 		if dir_res[0] == CONTRADICTION:
-			self.stats["direct_contradictions"] += 1
-			self.l.contradiction("direct", dir_res, curvar, value)
 			return (INCONSISTENT_ASSIGNMENT, dir_res[1])
 		if dir_res[0] == DOMAINS_REDUCED:
 			indir_res = self.mac.indirect(dir_res[1])
 			if indir_res[0] == CONTRADICTION:
-				self.stats["indirect_contradictions"] += 1
-				self.l.contradiction("indirect", indir_res, curvar, value)
 				return (INCONSISTENT_ASSIGNMENT, set([]))
 		return (CONSISTENT_ASSIGNMENT, set([]))
 		
@@ -93,43 +138,39 @@ class SOLVER():
 		adding this contradiction to a new constraint may help optimization 
 		in the next phase of the project.
 		'''
-		self.stats["nodes"] += 1
-		if len(self.asmnt.unassigned) == 0: # solution
-			self.l.solution(self.stats, self.kook, self.spec)
+		if self.__csp.unassigned_count() == 0: # solution
 			return (SOLUTION, None)
-		curvar = self.select.next()
-		domain = copy.deepcopy(self.csp.D[curvar])
+		curvar = self.__select.nextvar()
+		domain = copy.deepcopy(self.__csp.get_domain(curvar))
 		offset = 0
 		while True:
-			(value, offset) = self.value(curvar, domain, offset)				
-			if value == DOMAIN_EXHAUSTED:
-				return self.backjump.retreat(curvar)
-			dback = copy.deepcopy(self.csp.D)
-			assign_res = self.assign(curvar, value)
+			(val, offset) = self.__select.nextval(curvar, domain, offset)				
+			if val == DOMAIN_EXHAUSTED:
+				ac = self.__csp.assigned_count()
+				return self.__retreat(curvar, self.__confsets, ac)
+			self.__csp.backup_domains()
+			assign_res = self.__assign(curvar, val)
 			if assign_res[0] == INCONSISTENT_ASSIGNMENT:
-				self.conflict.accumulate(curvar, assign_res[1])
-				self.asmnt.unassign(curvar)
-				self.csp.D = copy.deepcopy(dback)
+				self.__accumulate(curvar, assign_res[1])
+				self.__csp.unassign(curvar)
+				self.__csp.revert_domains()
 				continue
 			dfs_res = self.dfs()
-			self.asmnt.unassign(curvar)
-			self.csp.D = copy.deepcopy(dback)
+			self.__csp.unassign(curvar)
+			self.__csp.revert_domains()
 			if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
 				return dfs_res[0]
 			if dfs_res[0] == BACKTRACK:
-				self.stats["backtracks"] += 1
 				continue
 			if dfs_res[0] == BACKJUMP:
 				if dfs_res[2] != curvar:
-					self.stats["jumpovers"] += 1
 					return dfs_res
 				else:
-					self.conflict.absorb(curvar, dfs_res[1])
-					self.stats["backjumps"] += 1
+					self.__absorb(curvar, dfs_res[1])
 					continue
 
 for kook, spec in specs.items():
-	solver = SOLVER("measures_of_drained_pieces.csv", kook, spec)
+	solver = SOLVER("measures_of_drained_pieces.csv", spec)
 	res = solver.find()
 	if res == SOLUTION:
 		print(solver.stats)

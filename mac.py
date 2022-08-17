@@ -87,24 +87,23 @@ class MAC():
 
 
 	'''
-	def __init__(self, csp, asmnt):
+	def __init__(self, csp):
 		self.__csp = csp
-		self.__asmnt = asmnt
 		self.__neighbors = {}
 		self.__alg_refs = {
-			"h1":		H1(csp, asmnt),
-			"h2":		H2(csp, asmnt),
-			"h3":		H3(csp, asmnt),
-			"h4":		H4(csp, asmnt),
-			"h5":		H5(csp, asmnt),
-			"h6":		H6(csp, asmnt),
-			"l1_half_l2":	sL1_HALF_L2(csp, asmnt),
-			"in_stock": 	IN_STOCK(csp, asmnt),
-			"same_th":	self.__same_thr,
-			"same_r":		self.__same_thr,
-			"l_dec":		L_DEC(csp, asmnt),
-			"d_dec":		D_DEC(csp, asmnt),
-			"len":		LEN(csp, asmnt)
+			"h1":		H1(csp),
+			"h2":		H2(csp),
+			"h3":		H3(csp),
+			"h4":		H4(csp),
+			"h5":		H5(csp),
+			"h6":		H6(csp),
+			"l1_half_l2":	sL1_HALF_L2(csp),
+			"in_stock": 	IN_STOCK(csp),
+			"same_th":	self.__same_th,
+			"same_r":		self.__same_r,
+			"l_dec":		L_DEC(csp),
+			"d_dec":		D_DEC(csp),
+			"len":		LEN(csp)
 		}
 
 	def __var_constraints(self, var):
@@ -114,7 +113,8 @@ class MAC():
 		This list is sorted based on the degree that consistency
 		algorithms impact varaibles. 
 		
-		To boost performace, neighbors are cached in self.neighbors.'''
+		To boost performace, neighbors are cached in self.neighbors.
+		This is a mathematical function.'''
 		# c S.F. constraint
 		# vc S.F. variable constraints
 		if not curvar in self.neighbors:
@@ -128,21 +128,19 @@ class MAC():
 		return self.neighbors[curvar]
 
 	def indirect(self, reduced_vars):
-	'''Establishes indirect consistency for reduced_vars.
-	
-	If the consistency spills over other variables, they are also checked.
-	i.e. it establishes consistency for all varaibles recursively.'''
-		# psvars S.F. participanting variables
-		# rpvars S.F. reduced participanting variables
+		'''Establishes indirect consistency for reduced_vars.
+		
+		If the consistency spills over other variables, they are also checked.
+		i.e. it establishes consistency for all varaibles recursively.'''
 		impacted = set([])
 		i = 0
 		while i < len(reduced_vars):
 			constraints = self.var_constraints(reduced_vars[i])
 			i += 1
 			for constraint in constraints:
-				psvars = self.csp.C[constraints]
-				rpvars = reduced_vars.intersection(psvars)
-				res = self.alg_ref[constraint].b_update(rpvars)
+				participants = self.__csp.get_participants(constraint)
+				reduced_vars = reduced_vars.intersection(participants)
+				res = self.alg_ref[constraint].b_update(reduced_vars)
 				if res[0] == CONTRADICTION:
 					return res
 				if res[0] == DOMAINS_REDUCED:

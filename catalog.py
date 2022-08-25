@@ -1,4 +1,5 @@
 import csv
+import copy
 from constants import *
 
 class TREE():
@@ -20,17 +21,62 @@ class TREE():
 	
 	def has_child(self, key):
 		return key in self.__children_keys
+		
+	def get_chkeys(self):
+		return self.__children_keys
 	
-	def meta(self):
+	def get_meta(self):
 		return self.__meta
-
-	def child(self, key):
+	
+	def get_key(self):
+		return self.__key
+		
+	def get_child(self, key):
 		if not self.has_child(key):
 			return NODE_NOT_FOUND
-		for child in self.children:
-			if key == child.key:
+		for child in self.__children:
+			if key == child.get_key():
 				return child
+
+class INDEX():
+
+	def __init__(self, idx_name):
+		self.__keys = idx_name.split("-")		
+		self.__head = TREE()
+
+	def index(self, TH, D, R, L):
+		'''Adds the given chunk data to the index.'''
+		self.__build_route(TH, D, R)
+		vals = {"D": D, "R": R, "TH": TH}
+		cursor = self.__head
+		for key in self.__keys:
+			cursor.update_meta(cursor.get_meta() + L)
+			cursor = cursor.get_child(vals[key])
 	
+	def __build_route(self, TH, D, R):
+		'''Creates nodes for the abset steps in the route.
+		
+		This function does not add L to the route.'''
+		vals = {"D": D, "R": R, "TH": TH}
+		cursor = self.__head
+		for key in self.__keys:
+			if not cursor.has_child(vals[key]):
+				cursor = cursor.add_child(vals[key])
+			else:		
+				cursor = cursor.get_child(vals[key])
+					
+	def find(self, filters):
+		'''Finds the node in the index tree given the filters.'''
+		cursor = self.__head
+		if filters == {}:
+			return cursor
+		for key in self.__keys:			
+			if key in filters:
+				cursor = cursor.get_child(filters[key])
+				if cursor == NODE_NOT_FOUND:
+					return NODE_NOT_FOUND
+		return cursor
+				
 class CATALOG():
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
@@ -59,13 +105,56 @@ class CATALOG():
 	* Any combinations of TH, R, and D could be given as filters to both values and getL methods.
 	* Both methods execute in constant time.	
 	'''
-	def __init__(self, csvfile):
-		self.__indices = {}
-		self.__path_to_idx = {}	
-		self.__init_indices()
-		self.__index_csv(csvfile)
+	def __init__(self):
+		self.__idxs = {}
+		self.__routes = {}
+
+	def setup(self, csvfile):
+		'''Performs everything required before a query can be executed.
+		
+		This is the first method to invoke, after instantiating an object
+		from the CATALOG class.'''
+		self.__build_idx_objects()
+		self.__index_data(csvfile)
+		self.__setup_query()
+		
+	def values(self, key, filters={}):
+		'''Returns values for key, filters include one or two of D,TH,R.'''
+		idx = self.__locate_idx(filters, key=key)
+		node = idx.find(filters)
+		if node != NODE_NOT_FOUND:
+			return node.get_chkeys()
+		return set([])
 	
-	def __index_csv(self, csvfile):
+	def l(self, filters={}):
+		'''Given the filters, searchs in indices for L.'''
+		idx = self.__locate_idx(filters)
+		node = idx.find(filters)
+		if node != NODE_NOT_FOUND:
+			return node.get_meta()
+		return 0.0
+
+	def __setup_query(self):
+		'''Helps find the appropriate index given the filters.'''
+		for idx_name in self.__idx_names():
+			steps = idx_name.split('-')
+			route1 = steps[0]
+			route2 = steps[0] + steps[1]
+			route3 = steps[0] + steps[1] + steps[2]
+			for route in [route1, route2, route3]:
+				if not route in self.__routes:
+					self.__routes[route] = idx_name
+
+	def __idx_names(self):
+		return {	"D-R-TH", "D-TH-R", 
+				"R-D-TH", "R-TH-D",
+				"TH-D-R", "TH-R-D"}
+	
+	def __build_idx_objects(self):
+		for idx_name in self.__idx_names():
+			self.__idxs[idx_name] = INDEX(idx_name)
+	
+	def __index_data(self, csvfile):
 		with open(csvfile) as f:
 			reader = csv.reader(f)
 			for p in reader:
@@ -74,124 +163,17 @@ class CATALOG():
 				TH = float(p[2])
 				R = float(p[3])
 				D = float(p[4])
-				self.__index(TH, D, R, L)
+				for idx in self.__idxs.values():
+					idx.index(TH, D, R, L)
 	
-	def __init_indices(self):
-		keys = ("D", "R", "TH")
-		indices_paths = {
-			(keys[0], keys[1], keys[2]), # D, R, TH
-			(keys[0], keys[2], keys[1]), # D, TH, R
-			(keys[1], keys[0], keys[2]), # R, D, TH
-			(keys[1], keys[2], keys[0]), # R, TH, D
-			(keys[2], keys[0], keys[1]), # TH, D, R
-			(keys[2], keys[1], keys[0]), # TH, R, D
-		}
-		for paths in indices_paths:
-			index_name = '-'.join(paths)
-			self.__indices[index_name] = {
-				"keys": keys,
-				"tree": TREE(),			
-			}
-			path_combinations = {
-				paths[0],
-				paths[0] + paths[1],
-				paths[0] + paths[1] + paths[2]
-			}
-			for path in path_combinations:
-				if not path in self.__path_to_idx:
-					self.__path_to_idx[path] = index_name	
-	
-	def __locate_index(self, filters, key=""):
-		'''Figures out which index can be used W.R.T. key and filters.'''
-		path = "".join(filters.keys()) + key
-		if not path in self.__path_to_idx:
+	def __locate_idx(self, filters, key=""):
+		'''Returns an index that can be queried against.'''
+		route = "".join(filters.keys()) + key
+		idx_name = ""
+		if route == "":
+			idx_name = "TH-R-D" # any index would do
+		elif route in self.__routes:
+			idx_name = self.__routes[route]
+		if idx_name == "":
 			return None
-		return self.__path_to_idx[path]
-	
-	def __locate_node(self, index, filters):
-		cursor = self.__indices[index]["tree"]
-		for index_key in self.__indices[index]["keys"]:
-			if index_key in filters.keys():
-				cursor = cursor.child(filters[index_key])
-			if cursor == NODE_NOT_FOUND:
-				break
-		return cursor
-	
-	def values(self, key, filters={}):
-		'''Returns values for key, given the filters (one or two of D,TH,R)'''
-		index = self.locate_index(filters, key=key)
-		if index == None:
-			raise Exception("Index was not found.", filters, key)
-		node = self.locate_node(index, filters)
-		return node.children_keys if node != NODE_NOT_FOUND else set([])
-	
-	def get_l(self, filters={}):
-		'''Given the filters, searchs in indices for L.'''
-		if filters == {}:
-			index = self.__indices[0] 			# any index would do
-			node = self.__indices[index]["tree"] # root
-		else:
-			index = self.locate_index(filters)
-			node = self.locate_node(index, filters)
-		return node.meta if node != NODE_NOT_FOUND else 0.0
-	
-	def __build_paths(self, paths, TH, D, R):
-		'''Creates nodes for the abset steps in the paths.'''
-		vals = {"D": D, "R": R, "TH": TH}
-		for idx_name, path in paths.copy().items():
-			for i, step in path.enumerate():
-				if step["cursor"] != None:
-					cursor = step["cursor"]
-					continue
-				else:
-					cursor = cursor.add_child(vals[step["key"]])
-					step["cursor"] = cursor
-					step["meta"] = cursor.meta()
-					paths[idx_name][i] = step
-		
-	def __index(self, TH, D, R, L):
-		'''Adds the given chunk data to all indices.'''
-		paths = self._paths(self.__indices, TH, D, R)
-		self.__build_paths(paths, TH, D, R)
-		paths = self.__update_metas(paths, L)
-		for cursor, meta in pairs.items():
-			cursor.update_meta(meta)
-	
-	def __paths(self, indices, TH, D, R):
-		'''Determines what paths do not exist and what paths do.
-		
-		This is a mathematical function.'''
-		paths = {}
-		vals = {"D": D, "R": R, "TH": TH}
-		for idx_name, index in indices.items():
-			stepskeys = idx_name.split("-")
-			cursor = index["tree"]
-			path = []
-			step = {
-				"cursor": cursor, 
-				"key": "root", 
-				"meta": cursor.meta()
-			}
-			path.append(step)
-			for stepkey in stepskeys:
-				step[key] = stepkey
-				if cursor.has_child(vals[stepkey]):
-					step["cursor"] = cursor.child(vals[stepkey])
-					step["meta"] = step["cursor"].meta()
-				else:
-					step["cursor"] = None
-					step["meta"] = None
-				path.append(step)
-			paths[idx_name] = path
-		return paths
-	
-	def __update_metas(self, paths, L):
-		'''Adds L to all nodes in the paths.
-		
-		This is a mathematical function.'''
-		vals = {"D": D, "R": R, "TH": TH}
-		for idx_name, path in paths.items():
-			for i, step in pathcopy.enumerate():
-				cursor = step["cursor"]
-				paths[idx_name][i]["meta"] = step["meta"] + L
-		return paths
+		return self.__idxs[idx_name]

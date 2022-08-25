@@ -1,21 +1,23 @@
-from ney_spec import specs
+from spec import specs
 from csp import CSP
 from mac import MAC
 from catalog import CATALOG
-from selct import SELECT
+from pickup import SELECT
 from constants import *
+from unary import UNARY
 import copy
 
 class SOLVER():
 
-	def __init__(self, csvfile, kook, spec):
+	def __init__(self, csvfile, spec):
 		self.__catalog = CATALOG(csvfile)
 		self.__spec = spec
-		self.__csp = CSP(self.catalog, self.spec)
-		X = self.__csp.get_X()
+		self.__csp = CSP(self.__catalog, spec)
+		self.__csp.define_csp()
+		X = self.__csp.get_variables()
 		self.__confsets = {v: [] for v in X} # order matters		
-		self.__select = SELECT(self.csp)		
-		self.__mac = MAC(self.csp)
+		self.__select = SELECT(self.__csp)		
+		self.__mac = MAC(self.__csp)
 
 	def __confvars(self, A, inconsistents, confset, curvar):
 		'''Decides which variables can be added to the conflict set.
@@ -95,18 +97,7 @@ class SOLVER():
 			confset = self.__confsets[curvar]
 			return (BACKJUMP, confset, jump_target)
 		return (BACKTRACK, None)
-						
-	def find(self):
-		'''Runs MAC for all variables first and then calls DFS.
-		
-		If MAC figures out any contradiction before search begins, no
-		solution could ever be found.
-		'''
-		res = self.mac.indirect()
-		if res[0] == CONTRADICTION:
-			return CONTRADICTION
-		return self.dfs()
-	
+							
 	def __assign(self, curvar, value):
 		'''Tries assigning curvar: value.
 		
@@ -168,12 +159,23 @@ class SOLVER():
 				else:
 					self.__absorb(curvar, dfs_res[1])
 					continue
-
+	def find(self):
+		'''Runs MAC for all variables first and then calls DFS.
+		
+		If MAC figures out any contradiction before search begins, no
+		solution could ever be found.
+		'''
+		unary = UNARY(self.__csp)
+		unary.unarify()
+		res = self.__mac.indirect()
+		if res[0] == CONTRADICTION:
+			return CONTRADICTION
+		return self.dfs()
+		
 for kook, spec in specs.items():
 	solver = SOLVER("measures_of_drained_pieces.csv", spec)
 	res = solver.find()
 	if res == SOLUTION:
 		print(solver.stats)
-		print(solver.asmnt.assignment)
 	else:
 		print("No solution", res)

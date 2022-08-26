@@ -1,9 +1,10 @@
 import unittest
-import init_thdr
+import initdomains
 
-test_modules = [init_thdr]
+cases = [initdomains]
 
 if __name__ == "__main__":
-	suite = unittest.loader.findTestCases(init_thdr)
 	runner = unittest.TextTestRunner()
-	runner.run(suite)
+	for case in cases:
+		suite = unittest.loader.findTestCases(initdomains)
+		runner.run(suite)

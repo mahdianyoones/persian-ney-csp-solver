@@ -9,16 +9,13 @@ import copy
 
 class SOLVER():
 
-	def __init__(self, csvfile, spec):
-		self.__catalog = CATALOG(csvfile)
-		self.__spec = spec
-		self.__csp = CSP(self.__catalog, spec)
-		self.__csp.define_csp()
+	def __init__(self, csp, select, mac):
+		self.__csp = csp
+		self.__select = select
+		self.__mac = mac
 		X = self.__csp.get_variables()
-		self.__confsets = {v: [] for v in X} # order matters		
-		self.__select = SELECT(self.__csp)		
-		self.__mac = MAC(self.__csp)
-
+		self.__confsets = {v: [] for v in X} # order matters
+		
 	def __confvars(self, A, inconsistents, confset, curvar):
 		'''Decides which variables can be added to the conflict set.
 		
@@ -159,23 +156,29 @@ class SOLVER():
 				else:
 					self.__absorb(curvar, dfs_res[1])
 					continue
-	def find(self):
+	def find(self, catalog, spec):
 		'''Runs MAC for all variables first and then calls DFS.
 		
 		If MAC figures out any contradiction before search begins, no
-		solution could ever be found.
-		'''
-		unary = UNARY(self.__csp)
-		unary.unarify()
+		solution could ever be found.'''
+		unary = UNARY()
+		unary.unarify(self.__csp, catalog, spec)
 		res = self.__mac.indirect()
 		if res[0] == CONTRADICTION:
 			return CONTRADICTION
-		return self.dfs()
-		
-for kook, spec in specs.items():
-	solver = SOLVER("measures_of_drained_pieces.csv", spec)
-	res = solver.find()
+		return self.__dfs()
+
+def main():
+	catalog = CATALOG("measures_of_drained_pieces.csv")
+	csp = CSP()
+	select = SELECT(csp)
+	mac = MAC(csp, catalog)
+	solver = SOLVER(csp, select, mac)
+	res = solver.find(catalog, specs["C"])
 	if res == SOLUTION:
 		print(solver.stats)
 	else:
 		print("No solution", res)
+			
+if __name__ == "__main__":	
+	main()

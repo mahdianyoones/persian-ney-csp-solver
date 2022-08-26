@@ -44,20 +44,20 @@ class INDEX():
 		self.__keys = idx_name.split("-")		
 		self.__head = TREE()
 
-	def index(self, TH, D, R, L):
+	def index(self, T, D, R, L):
 		'''Adds the given chunk data to the index.'''
-		self.__build_route(TH, D, R)
-		vals = {"D": D, "R": R, "TH": TH}
+		self.__build_route(T, D, R)
+		vals = {"D": D, "R": R, "T": T}
 		cursor = self.__head
 		for key in self.__keys:
 			cursor.update_meta(cursor.get_meta() + L)
 			cursor = cursor.get_child(vals[key])
 	
-	def __build_route(self, TH, D, R):
+	def __build_route(self, T, D, R):
 		'''Creates nodes for the abset steps in the route.
 		
 		This function does not add L to the route.'''
-		vals = {"D": D, "R": R, "TH": TH}
+		vals = {"D": D, "R": R, "T": T}
 		cursor = self.__head
 		for key in self.__keys:
 			if not cursor.has_child(vals[key]):
@@ -66,7 +66,9 @@ class INDEX():
 				cursor = cursor.get_child(vals[key])
 					
 	def find(self, filters):
-		'''Finds the node in the index tree given the filters.'''
+		'''Finds the node in the index tree given the filters.
+		
+		This is a mathematical function.'''
 		cursor = self.__head
 		if filters == {}:
 			return cursor
@@ -146,9 +148,9 @@ class CATALOG():
 					self.__routes[route] = idx_name
 
 	def __idx_names(self):
-		return {	"D-R-TH", "D-TH-R", 
-				"R-D-TH", "R-TH-D",
-				"TH-D-R", "TH-R-D"}
+		return {	"D-R-T", "D-T-R", 
+				"R-D-T", "R-T-D",
+				"T-D-R", "T-R-D"}
 	
 	def __build_idx_objects(self):
 		for idx_name in self.__idx_names():
@@ -160,20 +162,23 @@ class CATALOG():
 			for p in reader:
 				NO = p[0]
 				L = float(p[1]) * 10 # cm -> mm
-				TH = float(p[2])
+				T = float(p[2])
 				R = float(p[3])
 				D = float(p[4])
 				for idx in self.__idxs.values():
-					idx.index(TH, D, R, L)
+					idx.index(T, D, R, L)
 	
 	def __locate_idx(self, filters, key=""):
-		'''Returns an index that can be queried against.'''
+		'''Returns an index that can be queried against.
+		
+		This is a mathematical function.'''
 		route = "".join(filters.keys()) + key
 		idx_name = ""
 		if route == "":
-			idx_name = "TH-R-D" # any index would do
+			idx_name = "T-R-D" # any index would do
 		elif route in self.__routes:
 			idx_name = self.__routes[route]
 		if idx_name == "":
+			raise Exception("Index not found.", filters, key, route)
 			return None
 		return self.__idxs[idx_name]

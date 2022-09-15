@@ -1,9 +1,7 @@
 from constants import *
-from base import BASE
-from holes import HOLES
 import copy
 
-class H3(HOLES):
+class HOLE3():
 	''' Establishes h3 consistency for L1, L2, L3, and L4.
 	
 	This constraints guarantees that the 3st hole falls on the beginning of 

@@ -1,9 +1,7 @@
 from constants import *
-from base import BASE
-from holes import HOLES
 import copy
 
-class H6(HOLES):
+class HOLE6():
 	''' Establishes h6 consistency for L1, L2, L3, L4, L5.
 	
 	This constraints guarantees that the 6th hole falls on the beginning of

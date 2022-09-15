@@ -1,9 +1,7 @@
 from constants import *
-from base import BASE
-from holes import HOLES
 import copy
 
-class H5(HOLES):
+class HOLE5():
 	''' Establishes h5 consistency for L1, L2, L3, and L4.
 	
 	This constraints guarantees that the 5th hole falls on the node 5 below the

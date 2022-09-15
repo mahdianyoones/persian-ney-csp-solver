@@ -59,7 +59,7 @@ class CSP():
 	
 	def unassign_all(self):
 		self.assignment = {}
-		self.unassigned = copy.deepcopy(self.csp.X)
+		self.unassigned = copy.deepcopy(self.__X)
 		self.assigned = [] # order matters
 	
 	def get_variables(self):

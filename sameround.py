@@ -1,7 +1,6 @@
 from constants import *
-from base import BASE
 
-class SAME_R(BASE):
+class SAMEROUND():
 	'''Applies same roundness constraints.'''
 
 	def __init__(self, csp):
@@ -16,7 +15,7 @@ class SAME_R(BASE):
 	
 	def __has_impact(self, curvar):
 		'''Decides whether assignment to curvar could impact others.'''
-		return curvar != "R1":
+		return curvar != "R1"
 	
 	def __new_domains(self, curvar, value, D):
 		'''Returns new domains for participating variables.
@@ -34,7 +33,7 @@ class SAME_R(BASE):
 		return newdomains
 			 
 	def establish(self, curvar, value):
-	'''Establishes consistency W.R.T. same_r constraint.'''
+		'''Establishes consistency W.R.T. same_r constraint.'''
 		if not self.__has_impact(curvar):
 			return (DOMAINS_INTACT, set([]))
 		D = self.csp.get_domains()

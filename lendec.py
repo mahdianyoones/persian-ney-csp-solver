@@ -1,8 +1,7 @@
 from constants import *
 import math
-from base import BASE
 
-class L_DEC(BASE):
+class LENDEC():
 	'''Applies length decrement consistency.
 	
 	The following relations must hold between L2 through L7:
@@ -53,7 +52,7 @@ class L_DEC(BASE):
 			uprev = A[start_var]["max"]
 		else:
 			lprev = D[start_var]["min"]
-			uprev =  = D[start_var]["max"]
+			uprev = D[start_var]["max"]
 		return (lprev, uprev)
 	
 	def __newbounds(self, A, D, start_var):

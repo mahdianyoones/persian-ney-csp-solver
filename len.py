@@ -1,7 +1,6 @@
 from constants import *
-from base import BASE
 
-class LEN(BASE):
+class LEN():
 	'''Makes L variables consistent W.R.T. len constraint.
 	
 	This is probably the last constraint before a solution can
@@ -26,13 +25,13 @@ class LEN(BASE):
 		return curvar == "L6"
 	
 	def establish(self, curvar, value):
-	'''Establishes direct consistency for len.
+		'''Establishes direct consistency for len.
 
-	The following update happens:
-	
-	L7 = len - (L1 + L2 + L3 + L4 + L5 + L6)
-	
-	where len is the length of the Ney.'''
+		The following update happens:
+		
+		L7 = len - (L1 + L2 + L3 + L4 + L5 + L6)
+		
+		where len is the length of the Ney.'''
 		if not self.__has_impact(curvar):
 			return (DOMAINS_INTACT, set([]))
 		total_len = self.csp.get_spec("len")

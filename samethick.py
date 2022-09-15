@@ -1,7 +1,6 @@
 from constants import *
-from base import BASE
 
-class SAME_TH(BASE):
+class SAMETHICK():
 	'''Applies same thickness and roundness constraints.'''
 
 	def __init__(self, csp):
@@ -34,7 +33,7 @@ class SAME_TH(BASE):
 		return newdomains
 			 
 	def establish(self, curvar, value):
-	'''Establishes consistency W.R.T. same_th constraint.'''
+		'''Establishes consistency W.R.T. same_th constraint.'''
 		if not self.__has_impact(curvar):
 			return (DOMAINS_INTACT, set([]))
 		D = self.csp.get_domains()

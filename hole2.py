@@ -1,9 +1,7 @@
 from constants import *
-from base import BASE
-from holes import HOLES
 import copy
 
-class H2(HOLES):
+class HOLE2():
 	'''Establishes h2 consistency for L1, L2, and L3.
 	
 	This constraints guarantees that the 2st hole falls on node 4 below 

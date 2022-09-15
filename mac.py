@@ -1,15 +1,17 @@
-from h1 import H1
-from h2 import H2
-from h3 import H3
-from h4 import H4
-from h5 import H5
-from h6 import H6
+from hole1A import HOLE1A
+from hole1B import HOLE1B
+from hole2 import HOLE2
+from hole3 import HOLE3
+from hole4 import HOLE4
+from hole5 import HOLE5
+from hole6 import HOLE6
 from len import LEN
-from l_dec import L_DEC
-from d_dec import D_DEC
-from same_thr import SAME_THR
-from l1_half_l2 import L1_HALF_L2
-from in_stock import IN_STOCK
+from lendec import LENDEC
+from diamdec import DIAMDEC
+from samethick import SAMETHICK
+from sameround import SAMEROUND
+from half import HALF
+from stock import STOCK
 from constants import *
 import copy
 
@@ -91,7 +93,8 @@ class MAC():
 		self.__csp = csp
 		self.__neighbors = {}
 		self.__alg_refs = {
-			"h1":		H1(csp),
+			"hole1A":		HOLE1A(csp),
+			"hole1B":		HOLE1B(csp),
 			"h2":		H2(csp),
 			"h3":		H3(csp),
 			"h4":		H4(csp),

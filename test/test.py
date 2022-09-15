@@ -1,10 +1,14 @@
 import unittest
-import initdomains
+import test_initdomains
+import test_hole1A
 
-cases = [initdomains]
+cases = [
+	test_initdomains, 
+	test_hole1A
+]
 
 if __name__ == "__main__":
 	runner = unittest.TextTestRunner()
 	for case in cases:
-		suite = unittest.loader.findTestCases(initdomains)
+		suite = unittest.loader.findTestCases(case)
 		runner.run(suite)

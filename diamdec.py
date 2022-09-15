@@ -1,8 +1,7 @@
 from constants import *
-from base import BASE
 import copy
 
-class D_DEC(BASE):
+class DIAMDEC():
 	'''Implements diameter decrement consistency.
 	
 	 0.5 <= D2 - D1 <= 1

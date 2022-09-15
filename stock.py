@@ -1,7 +1,6 @@
 from constants import *
-from base import BASE
 
-class STOCK(BASE):
+class STOCK():
 	'''Establishes consistency W.R.T. in_stock constraint.'''
 
 	def __init__(self, csp):

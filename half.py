@@ -1,8 +1,7 @@
 from constants import *
-from base import BASE
 import math
 
-class HALF(BASE):
+class HALF():
 	'''Implements consistency algorithm for l1_half_l2 constraint.'''
 
 	def __init__(self, csp):

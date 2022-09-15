@@ -156,6 +156,7 @@ class SOLVER():
 				else:
 					self.__absorb(curvar, dfs_res[1])
 					continue
+	
 	def find(self, catalog, spec):
 		'''Runs MAC for all variables first and then calls DFS.
 		

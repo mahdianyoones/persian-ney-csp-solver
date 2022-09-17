@@ -2,46 +2,29 @@ from constants import *
 import copy
 
 class HOLE1B():
-	'''Establishes L1 + L2 + L3 + L4 - 10 > h1.
+	'''Establishes L1 + L2 + L3 + L4 - S > h1.
 	
 	This constraint gauranteed that hole 1 falls somewhere BEFORE 
 	the junction of nodes 4 & 5, and not on the junction.
 
-	Since, the relation is an inequality, we can only update the upper or
-	lower bounds of the domains. From the relation, the following updates
-	can be performed:
+	If possible, we can only update the lower bounds on the domains. 
 	
-	1) L1 > h1 - (L2 + L3 + L4 - 10)
-	2) L2 > h1 - (L1 + L3 + L4 - 10)
-	3) L3 > h1 - (L2 + L1 + L4 - 10)
-	4) L4 > h1 - (L2 + L3 + L1 - 10)
+	From the relation, the following inequalities can be derived:
 	
-	which help determine the boundaries of all participating variables on two
-	circumstances:
-		
-	1- One participating variable, say L1, is assigned a value.
+	1) L1_min > h1 - (L2_max + L3_max + L4_max - S)
+	2) L2_min > h1 - (L1_max + L3_max + L4_max - S)
+	3) L3_min > h1 - (L2_max + L1_max + L4_max - S)
+	4) L4_min > h1 - (L2_max + L3_max + L1_max - S)
 	
-	In this case, the following updates are feasable. 
-		
-	from 1, 	lower1 = h1 - (L2 + L3 + L4 - 10)
-	from 2, 	lower2 = h1 - (L1 + L3 + L4 - 10)
-	from 3, 	lower3 = h1 - (L1 + L2 + L4 - 10)
-	from 4, 	lower4 = h1 - (L1 + L2 + L3 - 10)
+	The algorithm performs the following assignments to make the boundaries
+	consistnet:
 	
-	2- Boundaries of either of participating variables are updated. This
-	update is done outside this algorithm.
-	
-	In this case, this algorithm is invoked to keep the update in check. 
-	i.e. after any change on the boundaries, the consistency of other
-	participating variables must be checked and maintained. This is called
-	bound propagation. 
-	
-	from 1, 	lower1 = h1 - (upper2 + upper3 + upper4 - 10)
-	from 2, 	lower2 = h1 - (upper1 + upper3 + upper4 - 10)
-	from 3, 	lower3 = h1 - (upper1 + upper2 + upper4 - 10)
-	from 4, 	lower4 = h1 - (upper1 + upper2 + upper3 - 10)
-	
-	h1 in the above relations is the length of hole 1 from top, and 10 is the
+	from 1, 	L1_min = h1 - (L2_max + L3_max + L4_max - S) + 1
+	from 2, 	L2_min = h1 - (L1_max + L3_max + L4_max - S) + 1 
+	from 3, 	L3_min = h1 - (L2_max + L1_max + L4_max - S) + 1
+	from 4, 	L4_min = h1 - (L2_max + L3_max + L1_max - S) + 1
+				
+	h1 in the above relations is the length of hole 1 from top, and S is the
 	minimum hole junction space between nodes 4 & 5 and the 1st hole.
 
 	Note that we do not enforce any exact length for nodes. As long as
@@ -51,8 +34,7 @@ class HOLE1B():
 	on their exact location.
 	
 	This constraint works with hole1A hand-in-hand to make sure that the
-	first hole falls on node 4 and not no any junction.'''
-		
+	first hole falls on node 4 and not on any junction.'''
 	def __init__(self, spec):
 		self.__h = spec["h1"]
 		self.__space = spec["hmarg"] * 1
@@ -73,6 +55,7 @@ class HOLE1B():
 			return (DOMAINS_INTACT, set([]))
 		D = csp.get_domains()
 		uppers = self.__uppers(A, D)
+		uppers[curvar] = value		
 		h = self.__h
 		s = self.__space
 		new_domains = self.__new_domains(D, uppers, ims, h, s)		
@@ -91,8 +74,22 @@ class HOLE1B():
 		uppers = self.__uppers(A, D)
 		h = self.__h
 		s = self.__space
+		if self.__uppers_inconsistent(D, uppers, h, s):
+			return (CONTRADICTION, ims, set([]))		
 		new_domains = self.__new_domains(D, uppers, ims, h, s)
 		return self.__update(csp, new_domains, ims)
+	
+	def __uppers_inconsistent(self, D, ups, h, s):
+		'''Checks the consistency of variables' upper bounds.'''
+		if ups["L1"] <= h - (ups["L2"] + ups["L3"] + ups["L4"] + s):
+			return True
+		if ups["L2"] <= h - (ups["L1"] + ups["L3"] + ups["L4"] + s):
+			return True
+		if ups["L3"] <= h - (ups["L1"] + ups["L2"] + ups["L4"] + s):
+			return True
+		if ups["L4"] <= h - (ups["L1"] + ups["L2"] + ups["L3"] + s):
+			return True
+		return False
 	
 	def __uppers(self, A, D):
 		'''A mathematical function.'''
@@ -101,7 +98,7 @@ class HOLE1B():
 			if var in A:
 				uppers[var] = A[var]
 			else:
-				uppers[var] = D[var]["min"]
+				uppers[var] = D[var]["max"]
 		return uppers
 		
 	def __impactables(self, A, curvar, imap):
@@ -116,26 +113,18 @@ class HOLE1B():
  		return val >= bounds["min"] and val <= bounds["max"]
 	
 	def __new_domains(self, D, ups, ims, h, s):
-		'''Carries out the following assignments:
+		'''Carries out the assignments.
 		
-		lower1 = h1 - (upper2 + upper3 + upper4 - 10)
-		lower2 = h1 - (upper1 + upper3 + upper4 - 10)
-		lower3 = h1 - (upper1 + upper2 + upper4 - 10)
-		lower4 = h1 - (upper1 + upper2 + upper3 - 10)
-		
-		Returns either CONTRADICTION or a dictionary containing new domains
-		to be updated.
-
 		This is a mathematical function.'''
 		lows = {}
 		if "L1" in ims:
-			lows["L1"] = h - (ups["L2"] + ups["L3"] + ups["L4"] - s)
+			lows["L1"] = h - (ups["L2"] + ups["L3"] + ups["L4"] - s) + 1
 		if "L2" in ims:
-			lows["L2"] = h - (ups["L1"] + ups["L3"] + ups["L4"] - s)
+			lows["L2"] = h - (ups["L1"] + ups["L3"] + ups["L4"] - s) + 1
 		if "L3" in ims:
-			lows["L3"] = h - (ups["L1"] + ups["L2"] + ups["L4"] - s)
+			lows["L3"] = h - (ups["L1"] + ups["L2"] + ups["L4"] - s) + 1
 		if "L4" in ims:
-			lows["L4"] = h - (ups["L1"] + ups["L2"] + ups["L3"] - s)
+			lows["L4"] = h - (ups["L1"] + ups["L2"] + ups["L3"] - s) + 1
 		new_domains = {}
 		for var, new_lower in lows.items():
 			if not self.__inbounds(new_lower, D[var]):
@@ -146,15 +135,12 @@ class HOLE1B():
 		return new_domains
 	
 	def __update(self, csp, new_domains, ims):
-		'''Carries out the final domain updates.
-		
-		Returns an appropriate response.'''
+		'''Carries out the final domain updates.'''
 		if new_domains == CONTRADICTION:
-			confset = {"h1", "h2", "h3", "h4"}.difference(ims)
-			return (CONTRADICTION, confset, "hole1B")
+			return (CONTRADICTION, ims, set([]), set([]))
 		elif len(new_domains) > 0:
 			for var, new_domain in new_domains.items():
 				csp.update_domain(var, new_domain)
-			return (DOMAINS_REDUCED, new_domains.keys())
+			return (DOMAINS_REDUCED, ims, set(new_domains.keys()))
 		else:
-			return (DOMAINS_INTACT, set([]))	
+			return (DOMAINS_INTACT, ims, set([]))	

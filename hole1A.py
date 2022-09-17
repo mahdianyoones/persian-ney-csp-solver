@@ -2,61 +2,40 @@ from constants import *
 import copy
 
 class HOLE1A():
-	''' Establishes L1 + L2 + L3 + 10 < h1.
+	''' Establishes L1 + L2 + L3 + S < h1.
 	
-	This constraint guarantees that the 1st hole falls somewhere after the 
+	This constraint guarantees that the 1st hole falls somewhere AFTER the 
 	junction of nodes 3 & 4, and not on the junction itself.
-		
-	We can only update the upper bounds on the domains. 
-	
+
 	From the relation, the following inequalities can be derived:
 	
-	1) L1 < h1 - (L2 + L3 + 10)
-	2) L2 < h1 - (L1 + L3 + 10)
-	3) L3 < h1 - (L1 + L2 + 10)
+	1) L1_max < h1 - (L2_min + L3_min + S)
+	2) L2_max < h1 - (L1_min + L3_min + S)
+	3) L3_max < h1 - (L1_min + L2_min + S)
 	
-	case 1 happens if L2 and/or L3 are assigned or their domains are reduced
-	in another constraint.
+	Note that on the right side of the inequalities, L1_min, L2_min, 
+	and L3_min may be replaced with the assigned value for L1, L2, and 
+	L3 respectively. However, when neither of them are assigned (or 
+	is being assigned), their current lower bound is used.
 	
-	Similarly, case 2 and 3 occur for assignment or reduction on 
-	L1 and/or L3 and L1 and/or L2 respectively.
-
-	which help determine the boundaries of all participating variables on two
-	circumstances:
+	The algorithm performs the following assignments to make the boundaries
+	consistnet:
 		
-	1- One participating variables is assigned. For example, L1 is assigned a
-	value.
-	
-	In this case, the following updates are feasable. 
-			
- 	from 1,	upper1 = h1 - (L2 + L3 + 10) - 1
-	from 2,	upper2 = h1 - (L1 + L3 + 10) - 1
-	from 3,	upper3 = h1 - (L1 + L2 + 10) - 1
+ 	from 1,	L1_max = h1 - (L2_min + L3_min + S) - 1
+	from 2,	L2_max = h1 - (L1_min + L3_min + S) - 1
+	from 3,	L3_max = h1 - (L1_min + L2_min + S) - 1
 		
-	2- Boundaries of either of participating variables are updated. This
-	update is done via other consistency algorithms.
-	
-	In this case, this algorithm is invoked to keep the update in check. 
-	i.e. after any change in the boundaries, the consistency of other
-	participating variables must be checked and maintained. This is called
-	bound propagation. 
-		
- 	from 1,	upper1 = h1 - (lower2 + lower3 + 10)
-	from 2,	upper2 = h1 - (lower1 + lower3 + 10)
-	from 3,	upper3 = h1 - (lower1 + lower2 + 10)
-		
-	h1 in the above relations is the length of hole 1 from top, and 10 is the
-	minimum hole junction space between nodes 3&4 and the 1st hole.
+	h1 is the length of hole 1 from top, and S is the	minimum hole junction
+	space between nodes 3 & 4 and the 1st hole.
 
 	Note that we do not enforce any exact length for nodes. As long as
 	the sum of all nodes add up to the desired length of the Ney, and 
 	that the location of holes are gauranteed not to fall on
-	the junctions between the nodes, we are able to build holes
+	the junctions between the nodes, we are able to make holes
 	on their exact location.
 	
 	This constraint works with hole1B hand-in-hand to make sure that the
 	first hole falls on node 4 and not no any junction.'''
-	
 	def __init__(self, spec):
 		self.__h = spec["h1"]
 		self.__space = spec["hmarg"] * 1
@@ -132,18 +111,9 @@ class HOLE1A():
  		return val >= bounds["min"] and val <= bounds["max"]
  	
 	def __new_domains(self, D, lowers, ims, h, s):
-		'''A mathematical function.
-
-		From L1 + L2 + L3 + 10 < h1,
+		'''Carries out the assignments.
 		
-		1) L1 < h1 - (L2 + L3 + 10)
-		2) L2 < h1 - (L1 + L3 + 10)
-		2) L3 < h1 - (L1 + L2 + 10)
-			
-	 	from 1,	upper1 = h1 - (lower2 + lower3 + 10) - 1
-		from 2,	upper2 = h1 - (lower1 + lower3 + 10) - 1
-		from 3,	upper3 = h1 - (lower1 + lower2 + 10) - 1
-		'''
+		This is a mathematical function.'''
 		ups = {}
 		if "L1" in ims:
 			ups["L1"] = h - (lowers["L2"] + lowers["L3"] + s) - 1
@@ -167,6 +137,6 @@ class HOLE1A():
 		elif len(new_domains) > 0:
 			for var, new_domain in new_domains.items():
 				csp.update_domain(var, new_domain)
-			return (DOMAINS_REDUCED, ims, new_domains.keys())
+			return (DOMAINS_REDUCED, ims, set(new_domains.keys()))
 		else:
 			return (DOMAINS_INTACT, ims, set([]))

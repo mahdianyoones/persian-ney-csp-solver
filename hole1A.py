@@ -54,8 +54,7 @@ class HOLE1A():
 		if len(ims) == 0:
 			return (DOMAINS_INTACT, set([]))
 		D = csp.get_domains()
-		lowers = self.__lowers(A, D)
-		lowers[curvar] = value
+		lowers = self.__lowers(A, D, curvar, value)
 		h = self.__h
 		s = self.__space
 		new_domains = self.__new_domains(D, lowers, ims, h, s)		
@@ -81,15 +80,15 @@ class HOLE1A():
 	
 	def __lowers_inconsistent(self, D, lowers, h, s):
 		'''Checks the consistency of variables' lower bounds.'''
-		if lowers["L1"] >= h - (lowers["L2"] + lowers["L3"] + s):
+		if lowers["L1"] >= h - lowers["L2"] - lowers["L3"] - s:
 			return True
-		if lowers["L2"] >= h - (lowers["L1"] + lowers["L3"] + s):
+		if lowers["L2"] >= h - lowers["L1"] - lowers["L3"] - s:
 			return True
-		if lowers["L3"] >= h - (lowers["L1"] + lowers["L2"] + s):
+		if lowers["L3"] >= h - lowers["L1"] - lowers["L2"] - s:
 			return True
 		return False
 			
-	def __lowers(self, A, D):
+	def __lowers(self, A, D, curvar=None, value=None):
 		'''A mathematical function.'''
 		lowers = {}
 		for var in {"L1", "L2", "L3"}:
@@ -97,6 +96,8 @@ class HOLE1A():
 				lowers[var] = A[var]
 			else:
 				lowers[var] = D[var]["min"]
+		if curvar != None:
+			lowers[curvar] = value
 		return lowers
 		
 	def __impactables(self, A, curvar, imap):
@@ -116,11 +117,11 @@ class HOLE1A():
 		This is a mathematical function.'''
 		ups = {}
 		if "L1" in ims:
-			ups["L1"] = h - (lowers["L2"] + lowers["L3"] + s) - 1
+			ups["L1"] = h - lowers["L2"] - lowers["L3"] - s - 1
 		if "L2" in ims:
-			ups["L2"] = h - (lowers["L1"] + lowers["L3"] + s) - 1
+			ups["L2"] = h - lowers["L1"] - lowers["L3"] - s - 1
 		if "L3" in ims:
-			ups["L3"] = h - (lowers["L1"] + lowers["L2"] + s) - 1
+			ups["L3"] = h - lowers["L1"] - lowers["L2"] - s - 1
 		new_domains = {}			
 		for var, new_upper in ups.items():
 			if not self.__inbounds(new_upper, D[var]):

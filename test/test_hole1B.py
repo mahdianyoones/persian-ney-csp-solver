@@ -38,7 +38,7 @@ class Test_HOLE1B(unittest.TestCase):
 		csp = self.__csp
 		csp.assign("L2", 24)
 		csp.assign("L4", 24)
-		csp.update_domain("L1", {"min": 133, "max": 0})
+		csp.update_domain("L1", {"min": 133, "max": 133})
 		# act
 		output = self.__sut.establish(csp, "L3", 122)
 		# assess
@@ -59,13 +59,13 @@ class Test_HOLE1B(unittest.TestCase):
 		csp = self.__csp
 		csp.assign("L2", 24)
 		csp.assign("L4", 24)
-		csp.update_domain("L1", {"min": 132, "max": 132})
+		csp.update_domain("L1", {"min": 132, "max": 133})
 		# act
 		output = self.__sut.establish(csp, "L3", 122)
 		# assess
 		expected = (DOMAINS_REDUCED, {"L1"}, {"L1"})
 		self.assertEqual(output, expected)
-		L1 = self.__csp.get_domains("L1")
+		L1 = self.__csp.get_domain("L1")
 		self.assertEqual(L1, {"min": 133, "max": 133})
 	
 	def test_L1_contradiction(self):
@@ -96,10 +96,10 @@ class Test_HOLE1B(unittest.TestCase):
 		
 		Pre-conditions:
 		
-		min_L1 > 312 - 10 – (max_L2 + max_L3 + max_L4)
-		min_L2 > 312 - 10 – (max_L1 + max_L3 + max_L4)
-		min_L3 > 312 - 10 – (max_L1 + max_L2 + max_L4)
-		min_L4 > 312 - 10 – (max_L1 + max_L2 + max_L3)
+		min_L1 > 312 - 10 - (max_L2 + max_L3 + max_L4)
+		min_L2 > 312 - 10 - (max_L1 + max_L3 + max_L4)
+		min_L3 > 312 - 10 - (max_L1 + max_L2 + max_L4)
+		min_L4 > 312 - 10 - (max_L1 + max_L2 + max_L3)
 		'''
 		# arrange
 		self.__reset_csp()
@@ -132,7 +132,7 @@ class Test_HOLE1B(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.update_domain("L1", {"min": 132, "max": 132})
+		csp.update_domain("L1", {"min": 132, "max": 133})
 		csp.update_domain("L2", {"min": 23, "max": 24})
 		csp.update_domain("L3", {"min": 121, "max": 122})
 		csp.update_domain("L4", {"min": 23, "max": 24})
@@ -142,10 +142,10 @@ class Test_HOLE1B(unittest.TestCase):
 		self.assertEqual(output[0], DOMAINS_REDUCED)
 		self.assertEqual(output[1], {"L1", "L2", "L3", "L4"})
 		self.assertEqual(output[2], {"L1", "L2", "L3", "L4"})
-		L1 = self.__csp.get_domains("L1")
-		L2 = self.__csp.get_domains("L2")
-		L3 = self.__csp.get_domains("L3")
-		L4 = self.__csp.get_domains("L4")
+		L1 = self.__csp.get_domain("L1")
+		L2 = self.__csp.get_domain("L2")
+		L3 = self.__csp.get_domain("L3")
+		L4 = self.__csp.get_domain("L4")
 		self.assertEqual(L1, {"min": 133, "max": 133})
 		self.assertEqual(L2, {"min": 24, "max": 24})
 		self.assertEqual(L3, {"min": 122, "max": 122})

@@ -54,8 +54,7 @@ class HOLE1B():
 		if len(ims) == 0:
 			return (DOMAINS_INTACT, set([]))
 		D = csp.get_domains()
-		uppers = self.__uppers(A, D)
-		uppers[curvar] = value		
+		uppers = self.__uppers(A, D, curvar, value)
 		h = self.__h
 		s = self.__space
 		new_domains = self.__new_domains(D, uppers, ims, h, s)		
@@ -75,23 +74,23 @@ class HOLE1B():
 		h = self.__h
 		s = self.__space
 		if self.__uppers_inconsistent(D, uppers, h, s):
-			return (CONTRADICTION, ims, set([]))		
+			return (CONTRADICTION, ims)		
 		new_domains = self.__new_domains(D, uppers, ims, h, s)
 		return self.__update(csp, new_domains, ims)
 	
 	def __uppers_inconsistent(self, D, ups, h, s):
 		'''Checks the consistency of variables' upper bounds.'''
-		if ups["L1"] <= h - (ups["L2"] + ups["L3"] + ups["L4"] + s):
+		if ups["L1"] <= h - ups["L2"] - ups["L3"] - ups["L4"] - s:
 			return True
-		if ups["L2"] <= h - (ups["L1"] + ups["L3"] + ups["L4"] + s):
+		if ups["L2"] <= h - ups["L1"] - ups["L3"] - ups["L4"] - s:
 			return True
-		if ups["L3"] <= h - (ups["L1"] + ups["L2"] + ups["L4"] + s):
+		if ups["L3"] <= h - ups["L1"] - ups["L2"] - ups["L4"] - s:
 			return True
-		if ups["L4"] <= h - (ups["L1"] + ups["L2"] + ups["L3"] + s):
+		if ups["L4"] <= h - ups["L1"] - ups["L2"] - ups["L3"] - s:
 			return True
 		return False
 	
-	def __uppers(self, A, D):
+	def __uppers(self, A, D, curvar=None, value=None):
 		'''A mathematical function.'''
 		uppers = {}
 		for var in {"L1", "L2", "L3", "L4"}:
@@ -99,8 +98,10 @@ class HOLE1B():
 				uppers[var] = A[var]
 			else:
 				uppers[var] = D[var]["max"]
+		if curvar != None:
+			uppers[curvar] = value
 		return uppers
-		
+	
 	def __impactables(self, A, curvar, imap):
 		'''A mathematical function.'''
 		ims = set([])
@@ -118,29 +119,29 @@ class HOLE1B():
 		This is a mathematical function.'''
 		lows = {}
 		if "L1" in ims:
-			lows["L1"] = h - (ups["L2"] + ups["L3"] + ups["L4"] - s) + 1
+			lows["L1"] = h - ups["L2"] - ups["L3"] - ups["L4"] - s + 1
 		if "L2" in ims:
-			lows["L2"] = h - (ups["L1"] + ups["L3"] + ups["L4"] - s) + 1
+			lows["L2"] = h - ups["L1"] - ups["L3"] - ups["L4"] - s + 1
 		if "L3" in ims:
-			lows["L3"] = h - (ups["L1"] + ups["L2"] + ups["L4"] - s) + 1
+			lows["L3"] = h - ups["L1"] - ups["L2"] - ups["L4"] - s + 1
 		if "L4" in ims:
-			lows["L4"] = h - (ups["L1"] + ups["L2"] + ups["L3"] - s) + 1
+			lows["L4"] = h - ups["L1"] - ups["L2"] - ups["L3"] - s + 1
 		new_domains = {}
 		for var, new_lower in lows.items():
 			if not self.__inbounds(new_lower, D[var]):
 				return CONTRADICTION
 			if new_lower > D[var]["min"]:
-				new_domain = {"min": new_lower, "max": D[var]["min"]}
+				new_domain = {"min": new_lower, "max": D[var]["max"]}
 				new_domains[var] = new_domain
 		return new_domains
 	
 	def __update(self, csp, new_domains, ims):
 		'''Carries out the final domain updates.'''
 		if new_domains == CONTRADICTION:
-			return (CONTRADICTION, ims, set([]), set([]))
+			return (CONTRADICTION, ims)
 		elif len(new_domains) > 0:
 			for var, new_domain in new_domains.items():
 				csp.update_domain(var, new_domain)
 			return (DOMAINS_REDUCED, ims, set(new_domains.keys()))
 		else:
-			return (DOMAINS_INTACT, ims, set([]))	
+			return (DOMAINS_INTACT, ims)	

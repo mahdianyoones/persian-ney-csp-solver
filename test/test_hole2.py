@@ -6,19 +6,22 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 from csp import CSP
-from hole1A import HOLE1A
+from hole2 import HOLE2
 from spec import specs
 from constants import *
 
-class Test_HOLE1A(unittest.TestCase):
+class Test_HOLE2(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
 
-		L1 + L2 + L3 + S < h1
+        L1 + L2 + L3 + S < h2
+
+        Note that this relation is just like that of hole1A. The only
+        difference is the value of the constant S.
 	'''
 			
 	def setUp(self):
 		self.__csp = CSP()
-		self.__sut = HOLE1A(specs["C"])
+		self.__sut = HOLE2(specs["C"])
 
 	def __reset_csp(self):
 		domain = {"min": 1, "max": 1000}
@@ -36,10 +39,10 @@ class Test_HOLE1A(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 48)
+		csp.assign("L2", 28)
 		csp.update_domain("L1", {"min": 131, "max": 131})
 		# act
-		output = self.__sut.establish(csp, "L3", 122)
+		output = self.__sut.establish(csp, "L3", 160)
 		# assess
 		self.assertEqual(output[0], DOMAINS_INTACT)
 		self.assertEqual(output[1], {"L1"})
@@ -59,10 +62,10 @@ class Test_HOLE1A(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 48)
+		csp.assign("L2", 28)
 		csp.update_domain("L1", {"min": 131, "max": 132})
 		# act
-		output = self.__sut.establish(csp, "L3", 122)
+		output = self.__sut.establish(csp, "L3", 160)
 		# assess
 		expected = (DOMAINS_REDUCED, {"L1"}, {"L1"})
 		self.assertEqual(output, expected)
@@ -80,10 +83,10 @@ class Test_HOLE1A(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 48)
+		csp.assign("L2", 28)
 		csp.update_domain("L1", {"min": 132, "max": 132})
 		# act
-		output = self.__sut.establish(csp, "L3", 122)
+		output = self.__sut.establish(csp, "L3", 160)
 		# assess
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L1"})
@@ -101,8 +104,8 @@ class Test_HOLE1A(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.update_domain("L1", {"min": 131, "max": 131})
-		csp.update_domain("L2", {"min": 48, "max": 48})
-		csp.update_domain("L3", {"min": 122, "max": 122})
+		csp.update_domain("L2", {"min": 28, "max": 28})
+		csp.update_domain("L3", {"min": 160, "max": 160})
 		# act
 		output = self.__sut.propagate(csp, {"L1", "L2"})
 		# assess
@@ -126,8 +129,8 @@ class Test_HOLE1A(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.update_domain("L1", {"min": 131, "max": 132})
-		csp.update_domain("L2", {"min": 48, "max": 49})
-		csp.update_domain("L3", {"min": 122, "max": 123})
+		csp.update_domain("L2", {"min": 28, "max": 29})
+		csp.update_domain("L3", {"min": 160, "max": 161})
 		# act
 		output = self.__sut.propagate(csp, {"L1", "L2"})
 		# assess
@@ -137,8 +140,8 @@ class Test_HOLE1A(unittest.TestCase):
 		L2 = self.__csp.get_domain("L2")
 		L3 = self.__csp.get_domain("L3")
 		self.assertEqual(L1, {"min": 131, "max": 131})
-		self.assertEqual(L2, {"min": 48, "max": 48})
-		self.assertEqual(L3, {"min": 122, "max": 122})
+		self.assertEqual(L2, {"min": 28, "max": 28})
+		self.assertEqual(L3, {"min": 160, "max": 160})
 		
 	def test_L1L2L3_contradiction(self):
 		'''Asserts that L1, L2, and L3 cannot be reduced; contradiction.
@@ -151,8 +154,8 @@ class Test_HOLE1A(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.update_domain("L1", {"min": 132, "max": 132})
-		csp.update_domain("L2", {"min": 48, "max": 48})
-		csp.update_domain("L3", {"min": 122, "max": 122})
+		csp.update_domain("L2", {"min": 28, "max": 28})
+		csp.update_domain("L3", {"min": 160, "max": 160})
 		# act
 		output = self.__sut.propagate(csp, {"L1"})
 		# assess

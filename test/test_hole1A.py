@@ -14,6 +14,8 @@ class Test_HOLE1A(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
 
 		L1 + L2 + L3 + S < h1
+        
+		Each test case represents an equivalence partition.		
 	'''
 			
 	def setUp(self):
@@ -28,10 +30,12 @@ class Test_HOLE1A(unittest.TestCase):
 	
 	def test_L1_consistent(self):
 		'''Asserts L1 is examined and is consistnet.
-		
+
 		Pre-conditions:
-		
-		min_L1 < h1 - S - (A_L2 + L3_curvar)
+
+		min_L1 < h1 - S - A_L2 - L3_curvar
+ 		max_L1 < h1 - s - A_L2 - L3_curvar
+		min_L1 <= max_L1		
 		'''
 		# arrange
 		self.__reset_csp()
@@ -106,7 +110,7 @@ class Test_HOLE1A(unittest.TestCase):
 		# act
 		output = self.__sut.propagate(csp, {"L1", "L2"})
 		# assess
-		expected = (DOMAINS_INTACT, {"L1", "L2", "L3"}, set([]))
+		expected = (DOMAINS_INTACT, {"L1", "L2", "L3"})
 		self.assertEqual(output, expected)
 		
 	def test_L1L2L3_reduce(self):
@@ -261,13 +265,3 @@ class Test_HOLE1A(unittest.TestCase):
 		output = self.__sut.propagate(csp, {"L3"})
 		# assess
 		self.assertEqual(output[1], {"L1", "L2"})
-		
-	def test_propagate_examines_L1L2L3(self):
-		'''Asserts that only L1, L2 and L3 are examined by propagate.'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		# act
-		output = self.__sut.propagate(csp, {"L1", "L2"})
-		# assess
-		self.assertEqual(output[1], {"L1", "L2", "L3"})

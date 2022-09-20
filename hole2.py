@@ -32,10 +32,8 @@ class HOLE2():
 	the sum of all nodes add up to the desired length of the Ney, and 
 	that the location of holes are gauranteed not to fall on
 	the junctions between the nodes, we are able to make holes
-	on their exact location.
+	on their exact location.'''
 	
-	This constraint works with hole1B hand-in-hand to make sure that the
-	first hole falls on node 4 and not no any junction.'''
 	def __init__(self, spec):
 		self.__h = spec["h2"]
 		self.__space = spec["hmarg"] * 2
@@ -47,7 +45,7 @@ class HOLE2():
 		}
 	
 	def establish(self, csp, curvar, value):
-		'''Establishes hole1A domain consistency.
+		'''Establishes hole2 domain consistency.
 
 		w.r.t. the assignment curvar: value.'''
 		A = csp.get_assignment()
@@ -62,24 +60,24 @@ class HOLE2():
 		return self.__update(csp, new_domains, ims)
 	
 	def propagate(self, csp, reduced_vars):
-		'''Maintains bounds consistency for hole1A due to propagation.'''
+		'''Maintains bounds consistency for hole2 due to propagation.'''
 		A = csp.get_assignment()
 		ims = set([])
 		for reduced_var in reduced_vars:
 			_ims = self.__impactables(A, reduced_var, self.__impact_map)
 			ims.update(_ims)
 		if len(ims) == 0:
-			return (DOMAINS_INTACT, set([]), set([]))
+			return (DOMAINS_INTACT, set([]))
 		D = csp.get_domains()
 		lowers = self.__lowers(A, D)
 		h = self.__h
 		s = self.__space
-		if self.__lowers_inconsistent(D, lowers, h, s):
-			return (CONTRADICTION, ims, set([]))
+		if self.__lowers_inconsistent(lowers, h, s):
+			return (CONTRADICTION, ims)
 		new_domains = self.__new_domains(D, lowers, ims, h, s)
 		return self.__update(csp, new_domains, ims)
 	
-	def __lowers_inconsistent(self, D, lowers, h, s):
+	def __lowers_inconsistent(self, lowers, h, s):
 		'''Checks the consistency of variables' lower bounds.'''
 		if lowers["L1"] >= h - lowers["L2"] - lowers["L3"] - s:
 			return True
@@ -135,10 +133,10 @@ class HOLE2():
 	def __update(self, csp, new_domains, ims):
 		'''Carries out the final domain updates.'''
 		if new_domains == CONTRADICTION:
-			return (CONTRADICTION, ims, set([]), set([]))
+			return (CONTRADICTION, ims)
 		elif len(new_domains) > 0:
 			for var, new_domain in new_domains.items():
 				csp.update_domain(var, new_domain)
 			return (DOMAINS_REDUCED, ims, set(new_domains.keys()))
 		else:
-			return (DOMAINS_INTACT, ims, set([]))
+			return (DOMAINS_INTACT, ims)

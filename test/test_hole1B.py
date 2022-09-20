@@ -14,8 +14,8 @@ class Test_HOLE1B(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
 
 		L1 + L2 + L3 + L4 - S > h1
-	'''
-			
+
+        Each test case represents an equivalence partition.'''
 	def setUp(self):
 		self.__csp = CSP()
 		self.__sut = HOLE1B(specs["C"])

@@ -2,48 +2,104 @@ from constants import *
 import copy
 
 class HOLE3():
-	''' Establishes h3 consistency for L1, L2, L3, and L4.
+	'''Establishes L1 + L2 + L3 + L4 + S < h3.
 	
-	This constraints guarantees that the 3st hole falls on the beginning of 
-	node 5. The relation L1 + L2 + L3 + L4 + 10 < h3 must hold for a 
-	consistent assignment.
-	
-	h3 in the above relation is the length of hole 3 from top, and 10 is the
-	minimum space required between the junction of nodes 4&5 and the 3rd
-	hole.
-	
-	Direct updates:
+	This constraint guarantees that the 3rd hole falls somewhere AFTER the 
+	junction of nodes 4 & 5, and not on the junction itself.
 
-		upper1 = h3 - ( lower2 + lower3 + lower4 + 10)
-		upper2 = h3 - ( lower1 + lower3 + lower4 + 10)
-		upper3 = h3 - ( lower1 + lower2 + lower4 + 10)
-		upper4 = h3 - ( lower1 + lower2 + lower3 + 10)
+	It also gaurantees that the hole falls on node 5.
 	
-	Indirect updates:
+	From the relation, the following inequalities can be derived:
+	
+	1) L1_max < h3 - L2_min - L3_min - L4_min - S
+	2) L2_max < h3 - L1_min - L3_min - L4_min - S
+	3) L3_max < h3 - L1_min - L2_min - L4_min - S
+	4) L4_max < h3 - L1_min - L2_min - L3_min - S
+	
+	Note that on the right side of the inequalities, L1_min, L2_min, L3_min, 
+	and L4_min may be replaced with the assigned value for L1, L2, L3, and L4 
+	respectively.
+	
+	However, when neither of them are assigned (or is being assigned), their
+	current lower bound is used.
 
- 		lower1 -> upper2, upper3, upper4
- 		lower2 -> upper1, upper3, upper4
- 		lower3 -> upper1, upper2, upper4
- 		lower4 -> upper1, upper2, upper3
-
-		in that, if lower bound of L1 (i.e. self.csp.D["L1"]["min"]) is reduced
-		then, upper bounds of L2, L3, and L4 could be impacted.
+	The algorithm performs the following assignments to make the boundaries
+	consistent:
 		
-		However, for the sake of simplicity, this algorithm checks all uppers 
-		if any lower changes.
-	'''		
-	def __init__(self, csp):
-		self.__csp = csp		
-		self.__h = csp.get_spec("h3")
-		self.__space = csp.get_spec["hmarg"] * 2
+ 	from 1,	L1_max = h3 - L2_min - L3_min - L4_min - S - 1
+	from 2,	L2_max = h3 - L1_min - L3_min - L4_min - S - 1
+	from 3,	L3_max = h3 - L1_min - L2_min - L4_min - S - 1
+	from 4,	L4_max = h3 - L1_min - L2_min - L3_min - S - 1
+		
+	h3 is the length of hole 3 from top, and S is the minimum hole junction
+	space between nodes 4 & 5 and the 3st hole.
+
+	Note that we do not enforce any exact length for nodes. As long as
+	the sum of all nodes add up to the desired length of the Ney, and 
+	that the location of holes are gauranteed not to fall on
+	the junctions between the nodes, we are able to make holes
+	on their exact location.'''
+
+	def __init__(self, spec):
+		self.__h = spec["h3"]
+		self.__space = spec["hmarg"] * 2
 		self.__impact_map = {
 			"L1": {"L2", "L3", "L4"},
 			"L2": {"L1", "L3", "L4"},
 			"L3": {"L1", "L2", "L4"},
 			"L4": {"L1", "L2", "L3"}		
 		}
+
+	def establish(self, csp, curvar, value):
+		'''Establishes hole3 domain consistency.
+
+		w.r.t. the assignment curvar: value.'''
+		A = csp.get_assignment()
+		ims = self.__impactables(A, curvar, self.__impact_map)
+		if len(ims) == 0:
+			return (DOMAINS_INTACT, set([]))
+		D = csp.get_domains()
+		lowers = self.__lowers(A, D, curvar, value)
+		h = self.__h
+		s = self.__space
+		new_domains = self.__new_domains(D, lowers, ims, h, s)		
+		return self.__update(csp, new_domains, ims)
+
+	def propagate(self, csp, reduced_vars):
+		'''Maintains bounds consistency for hole3 due to propagation.'''
+		A = csp.get_assignment()
+		ims = set([])
+		for reduced_var in reduced_vars:
+			_ims = self.__impactables(A, reduced_var, self.__impact_map)
+			ims.update(_ims)
+		if len(ims) == 0:
+			return (DOMAINS_INTACT, set([]))
+		D = csp.get_domains()
+		lowers = self.__lowers(A, D)
+		h = self.__h
+		s = self.__space
+		if self.__lowers_inconsistent(lowers, h, s):
+			return (CONTRADICTION, ims, set([]))
+		new_domains = self.__new_domains(D, lowers, ims, h, s)
+		return self.__update(csp, new_domains, ims)
 	
-	def __lowers(self, A, D):
+	def __lowers_inconsistent(self, lows, h, s):
+		'''Checks the consistency of variables' lower bounds.
+		
+		If the lower bounds are inconsistent, it is a contradiction.
+
+		This is a mathematical function.'''
+		if lows["L1"] >= h - lows["L2"] - lows["L3"] - lows["L4"] - s:
+			return True
+		if lows["L2"] >= h - lows["L1"] - lows["L3"] - lows["L4"] - s:
+			return True
+		if lows["L3"] >= h - lows["L1"] - lows["L2"] - lows["L4"] - s:
+			return True
+		if lows["L4"] >= h - lows["L1"] - lows["L2"] - lows["L3"] - s:
+			return True
+		return False
+			
+	def __lowers(self, A, D, curvar=None, value=None):
 		'''A mathematical function.'''
 		lowers = {}
 		for var in {"L1", "L2", "L3", "L4"}:
@@ -51,64 +107,50 @@ class HOLE3():
 				lowers[var] = A[var]
 			else:
 				lowers[var] = D[var]["min"]
+		if curvar != None:
+			lowers[curvar] = value
 		return lowers
-	
+		
 	def __impactables(self, A, curvar, imap):
 		'''A mathematical function.'''
-		ims = {}
+		ims = set([])
 		for var in imap[curvar]:
 			if not var in A:
 				ims.add(var)
 		return ims
 	
-	def __new_uppers(self, lws, ims, h, s):
-		'''A mathematical function.'''
+	def __inbounds(self, val, bounds):
+ 		return val >= bounds["min"] and val <= bounds["max"]
+ 	
+	def __new_domains(self, D, lows, ims, h, s):
+		'''Carries out the assignments.
+		
+		This is a mathematical function.'''
 		ups = {}
 		if "L1" in ims:
-			ups["L1"] = h-(lws["L2"]+lws["L3"]+lws["L4"]+s)
+			ups["L1"] = h - lows["L2"] - lows["L3"] - lows["L4"] - s - 1
 		if "L2" in ims:
-			ups["L2"] = h-(lws["L1"]+lws["L3"]+lws["L4"]+s)
+			ups["L2"] = h - lows["L1"] - lows["L3"] - lows["L4"] - s - 1
 		if "L3" in ims:
-			ups["L3"] = h-(lws["L1"]+lws["L2"]+lws["L4"]+s)
+			ups["L3"] = h - lows["L1"] - lows["L2"] - lows["L4"] - s - 1
 		if "L4" in ims:
-			ups["L4"] = h-(lws["L1"]+lws["L2"]+lws["L3"]+s)
-		return ups
-	
-	def __confset(self, ims):
-		return {"L1", "L2", "L3", "L4"}.difference(ims)	
-	
-	def b_update(self, reduced_vars):
-		'''Establishes h3 indirect consistency.'''
-		A = self.__csp.get_assignment()
-		ims = set([])
-		for reduced_var in reduced_vars:
-			_ims = self.__impactables(A, reduced_var, self.__impact_map)
-			ims.update(_ims)
-		return self.__establish(A, ims)
-	
-	def __establish(A, ims):
-		'''Implements both direct and indirect consistency for h3.'''	
-		if len(ims) == 0:
-			return (DIMAINS_INTACT, set([]))
-		D = self.__csp.get_domains()
-		lowers = self.__lowers(A, D)
-		h = self.__h
-		s = self.__space
-		new_uppers = self.__new_uppers(lowers, ims, h, s)
-		impacted = set([])
-		for var, new_upper in new_uppers.items():
-			if new_upper < D[var]["min"]:
-				return (CONTRADICTION, self.__confset(ims), "h3")
+			ups["L4"] = h - lows["L1"] - lows["L2"] - lows["L3"] - s - 1
+		new_domains = {}			
+		for var, new_upper in ups.items():
+			if not self.__inbounds(new_upper, D[var]):
+				return CONTRADICTION
 			if new_upper < D[var]["max"]:
-				impacted.add(var)
 				new_domain = {"min": D[var]["min"], "max": new_upper}
-				self.__csp.update_d(var, new_domain)
-		if len(impacted) == 0:
-			return (DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, set([]))
-				
-	def establish(self, curvar, value):
-		'''Establishes h3 direct consistency.'''
-		A = self.__csp.get_assignment()
-		ims = self.__impactables(A, curvar, self.__impact_map)
-		return self.__establish(A, ims)				
+				new_domains[var] = new_domain
+		return new_domains
+			
+	def __update(self, csp, new_domains, ims):
+		'''Carries out the final domain updates.'''
+		if new_domains == CONTRADICTION:
+			return (CONTRADICTION, ims)
+		elif len(new_domains) > 0:
+			for var, new_domain in new_domains.items():
+				csp.update_domain(var, new_domain)
+			return (DOMAINS_REDUCED, ims, set(new_domains.keys()))
+		else:
+			return (DOMAINS_INTACT, ims)

@@ -73,12 +73,12 @@ class HOLE1B():
 		uppers = self.__uppers(A, D)
 		h = self.__h
 		s = self.__space
-		if self.__uppers_inconsistent(D, uppers, h, s):
+		if self.__uppers_inconsistent(uppers, h, s):
 			return (CONTRADICTION, ims)		
 		new_domains = self.__new_domains(D, uppers, ims, h, s)
 		return self.__update(csp, new_domains, ims)
 	
-	def __uppers_inconsistent(self, D, ups, h, s):
+	def __uppers_inconsistent(self, ups, h, s):
 		'''Checks the consistency of variables' upper bounds.'''
 		if ups["L1"] <= h - ups["L2"] - ups["L3"] - ups["L4"] - s:
 			return True

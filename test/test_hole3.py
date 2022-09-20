@@ -6,24 +6,30 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 from csp import CSP
-from hole2 import HOLE2
+from hole3 import HOLE3
 from spec import specs
 from constants import *
 
-class Test_HOLE2(unittest.TestCase):
+class Test_HOLE3(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
 
-        L1 + L2 + L3 + S < h2
+		L1 + L2 + L3 + L4 + S < h3
+        
+		Each test case represents an equivalence partition.
 
-        Note that this relation is just like that of hole1A. The only
-        difference is the value of the constant S.
+        S = 20
+        h3 = 371
 
-        Each test case represents an equivalence partition.
+        L1 + L2 + L3 + L4 + 20 < 380
+
+        L1 < 371 - 20 - L2 - L3 - L4
+        
+        => L1 < 351 - L2 - L3 - L4
 	'''
 			
 	def setUp(self):
 		self.__csp = CSP()
-		self.__sut = HOLE2(specs["C"])
+		self.__sut = HOLE3(specs["C"])
 
 	def __reset_csp(self):
 		domain = {"min": 1, "max": 1000}
@@ -36,15 +42,19 @@ class Test_HOLE2(unittest.TestCase):
 		
 		Pre-conditions:
 		
-		min_L1 < h1 - S - (A_L2 + L3_curvar)
+		min_L1 < h3 - S - A_L2 - A_L4 - L3_curvar
+
+        180 < 371 - 20 - 24 - 24 - 122
+        180 < 181
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 28)
-		csp.update_domain("L1", {"min": 131, "max": 131})
+		csp.assign("L2", 24)
+		csp.assign("L4", 24)
+		csp.update_domain("L1", {"min": 180, "max": 180})
 		# act
-		output = self.__sut.establish(csp, "L3", 160)
+		output = self.__sut.establish(csp, "L3", 122)
 		# assess
 		self.assertEqual(output[0], DOMAINS_INTACT)
 		self.assertEqual(output[1], {"L1"})
@@ -54,96 +64,118 @@ class Test_HOLE2(unittest.TestCase):
 		
 		Pre-conditions:
 		
-		min_L1 < h1 - S - (A_L2 + L3_curvar)
+		min_L1 < h3 - S - A_L2 - A_L4 - L3_curvar
 
-		max_L1 => h1 - s - (A_L2 + L3_curvar)
-		
+        180 < 371 - 20 - 24 - 24 - 122
+        180 < 181
+
+		max_L1 >= h3 - S - A_L2 - A_L4 - L3_curvar
+
+        181 >= 371 - 20 - 24 - 24 - 122
+        181 >= 181
+
 		Lower bound is consistnet.
 		Upper bound can be made consistnet.
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 28)
-		csp.update_domain("L1", {"min": 131, "max": 132})
+		csp.assign("L2", 24)
+		csp.assign("L4", 24)
+		csp.update_domain("L1", {"min": 180, "max": 181})
 		# act
-		output = self.__sut.establish(csp, "L3", 160)
+		output = self.__sut.establish(csp, "L3", 122)
 		# assess
 		expected = (DOMAINS_REDUCED, {"L1"}, {"L1"})
 		self.assertEqual(output, expected)
 		L1 = self.__csp.get_domain("L1")
-		self.assertEqual(L1, {"min": 131, "max": 131})
+		self.assertEqual(L1, {"min": 180, "max": 180})
 
 	def test_L1_contradiction(self):
 		'''Asserts that L1 cannot be reduced, hence contradiction occurs.
 		
 		Pre-conditions:
 		
-		Min_L1 >= h1 - S - (A_L2 + L3_curvar)
+		min_L1 >= h3 - S - A_L2 - A_L4 - L3_curvar
 
+        182 >= 371 - 20 - 24 - 24 - 122
+        182 >= 181
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 28)
-		csp.update_domain("L1", {"min": 132, "max": 132})
+		csp.assign("L2", 24)
+		csp.assign("L4", 24)
+		csp.update_domain("L1", {"min": 182, "max": 182})
 		# act
-		output = self.__sut.establish(csp, "L3", 160)
+		output = self.__sut.establish(csp, "L3", 122)
 		# assess
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L1"})
 
-	def test_L1L2L3_consistent(self):
-		'''Asserts that L1, L2, and L3 are consistnet.
+	def test_L1L2L3L4_consistent(self):
+		'''Asserts that L1, L2, L3, and L4 are consistnet.
 		
 		Pre-conditions:
 		
-		min_L1 < h1 - S - (min_L2 + min_L3)
-		min_L2 < h1 - S - (min_L1 + min_L3)
-		min_L3 < h1 - S - (min_L1 + min_L2)
-		'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.update_domain("L1", {"min": 131, "max": 131})
-		csp.update_domain("L2", {"min": 28, "max": 28})
-		csp.update_domain("L3", {"min": 160, "max": 160})
-		# act
-		output = self.__sut.propagate(csp, {"L1", "L2"})
-		# assess
-		expected = (DOMAINS_INTACT, {"L1", "L2", "L3"})
-		self.assertEqual(output, expected)
-		
-	def test_L1L2L3_reduce(self):
-		'''Asserts that L1, L2, and L3 get reduced when inconsistent.
-		
-		Pre-conditions:
-		
-		max_L1 => h1 - S - (min_L2 + min_L3)
-		max_L2 => h1 - S - (min_L1 + min_L3)
-		max_L3 => h1 - S - (min_L1 + min_L2)
+        L1_max < h3 - L2_min - L3_min - L4_min - S
+        L2_max < h3 - L1_min - L3_min - L4_min - S
+        L3_max < h3 - L1_min - L2_min - L4_min - S
+        L4_max < h3 - L1_min - L2_min - L3_min - S
 
-		min_L1 < h1 - S - (min_L2 + min_L3)
-		min_L2 < h1 - S - (min_L1 + min_L3)
-		min_L3 < h1 - S - (min_L1 + min_L2)
+        180 < 371 - 20 - 24 - 24 - 122
+
+		180 < 181
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.update_domain("L1", {"min": 131, "max": 132})
-		csp.update_domain("L2", {"min": 28, "max": 29})
-		csp.update_domain("L3", {"min": 160, "max": 161})
+		csp.update_domain("L1", {"min": 180, "max": 180})
+		csp.update_domain("L2", {"min": 24, "max": 24})
+		csp.update_domain("L3", {"min": 122, "max": 122})
+		csp.update_domain("L4", {"min": 24, "max": 24})
 		# act
-		output = self.__sut.propagate(csp, {"L1", "L2"})
+		output = self.__sut.propagate(csp, {"L1", "L2", "L3"})
 		# assess
-		expected = (DOMAINS_REDUCED, {"L1", "L2", "L3"}, {"L1", "L2", "L3"})
+		expected = (DOMAINS_INTACT, {"L1", "L2", "L3", "L4"})
 		self.assertEqual(output, expected)
+		
+	def test_L1L2L3L4_reduce(self):
+		'''Asserts that L1, L2, L3, and L4 get reduced when inconsistent.
+		
+		Pre-conditions:
+		
+        L1_max >= h3 - L2_min - L3_min - L4_min - S
+        L2_max >= h3 - L1_min - L3_min - L4_min - S
+        L3_max >= h3 - L1_min - L2_min - L4_min - S
+        L4_max >= h3 - L1_min - L2_min - L3_min - S
+
+        L1_min < h3 - L2_min - L3_min - L4_min - S
+        L2_min < h3 - L1_min - L3_min - L4_min - S
+        L3_min < h3 - L1_min - L2_min - L4_min - S
+        L4_min < h3 - L1_min - L2_min - L3_min - S
+		'''
+		# arrange
+		self.__reset_csp()
+		csp = self.__csp
+		csp.update_domain("L1", {"min": 180, "max": 181})
+		csp.update_domain("L2", {"min": 24, "max": 25})
+		csp.update_domain("L3", {"min": 122, "max": 123})
+		csp.update_domain("L4", {"min": 24, "max": 25})
+		# act
+		output = self.__sut.propagate(csp, {"L1", "L2", "L3"})
+		# assess
+		self.assertEqual(output[0], DOMAINS_REDUCED)
+		self.assertEqual(output[1], {"L1", "L2", "L3", "L4"})
+		self.assertEqual(output[2], {"L1", "L2", "L3", "L4"})
 		L1 = self.__csp.get_domain("L1")
 		L2 = self.__csp.get_domain("L2")
 		L3 = self.__csp.get_domain("L3")
-		self.assertEqual(L1, {"min": 131, "max": 131})
-		self.assertEqual(L2, {"min": 28, "max": 28})
-		self.assertEqual(L3, {"min": 160, "max": 160})
+		L4 = self.__csp.get_domain("L4")
+		self.assertEqual(L1, {"min": 180, "max": 180})
+		self.assertEqual(L2, {"min": 24, "max": 24})
+		self.assertEqual(L3, {"min": 122, "max": 122})
+		self.assertEqual(L4, {"min": 24, "max": 24})
 		
 	def test_establish_examines_L2(self):
 		'''Asserts that only L2 is examined by establish.'''
@@ -151,17 +183,7 @@ class Test_HOLE2(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L1", 1)		
-		# act
-		output = self.__sut.establish(csp, "L3", 1)
-		# assess
-		self.assertEqual(output[1], {"L2"})
-		
-	def test_establish_examines_L2(self):
-		'''Asserts that only L2 is examined by establish.'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.assign("L1", 1)		
+		csp.assign("L4", 1)		
 		# act
 		output = self.__sut.establish(csp, "L3", 1)
 		# assess
@@ -173,6 +195,7 @@ class Test_HOLE2(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L2", 1)
+		csp.assign("L4", 1)
 		# act
 		output = self.__sut.establish(csp, "L1", 1)
 		# assess
@@ -183,7 +206,8 @@ class Test_HOLE2(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 1)		
+		csp.assign("L2", 1)	
+		csp.assign("L4", 1)	
 		# act
 		output = self.__sut.propagate(csp, {"L3"})
 		# assess
@@ -195,6 +219,7 @@ class Test_HOLE2(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L1", 1)		
+		csp.assign("L4", 1)		
 		# act
 		output = self.__sut.propagate(csp, {"L3"})
 		# assess
@@ -205,7 +230,8 @@ class Test_HOLE2(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.assign("L2", 1)		
+		csp.assign("L2", 1)
+		csp.assign("L4", 1)
 		# act
 		output = self.__sut.propagate(csp, {"L1"})
 		# assess
@@ -216,6 +242,7 @@ class Test_HOLE2(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
+		csp.assign("L4", 1)
 		# act
 		output = self.__sut.propagate(csp, {"L2"})
 		# assess
@@ -226,6 +253,7 @@ class Test_HOLE2(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
+		csp.assign("L4", 1)
 		# act
 		output = self.__sut.propagate(csp, {"L1"})
 		# assess
@@ -236,17 +264,18 @@ class Test_HOLE2(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
+		csp.assign("L4", 1)
 		# act
 		output = self.__sut.propagate(csp, {"L3"})
 		# assess
 		self.assertEqual(output[1], {"L1", "L2"})
-		
+
 	def test_propagate_examines_L1L2L3(self):
 		'''Asserts that only L1, L2 and L3 are examined by propagate.'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
 		# act
-		output = self.__sut.propagate(csp, {"L1", "L2"})
+		output = self.__sut.propagate(csp, {"L4"})
 		# assess
 		self.assertEqual(output[1], {"L1", "L2", "L3"})

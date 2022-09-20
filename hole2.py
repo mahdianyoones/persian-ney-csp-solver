@@ -3,7 +3,9 @@ import copy
 
 class HOLE2():
 	''' Establishes L1 + L2 + L3 + S < h2.
-	
+
+	S = hole_margin * 2 + hole_diameter * 1
+
 	This constraint guarantees that the 1st hole falls somewhere AFTER the 
 	junction of nodes 3 & 4, and not on the junction itself.
 

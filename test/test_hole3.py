@@ -17,14 +17,14 @@ class Test_HOLE3(unittest.TestCase):
         
 		Each test case represents an equivalence partition.
 
-        S = 20
+        S = 10
         h3 = 371
 
-        L1 + L2 + L3 + L4 + 20 < 380
+        L1 + L2 + L3 + L4 + 10 < 371
 
-        L1 < 371 - 20 - L2 - L3 - L4
+        L1 < 371 - 10 - L2 - L3 - L4
         
-        => L1 < 351 - L2 - L3 - L4
+        => L1 < 361 - L2 - L3 - L4
 	'''
 			
 	def setUp(self):
@@ -44,15 +44,15 @@ class Test_HOLE3(unittest.TestCase):
 		
 		min_L1 < h3 - S - A_L2 - A_L4 - L3_curvar
 
-        180 < 371 - 20 - 24 - 24 - 122
-        180 < 181
+        190 < 371 - 10 - 24 - 24 - 122
+        190 < 191
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L2", 24)
 		csp.assign("L4", 24)
-		csp.update_domain("L1", {"min": 180, "max": 180})
+		csp.update_domain("L1", {"min": 190, "max": 190})
 		# act
 		output = self.__sut.establish(csp, "L3", 122)
 		# assess
@@ -66,13 +66,13 @@ class Test_HOLE3(unittest.TestCase):
 		
 		min_L1 < h3 - S - A_L2 - A_L4 - L3_curvar
 
-        180 < 371 - 20 - 24 - 24 - 122
-        180 < 181
+        190 < 371 - 10 - 24 - 24 - 122
+        190 < 191
 
 		max_L1 >= h3 - S - A_L2 - A_L4 - L3_curvar
 
-        181 >= 371 - 20 - 24 - 24 - 122
-        181 >= 181
+        191 >= 371 - 10 - 24 - 24 - 122
+        191 >= 191
 
 		Lower bound is consistnet.
 		Upper bound can be made consistnet.
@@ -82,14 +82,14 @@ class Test_HOLE3(unittest.TestCase):
 		csp = self.__csp
 		csp.assign("L2", 24)
 		csp.assign("L4", 24)
-		csp.update_domain("L1", {"min": 180, "max": 181})
+		csp.update_domain("L1", {"min": 190, "max": 191})
 		# act
 		output = self.__sut.establish(csp, "L3", 122)
 		# assess
 		expected = (DOMAINS_REDUCED, {"L1"}, {"L1"})
 		self.assertEqual(output, expected)
 		L1 = self.__csp.get_domain("L1")
-		self.assertEqual(L1, {"min": 180, "max": 180})
+		self.assertEqual(L1, {"min": 190, "max": 190})
 
 	def test_L1_contradiction(self):
 		'''Asserts that L1 cannot be reduced, hence contradiction occurs.
@@ -98,15 +98,15 @@ class Test_HOLE3(unittest.TestCase):
 		
 		min_L1 >= h3 - S - A_L2 - A_L4 - L3_curvar
 
-        182 >= 371 - 20 - 24 - 24 - 122
-        182 >= 181
+        191 >= 371 - 10 - 24 - 24 - 122
+        191 >= 191
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L2", 24)
 		csp.assign("L4", 24)
-		csp.update_domain("L1", {"min": 182, "max": 182})
+		csp.update_domain("L1", {"min": 191, "max": 191})
 		# act
 		output = self.__sut.establish(csp, "L3", 122)
 		# assess
@@ -123,14 +123,14 @@ class Test_HOLE3(unittest.TestCase):
         L3_max < h3 - L1_min - L2_min - L4_min - S
         L4_max < h3 - L1_min - L2_min - L3_min - S
 
-        180 < 371 - 20 - 24 - 24 - 122
+        190 < 371 - 10 - 24 - 24 - 122
 
-		180 < 181
+		190 < 191
 		'''
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.update_domain("L1", {"min": 180, "max": 180})
+		csp.update_domain("L1", {"min": 190, "max": 190})
 		csp.update_domain("L2", {"min": 24, "max": 24})
 		csp.update_domain("L3", {"min": 122, "max": 122})
 		csp.update_domain("L4", {"min": 24, "max": 24})
@@ -158,7 +158,7 @@ class Test_HOLE3(unittest.TestCase):
 		# arrange
 		self.__reset_csp()
 		csp = self.__csp
-		csp.update_domain("L1", {"min": 180, "max": 181})
+		csp.update_domain("L1", {"min": 190, "max": 191})
 		csp.update_domain("L2", {"min": 24, "max": 25})
 		csp.update_domain("L3", {"min": 122, "max": 123})
 		csp.update_domain("L4", {"min": 24, "max": 25})
@@ -172,7 +172,7 @@ class Test_HOLE3(unittest.TestCase):
 		L2 = self.__csp.get_domain("L2")
 		L3 = self.__csp.get_domain("L3")
 		L4 = self.__csp.get_domain("L4")
-		self.assertEqual(L1, {"min": 180, "max": 180})
+		self.assertEqual(L1, {"min": 190, "max": 190})
 		self.assertEqual(L2, {"min": 24, "max": 24})
 		self.assertEqual(L3, {"min": 122, "max": 122})
 		self.assertEqual(L4, {"min": 24, "max": 24})

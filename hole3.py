@@ -4,6 +4,8 @@ import copy
 class HOLE3():
 	'''Establishes L1 + L2 + L3 + L4 + S < h3.
 	
+	S = hole_margin * 1
+
 	This constraint guarantees that the 3rd hole falls somewhere AFTER the 
 	junction of nodes 4 & 5, and not on the junction itself.
 
@@ -42,7 +44,7 @@ class HOLE3():
 
 	def __init__(self, spec):
 		self.__h = spec["h3"]
-		self.__space = spec["hmarg"] * 2
+		self.__space = spec["hmarg"] * 1
 		self.__impact_map = {
 			"L1": {"L2", "L3", "L4"},
 			"L2": {"L1", "L3", "L4"},

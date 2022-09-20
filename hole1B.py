@@ -4,6 +4,8 @@ import copy
 class HOLE1B():
 	'''Establishes L1 + L2 + L3 + L4 - S > h1.
 	
+	S = hole_margin * 1
+
 	This constraint gauranteed that hole 1 falls somewhere BEFORE 
 	the junction of nodes 4 & 5, and not on the junction.
 

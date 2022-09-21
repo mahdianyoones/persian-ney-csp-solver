@@ -5,6 +5,8 @@ import test_hole1B
 import test_hole2
 import test_hole3
 import test_hole4
+import test_hole5
+import test_hole6
 
 cases = [
 	test_initdomains, 
@@ -12,7 +14,9 @@ cases = [
 	test_hole1B,
 	test_hole2,
 	test_hole3,
-	test_hole4
+	test_hole4,
+	test_hole5,
+	test_hole6
 ]
 
 if __name__ == "__main__":

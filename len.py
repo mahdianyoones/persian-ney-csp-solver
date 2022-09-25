@@ -140,9 +140,6 @@ class LEN():
                     del new_domains[var]
         return new_domains
 
-    def __inbounds(self, val, bounds):
-         return val >= bounds["min"] and val <= bounds["max"]
-
     def __update(self, csp, new_domains, ims):
         '''Carries out the final domain updates.'''
         if new_domains == CONTRADICTION:

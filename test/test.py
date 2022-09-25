@@ -7,6 +7,7 @@ import test_hole3
 import test_hole4
 import test_hole5
 import test_hole6
+import test_len
 
 cases = [
 	test_initdomains, 
@@ -16,7 +17,8 @@ cases = [
 	test_hole3,
 	test_hole4,
 	test_hole5,
-	test_hole6
+	test_hole6,
+	test_len
 ]
 
 if __name__ == "__main__":

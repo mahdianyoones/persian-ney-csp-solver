@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Persian Ney Construction Aid!</h1>
+<p>Welcome to my project!</p>
+<br>
+<br>
+<table border="1">
+{% for rp in reedpieces %}
+<tr>
+    <td>{{rp.label}}</td>
+    <td>{{rp.length}}</td>
+    <td>{{rp.diam}}</td>
+    <td>{{rp.roundness}}</td>
+    <td>{{rp.thickness}}</td>
+</tr>
+{% endfor %}
+</table>
+<p>
+    <a href="add/">Add reed pieces</a>
+</p>
+</body>
+</html>

@@ -73,7 +73,7 @@
 </stylenode>
 </map_styles>
 </hook>
-<hook NAME="AutomaticEdgeColor" COUNTER="88" RULE="ON_BRANCH_CREATION"/>
+<hook NAME="AutomaticEdgeColor" COUNTER="94" RULE="ON_BRANCH_CREATION"/>
 <node TEXT="Initializes the domains of variables" POSITION="right" ID="ID_187230688" CREATED="1661599891025" MODIFIED="1661601249739">
 <icon BUILTIN="button_ok"/>
 <edge COLOR="#0000ff"/>
@@ -82,7 +82,8 @@
 <icon BUILTIN="button_ok"/>
 <edge COLOR="#7c0000"/>
 </node>
-<node TEXT="hole1A consistency" POSITION="right" ID="ID_523386345" CREATED="1662028600772" MODIFIED="1662028611385">
+<node TEXT="hole1A constraint behaviors" FOLDED="true" POSITION="right" ID="ID_523386345" CREATED="1662028600772" MODIFIED="1663579619608">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#7c7c00"/>
 <node TEXT="a partition is a system behavior that is performed for a range of values for an input" ID="ID_1031861582" CREATED="1662028620766" MODIFIED="1662368349727"/>
 <node TEXT="behavior granularity" ID="ID_1338726603" CREATED="1662369266046" MODIFIED="1662369296404">
@@ -160,7 +161,6 @@
     </p>
   </body>
 </html>
-
 </richcontent>
 </node>
 <node ID="ID_1407045773" CREATED="1662099223676" MODIFIED="1662367125582"><richcontent TYPE="NODE">
@@ -175,7 +175,6 @@
     </p>
   </body>
 </html>
-
 </richcontent>
 </node>
 <node ID="ID_494703958" CREATED="1662099304778" MODIFIED="1662367121608"><richcontent TYPE="NODE">
@@ -190,7 +189,6 @@
     </p>
   </body>
 </html>
-
 </richcontent>
 </node>
 </node>
@@ -229,7 +227,6 @@
     </p>
   </body>
 </html>
-
 </richcontent>
 </node>
 <node ID="ID_514505365" CREATED="1662370083617" MODIFIED="1662370138240"><richcontent TYPE="NODE">
@@ -244,7 +241,6 @@
     </p>
   </body>
 </html>
-
 </richcontent>
 </node>
 <node TEXT="however, we only need to test the system for this behavior for one such case" ID="ID_1983954949" CREATED="1662370139330" MODIFIED="1662370197845"/>
@@ -252,95 +248,68 @@
 </node>
 <node TEXT="an exhaustive list of input/value pairs for all the behaviors exists in the spreadsheet file" ID="ID_1894827464" CREATED="1662369229499" MODIFIED="1662370258732"/>
 </node>
-<node TEXT="hole1A propagation" POSITION="right" ID="ID_532605574" CREATED="1661858254888" MODIFIED="1661858265296">
-<edge COLOR="#007c7c"/>
-</node>
-<node TEXT="makes the boundary of variables consistent (mac.indirect)" POSITION="right" ID="ID_141201004" CREATED="1661599914505" MODIFIED="1661601295701">
-<edge COLOR="#ff00ff"/>
-</node>
-<node TEXT="assigns a value to an unassigned variable" POSITION="right" ID="ID_1605713215" CREATED="1661600961655" MODIFIED="1661601087485">
-<edge COLOR="#00ff00"/>
-</node>
-<node TEXT="backtracks to a different value" POSITION="right" ID="ID_942559200" CREATED="1661600672259" MODIFIED="1661600883093">
-<edge COLOR="#00ffff"/>
-</node>
-<node TEXT="backjumps to a different variable" POSITION="right" ID="ID_1159595711" CREATED="1661600858887" MODIFIED="1661600879273">
-<edge COLOR="#0000ff"/>
-</node>
-<node TEXT="terminates" POSITION="right" ID="ID_870337630" CREATED="1661600733335" MODIFIED="1661600734930">
-<edge COLOR="#007c00"/>
-</node>
-<node TEXT="establishes h4 consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_985737405" CREATED="1661008563773" MODIFIED="1661600799557">
-<edge COLOR="#7c007c"/>
-</node>
-<node TEXT="performs h4 bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_556210551" CREATED="1661080399449" MODIFIED="1661600799566">
-<edge COLOR="#007c7c"/>
-</node>
-<node TEXT="establishes h5 consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1701647875" CREATED="1661008563773" MODIFIED="1661600799570">
-<edge COLOR="#7c7c00"/>
-</node>
-<node TEXT="performs h5 bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_63723952" CREATED="1661080404779" MODIFIED="1661600799574">
+<node TEXT="hole1B constraint behaviors" POSITION="right" ID="ID_1105655473" CREATED="1663579548170" MODIFIED="1663579624145">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#ff0000"/>
 </node>
-<node TEXT="establishes h6 consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_288294010" CREATED="1661008563773" MODIFIED="1661600799577">
+<node TEXT="hole2 constraint behaviors" POSITION="right" ID="ID_5459536" CREATED="1663579635716" MODIFIED="1663583858813">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#0000ff"/>
 </node>
-<node TEXT="performs h6 bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_283116556" CREATED="1661080409538" MODIFIED="1661600799581">
+<node TEXT="hole3 constraint behaviors" POSITION="right" ID="ID_791782754" CREATED="1663583859602" MODIFIED="1663761732211">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#00ff00"/>
 </node>
-<node TEXT="establishes d_dec consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_143389757" CREATED="1661008563773" MODIFIED="1661600799584">
+<node TEXT="hole4 constraint behaviors" POSITION="right" ID="ID_1578395523" CREATED="1663761738779" MODIFIED="1663761765966">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#ff00ff"/>
 </node>
-<node TEXT="performs d_dec bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1152814088" CREATED="1661080419926" MODIFIED="1661600799587">
+<node TEXT="hole5 constraint behaviors" POSITION="right" ID="ID_1883075035" CREATED="1663761740643" MODIFIED="1663761765971">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#00ffff"/>
 </node>
-<node TEXT="establishes in_stock consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_10654768" CREATED="1661008563773" MODIFIED="1661600799590">
+<node TEXT="hole6 constraint behaviors" POSITION="right" ID="ID_1119341886" CREATED="1663761742555" MODIFIED="1663761765971">
+<icon BUILTIN="button_ok"/>
 <edge COLOR="#7c0000"/>
 </node>
-<node TEXT="performs in_stock bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1477217227" CREATED="1661080430340" MODIFIED="1661600799593">
-<edge COLOR="#00007c"/>
-</node>
-<node TEXT="establishes l1_half_l2 consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1674793195" CREATED="1661008563773" MODIFIED="1661600799596">
-<edge COLOR="#007c00"/>
-</node>
-<node TEXT="performs l1_half_l2 bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_382016572" CREATED="1661080437690" MODIFIED="1661600799599">
-<edge COLOR="#7c007c"/>
-</node>
-<node TEXT="establishes l_dec consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1479427135" CREATED="1661008563773" MODIFIED="1661600799601">
-<edge COLOR="#007c7c"/>
-</node>
-<node TEXT="performs l_dec bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_145873040" CREATED="1661080448082" MODIFIED="1661600799604">
-<edge COLOR="#7c7c00"/>
-</node>
-<node TEXT="establishes len consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1257229158" CREATED="1661008563773" MODIFIED="1661600799606">
-<edge COLOR="#ff0000"/>
-</node>
-<node TEXT="performs len bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_138805443" CREATED="1661080455207" MODIFIED="1661600799608">
-<edge COLOR="#0000ff"/>
-</node>
-<node TEXT="establishes same_r consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1030975271" CREATED="1661008563773" MODIFIED="1661600799610">
-<edge COLOR="#00ff00"/>
-</node>
-<node TEXT="performs same_r bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1596898600" CREATED="1661080462313" MODIFIED="1661600799612">
+<node TEXT="makes the boundary of variables consistent (mac.indirect)" POSITION="left" ID="ID_141201004" CREATED="1661599914505" MODIFIED="1661601295701">
 <edge COLOR="#ff00ff"/>
 </node>
-<node TEXT="establishes same_th consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_428535701" CREATED="1661008563773" MODIFIED="1661600799614">
+<node TEXT="assigns a value to an unassigned variable" POSITION="left" ID="ID_1605713215" CREATED="1661600961655" MODIFIED="1661601087485">
+<edge COLOR="#00ff00"/>
+</node>
+<node TEXT="backtracks to a different value" POSITION="left" ID="ID_942559200" CREATED="1661600672259" MODIFIED="1661600883093">
 <edge COLOR="#00ffff"/>
 </node>
-<node TEXT="performs same_th bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1837953714" CREATED="1661080467254" MODIFIED="1661600799616">
+<node TEXT="backjumps to a different variable" POSITION="left" ID="ID_1159595711" CREATED="1661600858887" MODIFIED="1661600879273">
+<edge COLOR="#0000ff"/>
+</node>
+<node TEXT="terminates" POSITION="left" ID="ID_870337630" CREATED="1661600733335" MODIFIED="1661600734930">
+<edge COLOR="#007c00"/>
+</node>
+<node TEXT="len constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_1257229158" CREATED="1661008563773" MODIFIED="1664130481979">
+<icon BUILTIN="button_ok"/>
+<edge COLOR="#ff0000"/>
+</node>
+<node TEXT="same_r constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_1030975271" CREATED="1661008563773" MODIFIED="1664134295989">
+<icon BUILTIN="button_ok"/>
+<edge COLOR="#00ff00"/>
+</node>
+<node TEXT="same_t constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_428535701" CREATED="1661008563773" MODIFIED="1664143687718">
+<icon BUILTIN="button_ok"/>
+<edge COLOR="#00ffff"/>
+</node>
+<node TEXT="d_dec constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_143389757" CREATED="1661008563773" MODIFIED="1663761803315">
+<edge COLOR="#ff00ff"/>
+</node>
+<node TEXT="in_stock constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_10654768" CREATED="1661008563773" MODIFIED="1663761810868">
 <edge COLOR="#7c0000"/>
 </node>
-<node TEXT="establishes h2 consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_754624275" CREATED="1661008563773" MODIFIED="1661600799620">
-<edge COLOR="#7c007c"/>
+<node TEXT="l1_half_l2 constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_1674793195" CREATED="1661008563773" MODIFIED="1663761819558">
+<edge COLOR="#007c00"/>
 </node>
-<node TEXT="performs h2 bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_1373024645" CREATED="1661080378508" MODIFIED="1661600799621">
+<node TEXT="l_dec constraint behaviors" LOCALIZED_STYLE_REF="default" POSITION="right" ID="ID_1479427135" CREATED="1661008563773" MODIFIED="1663761830728">
 <edge COLOR="#007c7c"/>
-</node>
-<node TEXT="establishes h3 consistency" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_263837726" CREATED="1661008563773" MODIFIED="1661600799622">
-<edge COLOR="#7c7c00"/>
-</node>
-<node TEXT="performs h3 bound propagation" LOCALIZED_STYLE_REF="default" POSITION="left" ID="ID_451919333" CREATED="1661080392177" MODIFIED="1661600799623">
-<edge COLOR="#ff0000"/>
 </node>
 </node>
 </map>

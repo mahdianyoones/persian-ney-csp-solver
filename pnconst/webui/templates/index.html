@@ -1,20 +1,74 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <style>
+            td, th {
+                text-align: center;
+                vertical-align: center;
+                padding: 5px 15px 5px 15px;
+            }
+            table {
+                border: 1px solid;
+            }            
+        </style>
+    </head>
 <body>
 <h1>Persian Ney Construction Aid!</h1>
-<p>Welcome to my project!</p>
+<p>Welcome to my project! <br>
+
+<p>To construct a Persian Ney, you need to have a few reed pieces at hand and make some measurements.</p>
+
+<p>When you go to a canebroker (a place where canes grows in bunch like a garden), you need to cut a few
+cane branches from the most bottom parts; as shown in the pictures below.</p>
+<p>You can also purchase canes from locals, which usually advertise on Instagram.</p>
+<p>Then you need to put them in a dark and dry place for a few months to get drained.</p>
+<p>Thenafter, you need to cut each cane branch at their junctions, resulting in several chuncks which in this project are called reed pieces.</p>
+<p>Using a culis and a simple ruler, you need to make some measurements for each reed piece.</p>
+<p>
+    <ul>
+        <li>The length of the reed in milimeters.</li>
+        <li>The diamter of the reed in milimeters.</li>
+        <li>The thickness of the reed in milimeters.</li>
+        <li>The roundness of the reed in milimeters.</li>
+    </ul>
+</p>
+<p>Also, you need to label each reed piece so that later you can distinguish them.
+    <br>You can simply label them with integer numbers 1, 2, 3, 4, etc and attach this label to the piece.</p>
+<p>
+    An example is shown below.
+</p>
+<p>
+    Now you let the AI to handle the rest!
+</p>
+<p>
+    Add reed pieces to the database below one by one.<br>
+    Then choose your desired Ney register from the settings.<br>
+    Finally click <b>find solutions</b> in the design section below to get optimal ways to construct your desired Ney!
+    <br>Note that the algorithm tries to find matches for your desired so that the final instruments have perfect frequency and certain chriteria.
+    <br>Also, if you choose more than one register, the algorithm finds the matches for all of them so that you can construct a complete set of Neys with your reed pieces.
+    <br>The latter option is where the power of AI outperforms that of humans in design.
+    <br>
+</p>
 <br>
 <br>
+<p>List of reed pieces added:</p>
 <table border="1">
-{% for rp in reedpieces %}
-<tr>
-    <td>{{rp.label}}</td>
-    <td>{{rp.length}}</td>
-    <td>{{rp.diam}}</td>
-    <td>{{rp.roundness}}</td>
-    <td>{{rp.thickness}}</td>
-</tr>
-{% endfor %}
+    <tr>
+        <th>Label</th>
+        <th>Length</th>
+        <th>Diameter</th>
+        <th>Roundness</th>
+        <th>Thickness</th>
+    </tr>
+    {% for rp in reedpieces %}
+    <tr>
+        <td>{{rp.label}}</td>
+        <td>{{rp.length}}mm</td>
+        <td>{{rp.diam}}mm</td>
+        <td>{{rp.roundness}}mm</td>
+        <td>{{rp.thickness}}mm</td>
+    </tr>
+    {% endfor %}
 </table>
 <p>
     <a href="add/">Add reed pieces</a>

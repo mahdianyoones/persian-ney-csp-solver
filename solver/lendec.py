@@ -10,10 +10,10 @@ class LENDEC():
 		L3 > L4 > 2/3 L3
 		L4 > L5 > 2/3 L4
 		L5 > L6 > 2/3 L5
-		L6 > L7'''
+		L6 > L7
+	
+	TODO: Move the following descriptions into the paper.
 
-	#TODO: Move the following descriptions into the paper.
-	'''
 	This consistency function is called on two occasions:
 		1- An L variable is assigned a value
 		2- Domain of an L variable has been reduced

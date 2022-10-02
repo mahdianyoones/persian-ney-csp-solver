@@ -15,7 +15,7 @@ class Test_INIT_DOMAIN(unittest.TestCase):
 	def setUp(self):
 		self.__sut = CSP()
 		catalog = CATALOG()
-		catalog.setup("measures_of_drained_pieces.csv")
+		catalog.setup("solver/test/pieces.csv")
 		unary = UNARY()
 		unary.unarify(self.__sut, catalog, specs["C"])
 	

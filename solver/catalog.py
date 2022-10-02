@@ -111,15 +111,14 @@ class CATALOG():
 		self.__idxs = {}
 		self.__routes = {}
 
-	def setup(self, csvfile):
+	def setup(self):
 		'''Performs everything required before a query can be executed.
 		
 		This is the first method to invoke, after instantiating an object
 		from the CATALOG class.'''
 		self.__build_idx_objects()
-		self.__index_data(csvfile)
 		self.__setup_query()
-		
+
 	def values(self, key, filters={}):
 		'''Returns values for key, filters include one or two of D,TH,R.'''
 		idx = self.__locate_idx(filters, key=key)
@@ -135,6 +134,21 @@ class CATALOG():
 		if node != NODE_NOT_FOUND:
 			return node.get_meta()
 		return 0.0
+
+	def add_from_csv(self, csvfile):
+		with open(csvfile) as f:
+			reader = csv.reader(f)
+			for p in reader:
+				NO = p[0]
+				L = float(p[1]) * 10 # cm -> mm
+				T = float(p[2])
+				R = float(p[3])
+				D = float(p[4])
+				self.add_piece(T, D, R, L)
+
+	def add_piece(self, T, D, R, L):
+		for idx in self.__idxs.values():
+			idx.index(T, D, R, L)
 
 	def __setup_query(self):
 		'''Helps find the appropriate index given the filters.'''
@@ -155,19 +169,7 @@ class CATALOG():
 	def __build_idx_objects(self):
 		for idx_name in self.__idx_names():
 			self.__idxs[idx_name] = INDEX(idx_name)
-	
-	def __index_data(self, csvfile):
-		with open(csvfile) as f:
-			reader = csv.reader(f)
-			for p in reader:
-				NO = p[0]
-				L = float(p[1]) * 10 # cm -> mm
-				T = float(p[2])
-				R = float(p[3])
-				D = float(p[4])
-				for idx in self.__idxs.values():
-					idx.index(T, D, R, L)
-	
+		
 	def __locate_idx(self, filters, key=""):
 		'''Returns an index that can be queried against.
 		

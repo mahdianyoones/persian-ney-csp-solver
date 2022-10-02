@@ -13,7 +13,11 @@ from constants import *
 class test_SAMEROUND(unittest.TestCase):
     '''Enfroces same roundness constraint to R variables.
 
-    R1 is always assigned first and the rest of variables must'''
+    Partitions:
+
+    a. R1 is not being assigned
+    b. At least one of R2, R3, ... to R7 does not contain the value of R1
+    c. All variables R2, R3, ... to R7 do contain the value of R1'''
 
     def setUp(self):
         self.__csp = CSP()

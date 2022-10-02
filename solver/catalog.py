@@ -111,12 +111,14 @@ class CATALOG():
 		self.__idxs = {}
 		self.__routes = {}
 
-	def setup(self):
+	def setup(self, csvfile=""):
 		'''Performs everything required before a query can be executed.
 		
 		This is the first method to invoke, after instantiating an object
 		from the CATALOG class.'''
 		self.__build_idx_objects()
+		if csvfile != "":
+				self.add_from_csv(csvfile)
 		self.__setup_query()
 
 	def values(self, key, filters={}):

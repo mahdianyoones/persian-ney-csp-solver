@@ -17,6 +17,12 @@ class test_LEN(unittest.TestCase):
 
         Equivalent partitions:
 
+        L1 = len - L2 - L3 - L4 - L5 - L6 - L7
+        L1 > len - L2 - L3 - L4 - L5 - L6 - L7
+        L1 < len - L2 - L3 - L4 - L5 - L6 - L7
+
+        a. A_L7 = len - A_L1 - A_L2 - A_L3 - A_L4 - A_L5 - A_L6
+
         a. Lower & upper are consistent.
         b. Lower & upper are inconsistent. Consistency is possible.
         c. Lower is inconsistent. Consistency Impossible.
@@ -109,7 +115,7 @@ class test_LEN(unittest.TestCase):
             self.__csp.update_domain(var, domain)
         self.__csp.unassign_all()
 
-    def test_consistent_bounds(self):
+    def test_all_consistent(self):
         '''Lower & upper are consistent.
 
             L1 + L2 + L3 + L4 + L5 + L6 + L7 = len
@@ -150,7 +156,7 @@ class test_LEN(unittest.TestCase):
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertIn("L1", output[1])
 
-    def test_bounds_reduce(self):
+    def test_L1_reduce(self):
         ''' Lower & upper are inconsistent. Consistency is possible.
 
             L1 + L2 + L3 + L4 + L5 + L6 + L7 = len
@@ -189,7 +195,7 @@ class test_LEN(unittest.TestCase):
         L1 = self.__csp.get_domain("L1")
         self.assertEqual(L1, {"min": 8, "max": 476})
 
-    def test_lower_contradiction(self):
+    def test_L1_lower_contradiction(self):
         '''Lower is inconsistent. Consistency Impossible.
 
             L1 + L2 + L3 + L4 + L5 + L6 + L7 = len
@@ -219,7 +225,7 @@ class test_LEN(unittest.TestCase):
         self.assertEqual(output[0], CONTRADICTION)
         self.assertIn("L1", output[1])
 
-    def test_upper_contradiction(self):
+    def test_L1_upper_contradiction(self):
         '''Upper is inconsistent. Consistency Impossible.
 
             L1 + L2 + L3 + L4 + L5 + L6 + L7 = len

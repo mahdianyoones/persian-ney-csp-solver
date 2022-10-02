@@ -1,7 +1,21 @@
 from constants import *
 
 class STOCK():
-	'''Establishes consistency W.R.T. in_stock constraint.'''
+	'''Establishes consistency W.R.T. in_stock constraint.
+	
+	This constraint ensures that selected reed properties exist in the
+	stock of reeds. 
+
+	Each reed piece has these properties: Length, thickness, roundness, and 
+	diameter.
+
+	Variables with the same postfix index together must represent a real piece
+	in the database. For example, a reed piece with T1=1mm, D1=18mm, R1=0 might
+	exist in the database, while a reed piece with T1=2mm, D1=18mm, R1=0,
+	L1 = 200mm may not. 
+
+	This constraint checks if assigned values to Ti, Di, and Ri represent
+	pieces in the database or not.'''
 
 	def __init__(self, csp):
 		self.__csp = csp

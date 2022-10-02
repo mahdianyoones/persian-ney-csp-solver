@@ -11,16 +11,21 @@ from spec import specs
 from constants import *
 
 class test_SAMETHICK(unittest.TestCase):
-    '''Enfroces same thickness constraint to T variables.
+    '''Asserts the correct behaviors of the same thickness constraint.
+    
 
-    T1 is always assigned first and the rest of variables must'''
+    Partitions:
+
+    a. T1 is not being assigned
+    b. At least one of T2, T3, ... to T7 does not contain the value of T1
+    c. All variables T2, T3, ... to T7 do contain the value of T1'''
 
     def setUp(self):
         self.__csp = CSP()
         self.__sut = SAMETHICK()
     
     def test_contradiction_occurs(self):
-        '''T1 = some_value, some_value does not exist in at least one domain.
+        '''Asserts contradiction when the value of T1 is not found in one var
         
         T1 = 0
         0 does not exist in T2'''
@@ -31,6 +36,7 @@ class test_SAMETHICK(unittest.TestCase):
         csp.update_domain("T5", {0, 2.5})
         csp.update_domain("T6", {0, 2.5})
         csp.update_domain("T7", {0, 2.5})
+        csp.assign("T1", 0)
         output = self.__sut.establish(csp, "T1", 0)
         self.assertEqual(output[0], CONTRADICTION)
     

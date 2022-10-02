@@ -13,19 +13,7 @@ from constants import *
 class Test_HOLE6(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
 
-		L1 + L2 + L3 + L4 + L5 + S < h6
-        
-		Each test case represents an equivalence partition.
-
-        S = 10
-        h6 = 467
-
-        L1 + L2 + L3 + L4 + L5 + 10 < 467
-
-        L1 < 467 - 10 - L2 - L3 - L4 - L5
-        
-        => L1 < 457 - L2 - L3 - L4 - L5
-	'''
+		L1 + L2 + L3 + L4 + L5 + S < h6.'''
 			
 	def setUp(self):
 		self.__csp = CSP()
@@ -37,62 +25,6 @@ class Test_HOLE6(unittest.TestCase):
 			self.__csp.update_domain(var, domain)	
 		self.__csp.unassign_all()		
 	
-	def test_L1_consistent(self):
-		'''Asserts L1 is examined and is consistnet.
-		
-		Pre-conditions:
-		
-		min_L1 < h6 - S - A_L2 - A_L4 - A_L5 - L3_curvar
-
-        286 < 467 - 10 - 24 - 24 - 61 - 61
-        286 < 287
-		'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.assign("L2", 24)
-		csp.assign("L4", 24)
-		csp.assign("L5", 61)
-		csp.update_domain("L1", {"min": 207, "max": 286})
-		# act
-		output = self.__sut.establish(csp, "L3", 61)
-		# assess
-		self.assertEqual(output[0], DOMAINS_INTACT)
-		self.assertEqual(output[1], {"L1"})
-	
-	def test_L1_reduces(self):
-		'''Asserts that L1 is reduced.
-		
-		Pre-conditions:
-		
-		min_L1 < h6 - S - A_L2 - A_L4 - A_L5 - L3_curvar
-
-        286 < 467 - 10 - 24 - 24 - 61 - 61
-        286 < 287
-
-		max_L1 >= h6 - S - A_L2 - A_L4 - A_L5 - L3_curvar
-
-        287 >= 467 - 10 - 24 - 24 - 61 - 61
-        287 >= 287
-
-		Lower bound is consistnet.
-		Upper bound can be made consistnet.
-		'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.assign("L2", 24)
-		csp.assign("L4", 24)
-		csp.assign("L5", 61)
-		csp.update_domain("L1", {"min": 286, "max": 287})
-		# act
-		output = self.__sut.establish(csp, "L3", 61)
-		# assess
-		expected = (DOMAINS_REDUCED, {"L1"}, {"L1"})
-		self.assertEqual(output, expected)
-		L1 = self.__csp.get_domain("L1")
-		self.assertEqual(L1, {"min": 286, "max": 286})
-
 	def test_L1_contradiction(self):
 		'''Asserts that L1 cannot be reduced, hence contradiction occurs.
 		
@@ -116,7 +48,7 @@ class Test_HOLE6(unittest.TestCase):
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L1"})
 
-	def test_L1L2L3L4L5_consistent(self):
+	def test_all_consistent(self):
 		'''Asserts that L1, L2, L3, L4, and L5 are consistnet.
 		
 		Pre-conditions:
@@ -144,7 +76,7 @@ class Test_HOLE6(unittest.TestCase):
 		expected = (DOMAINS_INTACT, {"L1", "L2", "L3", "L4", "L5"})
 		self.assertEqual(output, expected)
 		
-	def test_L1L2L3L4L5_reduce(self):
+	def test_all_reduce(self):
 		'''Asserts that L1, L2, L3, L4, and L5 get reduced when inconsistent.
 		
 		Pre-conditions:
@@ -211,33 +143,7 @@ class Test_HOLE6(unittest.TestCase):
 		output = self.__sut.propagate(csp, {"L3"})
 		# assess
 		self.assertEqual(output[1], {"L1"})
-		
-	def test_propagate_examines_L2(self):
-		'''Asserts that only L2 is examined by propagate.'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.assign("L1", 1)		
-		csp.assign("L4", 1)
-		csp.assign("L5", 1)
-		# act
-		output = self.__sut.propagate(csp, {"L3"})
-		# assess
-		self.assertEqual(output[1], {"L2"})
-		
-	def test_propagate_examines_L3(self):
-		'''Asserts that only L3 is examined by propagate.'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.assign("L2", 1)
-		csp.assign("L4", 1)
-		csp.assign("L5", 1)
-		# act
-		output = self.__sut.propagate(csp, {"L1"})
-		# assess
-		self.assertEqual(output[1], {"L3"})
-		
+				
 	def test_propagate_examines_L1L3(self):
 		'''Asserts that only L1 and L3 are examined by propagate.'''
 		# arrange
@@ -249,19 +155,7 @@ class Test_HOLE6(unittest.TestCase):
 		output = self.__sut.propagate(csp, {"L2"})
 		# assess
 		self.assertEqual(output[1], {"L1", "L3"})
-		
-	def test_propagate_examines_L2L3(self):
-		'''Asserts that only L2 and L3 are examined by propagate.'''
-		# arrange
-		self.__reset_csp()
-		csp = self.__csp
-		csp.assign("L4", 1)
-		csp.assign("L5", 1)
-		# act
-		output = self.__sut.propagate(csp, {"L1"})
-		# assess
-		self.assertEqual(output[1], {"L2", "L3"})
-		
+			
 	def test_propagate_examines_L1L2L3L5(self):
 		'''Asserts that only L1, L2 and L3 are examined by propagate.'''
 		# arrange

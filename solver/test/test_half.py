@@ -46,7 +46,7 @@ class test_HALF(unittest.TestCase):
         csp.update_domain("L1", {"min": 30, "max": 40})
         csp.update_domain("L2", {"min": 40, "max": 70})
         # act
-        out = self.__sut.propagate("L1")
+        out = self.__sut.propagate(csp, {"L1"})
         # assess
         self.assertEqual(out[0], DOMAINS_REDUCED)
         self.assertEqual(out[1], {"L1", "L2"})
@@ -69,11 +69,11 @@ class test_HALF(unittest.TestCase):
         csp.update_domain("L2", {"min": 59, "max": 61})
         csp.assign("L1", 30)
         # act
-        out = self.__sut.establish("L1", 30)
+        out = self.__sut.establish(csp, "L1", 30)
         # assess
         self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L1"})
-        self.assertEqual(out[2], {"L1"})
+        self.assertEqual(out[1], {"L2"})
+        self.assertEqual(out[2], {"L2"})
         D = csp.get_domains()
         self.assertEqual(D["L2"], {"min": 60, "max": 60})
 
@@ -93,7 +93,7 @@ class test_HALF(unittest.TestCase):
         csp.update_domain("L1", {"min": 15, "max": 30})
         csp.update_domain("L2", {"min": 40, "max": 70})
         # act
-        out = self.__sut.propagate("L1")
+        out = self.__sut.propagate(csp, {"L1"})
         # assess
         self.assertEqual(out[0], DOMAINS_REDUCED)
         self.assertEqual(out[1], {"L1", "L2"})
@@ -101,3 +101,42 @@ class test_HALF(unittest.TestCase):
         D = csp.get_domains()
         self.assertEqual(D["L1"], {"min": 20, "max": 30})
         self.assertEqual(D["L2"], {"min": 40, "max": 60})
+
+    def test_contradiction_occurs(self):
+        '''Asserts a case that propagate catches contradiction.
+        
+        When the domain of both L1 and L2 are updated, and they are
+        inconsistent, two cases appear: a) they can adjust b) they cannot
+        
+        The case a is covered by two test cases in this class. Case b occurs
+        when one domain reduces to one value by another constraint. In this
+        case this domain cannot adjust.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("L1", {"min": 22, "max": 22})
+        csp.update_domain("L2", {"min": 40, "max": 70})
+        # act
+        out = self.__sut.propagate(csp, {"L1"})
+        # assess
+        self.assertEqual(out[0], CONTRADICTION)
+        self.assertEqual(out[1], {"L1", "L2"})
+    
+    def test_reduced_but_consistent(self):
+        '''When the domains reduced to consistent values, no update is needed.
+        
+        L1 reduced to (30, 50)
+        L2 reduced to (60, 100)
+
+        It is highly unlikey to happen, but the odds is not zero.
+        '''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("L1", {"min": 30, "max": 50})
+        csp.update_domain("L2", {"min": 60, "max": 100})
+        # act
+        out = self.__sut.propagate(csp, {"L1"})
+        # assess
+        self.assertEqual(out[0], DOMAINS_INTACT)
+        self.assertEqual(out[1], {"L1", "L2"})

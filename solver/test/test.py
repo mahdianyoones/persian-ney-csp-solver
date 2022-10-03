@@ -10,6 +10,7 @@ import test_hole6
 import test_len
 import test_sameround
 import test_samethick
+import test_half
 
 cases = [
 	test_initdomains, 
@@ -22,7 +23,8 @@ cases = [
 	test_hole6,
 	test_len,
 	test_sameround,
-	test_samethick
+	test_samethick,
+	test_half
 ]
 
 if __name__ == "__main__":

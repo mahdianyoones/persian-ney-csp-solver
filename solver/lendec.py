@@ -1,3 +1,4 @@
+from functools import reduce
 from constants import *
 import math
 
@@ -41,45 +42,37 @@ class LENDEC():
 		From the two examples above, we can observe that assigning
 		values to variables can trigger stronger domain reduction
 		in propagation.
-	'''
 
-	def __init__(self, csp):
-		self.__csp = csp
+		The assumption is that assignments occur in this order: L1, L2, L3,
+		L4, L5, L6, and then L7.'''
 	
-	def __getprevs(self, A, D, start_var):
-		if start_var in A:
-			lprev = A[start_var]["min"]
-			uprev = A[start_var]["max"]
-		else:
-			lprev = D[start_var]["min"]
-			uprev = D[start_var]["max"]
-		return (lprev, uprev)
+	def establish(self, csp, curvar, value):
+		'''Establishes consistency W.R.T. len decrement constraint.
 	
-	def __newbounds(self, A, D, start_var):
-		'''Returns new consistent bounds W.R.T. length decrement.
-	
-		This is a mathematical function.'''
-		(lprev, uprev) = self.__getprevs(A, D, start_var)
-		start_i = self.var_i(start_var)
-		newbounds = {}		
-		for i in range(start_i + 1, 8):
-			li = "L" + str(i)
-			lower = D[li]["min"]
-			if i < 7:
-				lower = max(D[Li]["min"], math.ceil(2/3 * lprev))
-			upper = min(D[Li]["max"], uprev - 1)
-			if lower < D[li]["min"] or lower > D[li]["max"]:
-				return CONTRADICTION
-			if upper < D[li]["min"] or upper > D[li]["max"]:
-				return CONTRADICTION	
-			if lower == D[li]["min"] and upper == D[li]["max"]:
-				break
-			newbounds[li] = {"min": lower, "max": upper}
-			lprev = lower
-			uprev = upper
-		return newbounds
-					
-	def __establish(self, start_var):
+		upper3 = min(upper3, L2 - 1)
+		upper4 = min(upper4, upper3 - 1)
+		upper5 = min(upper5, upper4 - 1)
+		upper6 = min(upper6, upper5 - 1)
+		upper7 = min(upper7, upper6 - 1)
+		
+		lower3 = max(lower3, 2/3 * L2)
+		lower4 = max(lower4, 2/3 lower3)
+		lower5 = max(lower5, 2/3 lower4)
+		lower6 = max(lower6, 2/3 lower5)'''
+		if curvar == "L7":
+			return (DOMAINS_INTACT, set([]))
+		return self.__establish(csp, curvar)
+
+	def propagate(self, csp, reduced_vars):
+		'''Establishes indirect consistency W.R.T. l_dec constraint.
+		
+		if, say, L4, L5, and L6 are reduced, establishing consistency
+		just for L4 makes consistency of L5 and L6 fall into place.'''
+		reduced_sorted = sorted(reduced_vars)
+		start_var = reduced_sorted[0]
+		return self.__establish(csp, start_var)
+
+	def __establish(self, csp, start_var):
 		'''Establishes both indirect and direct l_dec consistency.
 	
 		lower3 = max(lower3, 2/3 lower2)
@@ -97,43 +90,54 @@ class LENDEC():
 		upper7 = min(upper7, upper6 - 1)
 		
 		This is a mutable shell function.'''
-		A = self.csp.get_assignment()
-		D = self.csp.get_domains()
-		newbounds = self.__newbounds(A, D, start_var)
+		A = csp.get_assignment()
+		D = csp.get_domains()
+		(newbounds, examined) = self.__newbounds(A, D, start_var)
 		if newbounds == CONTRADICTION:
-			return (CONTRADICTION, set([]), "l_dec")
-		impacted = set(newbounds.keys())
-		if len(impacted) == 0:
-			return (DOMAINS_INTACT, set([]))
+			return (CONTRADICTION, examined)
 		for Li, new_domain in newbounds.items():
-			self.csp.update_d(Li, new_domain)
-		return (DOMAINS_REDUCED, impacted)
-		
-	def b_update(self, reduced_vars):
-		'''Establishes indirect consistency W.R.T. l_dec constraint.
-		
-		if, say, L4, L5, and L6 are reduced, establishing consistency
-		just for L4 makes consistency of L5 and L6 fall into place.'''
-		reduced_sorted = sorted(reduced_vars)
-		start_var = reduced_sorted[0]
-		return self.__establish(start_var)
+			csp.update_domain(Li, new_domain)
+		reduced = set(newbounds.keys())
+		if len(reduced) == 0:
+			return (DOMAINS_INTACT, examined)
+		return (DOMAINS_REDUCED, examined, reduced)
 
-	def __has_impact(self, curvar):
-		return curvar != "L7"
-		
-	def establish(self, curvar, value):
-		'''Establishes direct consistency W.R.T. l_dec constraint.
+	def __getprevs(self, A, D, start_var):
+		if start_var in A:
+			lprev = A[start_var]
+			uprev = A[start_var]
+		else:
+			lprev = D[start_var]["min"]
+			uprev = D[start_var]["max"]
+		return (lprev, uprev)
 	
-		upper3 = min(upper3, L2 - 1)
-		upper4 = min(upper4, upper3 - 1)
-		upper5 = min(upper5, upper4 - 1)
-		upper6 = min(upper6, upper5 - 1)
-		upper7 = min(upper7, upper6 - 1)
-		
-		lower3 = max(lower3, 2/3 * L2)
-		lower4 = max(lower4, 2/3 lower3)
-		lower5 = max(lower5, 2/3 lower4)
-		lower6 = max(lower6, 2/3 lower5)'''
-		if not self.__has_impact(curvar):
-			return (DOMAINS_INTACT, None)
-		return self.__establish(curvar)
+	def __in_range(self, range, value):
+		return value >= range["min"] and value <= range["max"]
+	
+	def __reduced(self, upper, lower, domain):
+		return upper - lower < domain["max"] - domain["min"]
+
+	def __newbounds(self, A, D, start_var):
+		'''Returns new consistent bounds W.R.T. length decrement.
+	
+		This is a mathematical function.'''
+		(lprev, uprev) = self.__getprevs(A, D, start_var)
+		newbounds = {}
+		examined = set([])
+		for i in range(int(start_var[1]) + 1, 8):
+			li = "L" + str(i)
+			examined.add(li)
+			if i < 7:
+				lower = math.ceil(2/3 * lprev)
+			else:
+				lower = min(D[li]["min"], lprev - 1)
+			upper = uprev - 1
+			if not self.__in_range(D[li], lower):
+				return (CONTRADICTION, examined)
+			if not self.__in_range(D[li], upper):
+				return (CONTRADICTION, examined)
+			if self.__reduced(upper, lower, D[li]):
+				newbounds[li] = {"min": lower, "max": upper}
+			lprev = lower
+			uprev = upper
+		return (newbounds, examined)

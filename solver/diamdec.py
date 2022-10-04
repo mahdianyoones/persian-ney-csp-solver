@@ -1,3 +1,4 @@
+from functools import reduce
 from constants import *
 import copy
 
@@ -11,90 +12,76 @@ class DIAMDEC():
 	 0.5 <= D6 - D5 <= 1
 	 0.5 <= D7 - D6 <= 1
 	 
-	 0.5 and 1 are subject to ney_spec.
+	 0.5 and 1 are subject to specifications.
 	 
-	 Inconsistent values can be removed from all D variables in one go.	 
-	'''
-	
-	def __init__(self, csp):
-		self.__csp = csp
-		self.__ddiffmin = csp.spec["ddiff"]["min"]
-	
-	def __inconsistents(self, dall, ddiffmin, assignment):
-		'''Returns inconsistent values of D1 to D7 W.R.T. d_dec.
+	 The assumption is that D1 is assigned before D2, D2 is assigned before
+	 D3, D3 is assigned before D4, and so on.'''
+
+	def __init__(self, ddiff):
+		self.__ddiff = ddiff
+
+	def establish(self, csp, curvar, value):
+		'''Establishes consistency W.R.T. diameter dececrement constraint.'''
+		if curvar == "D7":
+			return (DOMAINS_INTACT, set([]))
+		(D_consistent, examined) = self.__consistent(csp, curvar, value)
+		if D_consistent == CONTRADICTION:
+			return (CONTRADICTION, examined)
+		del D_consistent[curvar]
+		reduced = set([])
+		D = csp.get_domains()
+		for v, new_domain in D_consistent.items():
+			if len(new_domain) < len(D[v]):
+				csp.update_domain(v, new_domain)
+				reduced.add(v)
+		if len(reduced) > 0:
+			return (DOMAINS_REDUCED, examined, reduced)
+		return (DOMAINS_INTACT, examined)
+
+	def propagate(self, csp, reduced_vars):
+		'''Establishes boundary consistency w.r.t. diamdec constraint.
 		
-		This is a mathematical function.'''
-		incons = {}
-		for i in range(1, 8):
-			di = "D" + str(i)
-			incons[di] = set([])
-			if di in assignment:
-				last_max = assignment[di]
-				continue
-			reduced = False
-			for diameter in dall[di]:
-				if diameter > last_max - ddiff_min:
-					incons[di].add(diameter)
-					reduced = True
-			if not reduced:
-				break
-			if len(incons[di]) == len(dall[di]):
-				break
-			last_max = max(dall[di])
-		return incons
-	
-	def __confset(self, incons, dall, assignment):
-		'''Checks if a contradiction has occured and returns a conflit set.
+		It is unclear whether a strong consistency algorithm exists for
+		propagation of boundary reductions. Temporarily, the propagate
+		in this constraint does nothing to see the performance of the
+		algorithm without it.
 		
-		This is a mathematical function.'''
-		confset = set([])
-		contra = False
-		for di, values in incons.items():
-			if len(values) == len(dall[di]):
-				contra = True
-				break
-			if di in assignment:
-				confset.add(di)
-		return (contra, confset)
-	
-	def __establish(self):
-		'''Removes inconsistent values from all D variables W.R.T. d_dec.'''
-		a = self.csp.get_assignment()
-		incons = self.__inconsistents(self.csp.D, self.__ddiffmin, a)
-		(contra, confset) = self.__confset(incons, self.csp.D. a)
-		if contra:
-			(True, confset, set([]))
-		impacted = set([])
-		for di, values in incons.items():
-			if len(values) > 0:
-				impacted.add(di)
-				reduced_d = self.csp.D[di].difference(values)
-				self.csp.update_d(di, reduced_d)
-		return (False, set([]), impacted)
-	
-	def b_update(self):
-		'''Establishes indirect d_dec consistency.'''
-		(contr, confset, impacted) = self._establish()
-		if contra:
-			return (CONTRADICTION, set([]), "d_dec")
-		if len(impacted) > 0:
-			return (DOMAINS_REDUCED, impacted)
+		If the impact is significant, then we shall look for an efficient
+		algorithm.'''
 		return (DOMAINS_INTACT, set([]))
-	
-	def establish(self, curvar, value):
-		'''Establishes direct d_dec consistency after assignment.
+
+	def __compare(self, A, B, diff):
+		'''Checks if values in B (D_i+1) are consistent W.R.T. A (D_i).
 		
-		e.g.
-		
-		If D1 and D2 are assigned and contradiction occurs for D5 (it runs 
-		out of values), confset = {D1, D2}.
-		
-		We cannot tell whether other variables (Rs, Ths, and Ls) are
-		responsible for this contradiction or not.
+		i.e. A and B contain domain values for D1&D2, D2&D3, etc
 		'''
-		(contra, confset, impacted) = self._establish()
-		if contra:
-			return (CONTRADICTION, confset, "d_dec")
-		if len(impacted) > 0:
-			(DOMAINS_REDUCED, impacted)
-		return (DOMAINS_INTACT, set([]))
+		mindiff = diff["min"]
+		maxdiff = diff["max"]
+		A_consistent = set([])
+		B_consistent = set([])
+		for val_A in A:
+			for val_B in B:
+				diff = val_A - val_B
+				if diff <= maxdiff and diff >= mindiff:
+					A_consistent.add(val_A)
+					B_consistent.add(val_B)
+		return (A_consistent, B_consistent)
+
+	def __consistent(self, csp, curvar, value):
+		'''Evaluates unassigned D variables and returns consistent values.'''
+		curvar_index = int(curvar[1])
+		D_consistent = {"D"+str(i): set([]) for i in range(curvar_index, 8)}
+		D_consistent[curvar] = {value}
+		examined = set([])
+		for i in range(curvar_index, 7):
+			var_A = "D"+str(i)
+			var_B = "D"+str(i+1)
+			A = D_consistent[var_A]
+			B = csp.get_domain(var_B)
+			(A_consistent, B_consistent) = self.__compare(A, B, self.__ddiff)
+			examined.add(var_B)
+			if len(A_consistent) == 0 or len(B_consistent) == 0:
+				return (CONTRADICTION, examined)
+			D_consistent[var_A] = A_consistent
+			D_consistent[var_B] = B_consistent
+		return (D_consistent, examined)

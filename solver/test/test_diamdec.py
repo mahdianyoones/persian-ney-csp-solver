@@ -98,6 +98,32 @@ class test_DIAMDEC(unittest.TestCase):
         self.assertEqual(D["D6"], {9, 9.5, 10, 10.5, 11, 11.5})
         self.assertEqual(D["D7"], {8, 8.5, 9, 9.5, 10, 10.5, 11})
 
+    def test_reduction_occurs_2(self):
+        '''Asserts a case in which reduction happens.
+                    
+            One of these criteria must hold true for a value to be illegal:
+
+            Di - D_i-1 < 0.5
+            Di - D_i-1 > 1
+            
+            This case also covers the partition that no legal values in D2
+            is found for a value in D1.
+
+            For which, consistency is achieved by removing the value from D1.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("D7", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        # act
+        csp.assign("D1", 14)
+        output = self.__sut.establish(csp, "D6", 10)
+        # assess
+        self.assertEqual(output[0], DOMAINS_REDUCED)
+        self.assertEqual(output[1], {"D7"})
+        self.assertEqual(output[1], {"D7"})
+        D = csp.get_domains()
+        self.assertEqual(D["D7"], {9, 9.5})
+
     def test_no_reduction(self):
         '''Asserts a case that no reduction occurs.
                 

@@ -144,7 +144,6 @@ class test_DIAMDEC(unittest.TestCase):
         # act
         csp.assign("D1", 14)
         output = self.__sut.establish(csp, "D1", 14)
-
         # assess
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})

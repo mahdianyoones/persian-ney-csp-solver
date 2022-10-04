@@ -39,7 +39,7 @@ class test_DIAMDEC(unittest.TestCase):
     
     def setUp(self):
         self.__csp = CSP()
-        self.__sut = DIAMDEC(specs["ddiff"])
+        self.__sut = DIAMDEC({"min": 0.5, "max": 1.0})
     
     def __reset_csp(self):
         self.__csp.unassign_all()
@@ -54,21 +54,16 @@ class test_DIAMDEC(unittest.TestCase):
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("D1", {12.5, 12, 12.1})
         csp.update_domain("D2", {13, 13.5, 13.6, 14})
-        csp.update_domain("D3", {11, 12, 12.5, 13, 13.5})
-        csp.update_domain("D4", {11, 11.5, 12, 12.5, 13})
-        csp.update_domain("D5", {10, 10.5, 11, 11.5, 12, 12.5})
-        csp.update_domain("D6", {8, 9, 9.5, 10, 10.5, 11, 11.5, 12})
-        csp.update_domain("D7", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
         # act
-        output = self.__sut.propagate("D1", 14.5)
+        csp.assign("D1", 12.5)
+        output = self.__sut.establish(csp, "D1", 12.5)
         # assess
         self.assertEqual(output[0], CONTRADICTION)
-        self.assertEqual(output[1], {"D1","D2"})
+        self.assertEqual(output[1], {"D2"})
 
     def test_reduction_occurs(self):
-        '''Asserts a case reduction happens.
+        '''Asserts a case in which reduction happens.
                     
             One of these criteria must hold true for a value to be illegal:
 
@@ -78,12 +73,10 @@ class test_DIAMDEC(unittest.TestCase):
             This case also covers the partition that no legal values in D2
             is found for a value in D1.
 
-            For which, consistency is achieved by removing the value from D1.
-            '''
+            For which, consistency is achieved by removing the value from D1.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("D1", {12.5, 14, 14.5})
         csp.update_domain("D2", {13, 13.5, 13.6, 14})
         csp.update_domain("D3", {11, 12, 12.5, 13, 13.5})
         csp.update_domain("D4", {11, 11.5, 12, 12.5, 13})
@@ -91,18 +84,19 @@ class test_DIAMDEC(unittest.TestCase):
         csp.update_domain("D6", {8, 9, 9.5, 10, 10.5, 11, 11.5, 12})
         csp.update_domain("D7", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
         # act
-        output = self.__sut.propagate("D1", 14.5)
+        csp.assign("D1", 14)
+        output = self.__sut.establish(csp, "D1", 14)
         # assess
         self.assertEqual(output[0], DOMAINS_REDUCED)
-        self.assertEqual(output[1], {"D1","D2","D3","D4","D5","D6","D7"})
+        self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})
+        self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})
         D = csp.get_domains()
-        self.assertEqual(D["D1"], {14, 14.5})
-        self.assertEqual(D["D2"], {13, 13.5, 13.6, 14})
-        self.assertEqual(D["D3"], {12, 12.5, 13, 13.5})
-        self.assertEqual(D["D4"], {11, 11.5, 12, 12.5, 13})
-        self.assertEqual(D["D5"], {10, 10.5, 11, 11.5, 12, 12.5})
-        self.assertEqual(D["D6"], {9, 9.5, 10, 10.5, 11, 11.5, 12})
-        self.assertEqual(D["D7"], {8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5})
+        self.assertEqual(D["D2"], {13, 13.5})
+        self.assertEqual(D["D3"], {12, 12.5, 13})
+        self.assertEqual(D["D4"], {11, 11.5, 12, 12.5})
+        self.assertEqual(D["D5"], {10, 10.5, 11, 11.5, 12})
+        self.assertEqual(D["D6"], {9, 9.5, 10, 10.5, 11, 11.5})
+        self.assertEqual(D["D7"], {8, 8.5, 9, 9.5, 10, 10.5, 11})
 
     def test_no_reduction(self):
         '''Asserts a case that no reduction occurs.
@@ -115,24 +109,17 @@ class test_DIAMDEC(unittest.TestCase):
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("D1", {14, 14.5})
-        csp.update_domain("D2", {13, 13.5, 13.6, 14})
-        csp.update_domain("D3", {12, 12.5, 13, 13.5})
-        csp.update_domain("D4", {11, 11.5, 12, 12.5, 13})
-        csp.update_domain("D5", {10, 10.5, 11, 11.5, 12, 12.5})
-        csp.update_domain("D6", {9, 9.5, 10, 10.5, 11, 11.5, 12})
-        csp.update_domain("D7", {8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5})
+        csp.update_domain("D2", {13, 13.5})
+        csp.update_domain("D3", {12, 12.5, 13})
+        csp.update_domain("D4", {11, 11.5, 12, 12.5})
+        csp.update_domain("D5", {10, 10.5, 11, 11.5, 12})
+        csp.update_domain("D6", {9, 9.5, 10, 10.5, 11, 11.5})
+        csp.update_domain("D7", {8, 8.5, 9, 9.5, 10, 10.5, 11})
         # act
-        output = self.__sut.propagate("D1", 14.5)
+        csp.assign("D1", 14)
+        output = self.__sut.establish(csp, "D1", 14)
+
         # assess
         self.assertEqual(output[0], DOMAINS_INTACT)
-        self.assertEqual(output[1], {"D1","D2","D3","D4","D5","D6","D7"})
+        self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})
         D = csp.get_domains()
-        self.assertEqual(D["D1"], {14, 14.5})
-        self.assertEqual(D["D2"], {13, 13.5, 14})
-        self.assertEqual(D["D3"], {12, 12.5, 13, 13.5})
-        self.assertEqual(D["D4"], {11, 11.5, 12, 12.5, 13})
-        self.assertEqual(D["D5"], {10, 10.5, 11, 11.5, 12, 12.5})
-        self.assertEqual(D["D6"], {9, 9.5, 10, 10.5, 11, 11.5, 12})
-        self.assertEqual(D["D7"], {8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5})
-

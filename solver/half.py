@@ -2,30 +2,29 @@ from constants import *
 import math
 
 class HALF():
-	'''Implements consistency algorithm for l1_half_l2 constraint.
+	'''Implements consistency algorithm for the half constraint.
 	
-        There must be this relation between assigned values to L1 and L2:
+        The second node must be double the length of the first node. i.e. :
 
         L1 = L2 / 2     or      L2 = L1 * 2
-		
-		Also the boundaries could be made consistent.
-		'''
+				
+		This algorithm also handles propagation. That is, when L1 or L2 are
+		reduced by other constraints, the effect is kept in check.
+
+		If L1 is reduced, the boundary of both L1 and L2 are examined and made
+		consistent. If this reduction makes consistency impossible,
+		contradiction is reported.'''
 	
 	def establish(self, csp, curvar, value):
-		'''Establishes consistency W.R.T. l1_half_l2 constraint.
+		'''Establishes consistency after assignment curvar: value.
 		
 		The domain of L2 reduces to L1 * 2.
 	
-		If L1 is assigned a value, L2 reduces to one value only. However,
-		the domain of L2 will still be represented via bounds, now with
-		equal min & max.
-		
-		If the assigned variable is L2, nothing happens. The assumption is
-		that L1 is always assigned first.
+		The assumption is that L1 is always assigned before L2. Therefore,
+		when L2 is assigned, there is no variable left to be examined.
 
-		L1 = 100
-		L2 = {"min": 80,  "max":90}
-		'''
+		After consistency, L2 reduces to one value only; however, its domain
+		is now represented via bounds with equal min & max.'''
 		if curvar != "L1":
 			return (DOMAINS_INTACT, set([]))
 		L2 = csp.get_domain("L2")
@@ -37,12 +36,7 @@ class HALF():
 		return (DOMAINS_REDUCED, {"L2"}, {"L2"})
 
 	def propagate(self, csp, reduced_vars):
-		'''Establishes bounds consistency W.R.T. l1_half_l2 constraint.
-		
-		Note: only one of the above updates happen. In case of
-		contradiction, both reduced variables are involved. That's why
-		reduced_vars is returned as the conflict set.
-		'''
+		'''Establishes consistency when L1 andor L2 are reduced elsewhere.'''
 		L1 = csp.get_domain("L1")
 		L2 = csp.get_domain("L2")
 		if self.__consistent(L1, L2):

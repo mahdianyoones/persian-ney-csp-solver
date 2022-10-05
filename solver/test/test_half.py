@@ -115,7 +115,7 @@ class test_HALF(unittest.TestCase):
         csp.assign("L1", 30)
         out = self.__sut.establish(csp, "L1", 30)
         # assess
-        self.assertEqual(out[0], DOMAIN_INTACT)
+        self.assertEqual(out[0], DOMAINS_INTACT)
         self.assertEqual(out[1], {"L2"})
 
     def test_contradiction_after_propagation(self):

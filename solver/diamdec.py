@@ -5,17 +5,26 @@ import copy
 class DIAMDEC():
 	'''Implements diameter decrement consistency.
 	
-	 0.5 <= D2 - D1 <= 1
-	 0.5 <= D3 - D2 <= 1
-	 0.5 <= D4 - D3 <= 1
-	 0.5 <= D5 - D4 <= 1
-	 0.5 <= D6 - D5 <= 1
-	 0.5 <= D7 - D6 <= 1
-	 
-	 0.5 and 1 are subject to specifications.
-	 
-	 The assumption is that D1 is assigned before D2, D2 is assigned before
-	 D3, D3 is assigned before D4, and so on.'''
+        The constraint makes sure the following relations exist between D
+        variables:
+    
+        0.5 <= D2 - D1 <= 1.5
+        0.5 <= D3 - D2 <= 1.5
+        0.5 <= D4 - D3 <= 1.5
+        0.5 <= D5 - D4 <= 1.5
+        0.5 <= D6 - D5 <= 1.5
+        0.5 <= D7 - D6 <= 1.5
+
+        i.e. the diamater difference between adjacent nodes must 
+        fall into an accepted range.
+
+        The accepted range is defined in specs.py as a configuration option,
+        having min and max as lower and upper bounds.
+
+        The algorithm assumes that the order of assignments are in the
+        order of variables indices. That is D1, D2, D3, D4, D5, D6, and D7.
+
+        This constraint restricts final solutions to conic-shape ones.'''
 
 	def __init__(self, ddiff):
 		self.__ddiff = ddiff

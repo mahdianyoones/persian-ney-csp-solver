@@ -98,7 +98,7 @@ class test_DIAMDEC(unittest.TestCase):
         D = csp.get_domains()
         self.assertEqual(D["D2"], {13})     # 12 is removed
         self.assertEqual(D["D3"], {12.5})   # 12 is removed
-        self.assertEqual(D["D7"], {8.5, 9, 9.1}) # 8.4 is removed
+        self.assertEqual(D["D7"], {8.5, 8.6, 9}) # 8.4 is removed
 
     def test_reduction_2(self):
         '''Asserts another case in which reduction happens.'''

@@ -1,40 +1,31 @@
 from constants import *
 import copy
 
-class HOLE1A():
-    '''Implements hole1A constraints.
+class HOLE1():
+    '''Implements hole1 constraint.
     
-    This constraint guarantees that the 1st hole falls somewhere AFTER the 
-    junction of nodes 3 & 4, and not on the junction itself.
+    The goal is to ensure that hole 1 falls on node 4.
 
-    This relation between L1, L2, and L3 must exist:
+    The following relation must exist between variables.
 
-    L1 + L2 + L3 + hole_margin * 1 < h1.
+    L1 + L2 + L3 + hole_margin < h1.
+
+    From which we can define the upper bounds for L1, L2, and L3 as such:
     
-    S = hole_margin * 1
+    1) L1_max < h3 - L2_min - L3_min - hole_margin
+    2) L2_max < h3 - L1_min - L3_min - hole_margin
+    3) L3_max < h3 - L1_min - L2_min - hole_margin
 
-    h1 is the length of hole 1 from top. hole_margin is a constant value to
-    enforce some distance between a hole and 1) other holes 2) node junction
-
-    Like other constraint modules, there are two entries: propagate and
-    establish.
-
-    Boundaries are made consistnet throught:
-        
-     L1_max = h1 - L2_min - L3_min - S - 1
-    L2_max = h1 - L1_min - L3_min - S - 1
-    L3_max = h1 - L1_min - L2_min - S - 1
-        
-    Note that we do not enforce any exact length for nodes. As long as the sum
-    of all nodes add up to the desired length of the Ney, and that the
-    location of holes are gauranteed not to fall on the junctions between the
-    nodes, we are able to make holes on their exact location.
+    Also, we can detect contradiction from their lower bounds. That is:
     
-    This constraint works with hole1B hand-in-hand to make sure that the
-    first hole falls on node 4 and not no any junction.'''
+    L1_min + L2_min + L3_min + hole_margin >= h3.
+    
+    In this case, consistency is impossible, since the lower bounds cannot
+    be reduced.'''
+
     def __init__(self, spec):
         self.__h = spec["h1"]
-        self.__space = spec["hmarg"] * 1
+        self.__space = spec["hmarg"]
         self.__impact_map = {
             "L1": {"L2", "L3"},
             "L2": {"L1", "L3"},
@@ -67,18 +58,14 @@ class HOLE1A():
         lowers = self.__lowers(A, D)
         h = self.__h
         s = self.__space
-        if self.__lowers_inconsistent(lowers, h, s):
+        if self.__contradiction(lowers, h, s):
             return (CONTRADICTION, ims)
         new_domains = self.__new_domains(D, lowers, ims, h, s)
         return self.__update(csp, new_domains, ims)
     
-    def __lowers_inconsistent(self, lowers, h, s):
-        '''Detects contradiction due to lower bounds.'''
-        if lowers["L1"] >= h - lowers["L2"] - lowers["L3"] - s:
-            return True
-        if lowers["L2"] >= h - lowers["L1"] - lowers["L3"] - s:
-            return True
-        if lowers["L3"] >= h - lowers["L1"] - lowers["L2"] - s:
+    def __contradiction(self, lows, h, s):
+        '''Detects contradiction'''
+        if lows["L1"] + lows["L2"] + lows["L3"] + s >= h:
             return True
         return False
             

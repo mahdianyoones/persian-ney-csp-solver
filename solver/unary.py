@@ -1,47 +1,37 @@
 import copy
 
 class UNARY():
-	
-	def unarify(self, csp, catalog, spec):
-		'''Initiates the domain of vars and makes them unary consistent.'''
-		X = csp.get_variables()
-		self.__establish_L(csp, spec, X)
-		self.__establish_holes_space(csp, spec)
-		self.__establish_RTD(csp, catalog, X)
-		self.__establish_D1(csp, spec)
-		self.__establish_L4(csp, spec)
-		self.__establish_L5(csp, spec)
+	'''Implements unary constraints.'''
 
-	def __establish_L(self, csp, spec, X):
-		'''Sets infinite positive integer values for all L variables.'''
-		domain = {"min": spec["minl"], "max": float("inf")}
+	def unarify(self, csp, catalog, spec):
+		'''Executes all unary consistency methods.'''
+		self.__initial_domains(csp, catalog)
+		self.__nodes_min_len(csp, spec)
+		self.__sixth_node_min_len(csp, spec)
+		self.__first_node_diameter(csp, spec)
+		self.__fourth_node_two_holes(csp, spec)
+		self.__fifth_node_three_holes(csp, spec)
+
+	def __nodes_min_len(self, csp, spec):
+		'''All nodes initially have a minimum lower and no upper bound.'''
+		X = csp.get_variables()
+		_min = spec["minl"]
+		_inf = float("inf")
 		for var in X:
 			if var[0] == "L":
-				csp.update_domain(var, copy.deepcopy(domain))
+				csp.update_domain(var, {"min": _min, "max": _inf})
 
-	def __establish_holes_space(self, csp, spec):
-		'''Makes L4, L5, and L6 consistent W.R.T. minimum node length.
-		
-		Nodes 4, 5, and 6 contain holes. Between the holes and nodes'
-		junction with adjacent nodes must be a minumum space. Also,
-		between the holes themselves must be a minimum space.
-		'''		
-		d = csp.get_domain("L4")
-		new_d = copy.deepcopy(d)
-		new_d["min"] = spec["hmarg"] * 3 + spec["holed"] * 2
-		csp.update_domain("L4", new_d)
-		
-		d = csp.get_domain("L5")
-		new_d = copy.deepcopy(d)
-		new_d["min"] =  spec["hmarg"] * 4 + spec["holed"] * 3
-		csp.update_domain("L5", new_d)
-		
-		d = csp.get_domain("L6")
-		new_d = copy.deepcopy(d)
+	def __sixth_node_min_len(self, csp, spec):
+		'''Node 6 must be long enough to contain at least one hole.'''		
+		X = csp.get_variables()
+		L6 = csp.get_domain("L6")
+		new_d = copy.deepcopy(L6)
 		new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
 		csp.update_domain("L6", new_d)
 				
-	def __establish_RTD(self, csp, catalog, X):
+	def __initial_domains(self, csp, catalog):
+		'''Defines initial values for domains of all vars except Ls.'''
+		X = csp.get_variables()
 		diams = catalog.values("D")
 		thicks = catalog.values("T")
 		rounds = catalog.values("R")
@@ -53,16 +43,16 @@ class UNARY():
 			elif var[0] == "T":
 				csp.update_domain(var, copy.deepcopy(thicks))
 
-	def __establish_D1(self, csp, spec):
-		'''Makes D1 consistent W.R.T. minimum d1 minimum diameter.'''
-		d1 = csp.get_domain("D1")
+	def __first_node_diameter(self, csp, spec):
+		'''Node 1 cannot have a diameter below a certain value (e.g. 18mm).'''
+		D1 = csp.get_domain("D1")
 		legal_values = set([])
-		for diam in d1:
+		for diam in D1:
 			if diam >= spec["topd"]["min"] and diam <= spec["topd"]["max"]:
 				legal_values.add(diam)
 		csp.update_domain("D1", legal_values)
 
-	def __establish_L4(self, csp, spec):
+	def __fourth_node_two_holes(self, csp, spec):
 		'''Implements a length constraint on L4.
 			
 			The goal is to ensure holes 1 and 2 fall on node 4.
@@ -78,7 +68,7 @@ class UNARY():
 		L4 = csp.get_domain("L4")
 		csp.update_domain("L4", {"min": new_min, "max": L4["max"]})
 
-	def __establish_L5(self, csp, spec):
+	def __fifth_node_three_holes(self, csp, spec):
 		'''Implements a length constraint on L5.
 			
 			The goal is to ensure holes 3, 4, and 5 falls on node 5.

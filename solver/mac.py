@@ -1,4 +1,4 @@
-from hole1A import HOLE1A
+from hole1 import HOLE1A
 from hole1B import HOLE1B
 from hole2 import HOLE2
 from hole3 import HOLE3
@@ -92,6 +92,8 @@ class MAC():
 	def __init__(self, csp):
 		self.__csp = csp
 		self.__neighbors = {}
+		self._constraints_order = {}
+		self.__init_constraints_order(csp)
 		self.__alg_refs = {
 			"hole1A":		HOLE1A(csp),
 			"hole1B":		HOLE1B(csp),
@@ -108,6 +110,14 @@ class MAC():
 			"d_dec":		D_DEC(csp),
 			"len":		LEN(csp)
 		}
+
+	def __init_constraints_order(self, csp):
+		'''Determines the order of constraints.
+		
+		A constraint order denotes the number of participants it has.'''
+		constraints = csp.get_constraints()
+		for constraint, participants in constraints:
+			self.__constraints_order[constraint] = 8 - len(participants)
 
 	def __var_constraints(self, var):
 		'''Returns variables that share a constraint with curvar.

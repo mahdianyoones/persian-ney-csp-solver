@@ -15,14 +15,14 @@ class CSP():
 			"lendec":  	{"L2", "L3", "L4", "L5", "L6", "L7"},
 			"hole6":	{"L1", "L2", "L3", "L4", "L5"},
 			"hole3":	{"L1", "L2", "L3", "L4"},
-			"stock1":	{"T1", "R1", "D1"},
-			"stock2":	{"T2", "R2", "D2"},
-			"stock3":	{"T3", "R3", "D3"},
-			"stock4":	{"T4", "R4", "D4"},
-			"stock5":	{"T5", "R5", "D5"},
-			"stock6":	{"T6", "R6", "D6"},
-			"stock7":	{"T7", "R7", "D7"},
-			"hole1":	{"L1", "L2", "L3"},
+			"stock1":	{"T1", "R1", "D1", "L1"},
+			"stock2":	{"T2", "R2", "D2", "L2"},
+			"stock3":	{"T3", "R3", "D3", "L3"},
+			"stock4":	{"T4", "R4", "D4", "L4"},
+			"stock5":	{"T5", "R5", "D5", "L5"},
+			"stock6":	{"T6", "R6", "D6", "L6"},
+			"stock7":	{"T7", "R7", "D7", "L7"},
+			"hole1":	{"L1", "L2", "L3",},
 			"half":		{"L1", "L2"},
 		}
 		self.__D = {}
@@ -43,6 +43,9 @@ class CSP():
 	def get_assignment(self):
 		return self.__assignment
 	
+	def get_assigned_vars(self):
+		return self.__assigned
+
 	def get_unassigned_vars(self):
 		return self.__unassigned
 		

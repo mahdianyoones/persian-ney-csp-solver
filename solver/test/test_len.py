@@ -225,6 +225,25 @@ class test_LEN(unittest.TestCase):
         self.assertEqual(output[0], CONTRADICTION)
         self.assertIn("L1", output[1])
 
+    def test_contradiction_after_establish(self):
+        '''Assers a contradictory case.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.assign("L1", 9)
+        csp.assign("L2", 9)
+        csp.assign("L3", 9)
+        csp.assign("L4", 9)
+        csp.assign("L5", 9)
+        csp.assign("L6", 9)
+        csp.update_domain("L7", {"min": 8, "max": 86})
+        # act
+        output = self.__sut.establish(csp, "L6", 9)
+        # assess
+        self.assertEqual(output[0], CONTRADICTION)
+        self.assertEqual(output[1], {"L7"})
+        self.assertEqual(output[2], {"L1","L2","L3","L4","L5","L6"})
+
     def test_L1_upper_contradiction(self):
         '''Upper is inconsistent. Consistency Impossible.
 

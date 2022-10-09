@@ -41,13 +41,15 @@ class Test_HOLE3(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L2", 24)
+		csp.assign("L3", 122)
 		csp.assign("L4", 24)
 		csp.update_domain("L1", {"min": 191, "max": 191})
 		# act
-		output = self.__sut.establish(csp, "L3", 122)
+		output = self.__sut.establish(csp, "L4", 24)
 		# assess
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L1"})
+		self.assertEqual(output[2], {"L2", "L3", "L4"})
 
 	def test_all_consistent(self):
 		'''Asserts that L1, L2, L3, and L4 are consistnet.

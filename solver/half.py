@@ -29,7 +29,7 @@ class HALF():
 			return (DOMAINS_INTACT, set([]))
 		L2 = csp.get_domain("L2")
 		if L2["min"] > value * 2 or L2["max"] < value * 2:
-			return (CONTRADICTION, {"L2"})
+			return (CONTRADICTION, {"L2"}, {"L1"})
 		if L2["max"] == L2["max"] and value * 2 == L2["max"]:
 			return (DOMAINS_INTACT, {"L2"})
 		csp.update_domain("L2", {"min": value * 2, "max": value * 2})
@@ -42,7 +42,7 @@ class HALF():
 		if self.__consistent(L1, L2):
 			return (DOMAINS_INTACT, {"L1", "L2"})
 		elif self.__contradiction(L1, L2):
-				return (CONTRADICTION, {"L1", "L2"})
+				return (CONTRADICTION, {"L1", "L2"}, set([]))
 		reduced = set([])
 		if L1["min"] * 2 > L2["min"]: # min of L2 can adjust
 			csp.update_domain("L2", {"min": L1["min"] * 2, "max": L2["max"]})

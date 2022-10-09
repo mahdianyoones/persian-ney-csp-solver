@@ -1,30 +1,26 @@
 import unittest
-import test_initdomains
-import test_hole1A
-import test_hole1B
-import test_hole2
+import test_hole1
 import test_hole3
-import test_hole4
-import test_hole5
 import test_hole6
 import test_len
 import test_sameround
 import test_samethick
 import test_half
+import test_diamdec
+import test_lendec
+import test_pickup
 
 cases = [
-	test_initdomains, 
-	test_hole1A,
-	test_hole1B,
-	test_hole2,
+	test_hole1,
 	test_hole3,
-	test_hole4,
-	test_hole5,
 	test_hole6,
 	test_len,
 	test_sameround,
 	test_samethick,
-	test_half
+	test_half,
+	test_diamdec,
+	test_lendec,
+	test_pickup
 ]
 
 if __name__ == "__main__":

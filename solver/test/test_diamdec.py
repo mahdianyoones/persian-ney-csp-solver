@@ -129,5 +129,23 @@ class test_DIAMDEC(unittest.TestCase):
         csp.assign("D1", 12.5)
         output = self.__sut.establish(csp, "D1", 12.5)
         # assess
-        self.assertEqual(output[0], CONTRADICTION)
-        self.assertEqual(output[1], {"D2"})
+        self.assertEqual(output[0], CONTRADICTION) # output indicator
+        self.assertEqual(output[1], {"D2"}) # examined set
+        self.assertEqual(output[2], {"D1"}) # conflict set
+
+    def test_returns_correct_conflict_set(self):
+        '''Asserts correct a conflcit set is returned.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("D5", {13, 13.5, 13.6, 14})
+        # act
+        csp.assign("D1", 14)
+        csp.assign("D2", 13)
+        csp.assign("D3", 12)
+        csp.assign("D4", 11)
+        output = self.__sut.establish(csp, "D4", 11)
+        # assess
+        self.assertEqual(output[0], CONTRADICTION) # output indicator
+        self.assertEqual(output[1], {"D5"}) # examined set
+        self.assertEqual(output[2], {"D1","D2","D3","D4"}) # conflict set

@@ -33,19 +33,8 @@ class DIAMDEC():
 		'''Establishes consistency W.R.T. diameter dececrement constraint.'''
 		if curvar == "D7":
 			return (DOMAINS_INTACT, set([]))
-		(D_consistent, examined) = self.__consistent(csp, curvar, value)
-		if D_consistent == CONTRADICTION:
-			return (CONTRADICTION, examined)
-		del D_consistent[curvar]
-		reduced = set([])
-		D = csp.get_domains()
-		for v, new_domain in D_consistent.items():
-			if len(new_domain) < len(D[v]):
-				csp.update_domain(v, new_domain)
-				reduced.add(v)
-		if len(reduced) > 0:
-			return (DOMAINS_REDUCED, examined, reduced)
-		return (DOMAINS_INTACT, examined)
+		(D_consistent, examined) = self.__consistent(csp, curvar, {value})
+		return self.__establish(curvar, csp, D_consistent, examined)
 
 	def propagate(self, csp, reduced_vars):
 		'''Establishes boundary consistency w.r.t. diamdec constraint.
@@ -57,7 +46,39 @@ class DIAMDEC():
 		
 		If the impact is significant, then we shall look for an efficient
 		algorithm.'''
-		return (DOMAINS_INTACT, set([]))
+		curvar = sorted(reduced_vars)[0]
+		if curvar == "D7":
+			return (DOMAINS_INTACT, set([]))
+		values = csp.get_domain(curvar)
+		(D_consistent, examined) = self.__consistent(csp, curvar, values)
+		return self.__establish(curvar, csp, D_consistent, examined)
+
+	def __confset(self, curvar, csp):
+		'''Returns the conflict set.'''
+		confset = set([])
+		A = csp.get_assignment()
+		curvar_index = int(curvar[1])
+		for i in range(1, curvar_index+1):
+			vari = "D"+str(i)
+			if vari in A:
+				confset.add(vari)
+		return confset
+
+	def __establish(self, curvar, csp, D_consistent, examined):
+		if D_consistent == CONTRADICTION:
+			confset = self.__confset(curvar, csp)
+			return (CONTRADICTION, examined, confset)
+		del D_consistent[curvar]
+		reduced = set([])
+		D = csp.get_domains()
+		for v, new_domain in D_consistent.items():
+			if len(new_domain) < len(D[v]):
+				csp.update_domain(v, new_domain)
+				reduced.add(v)
+		if len(reduced) > 0:
+			return (DOMAINS_REDUCED, examined, reduced)
+		return (DOMAINS_INTACT, examined)
+
 
 	def __compare(self, A, B, diff):
 		'''Checks if values in B (D_i+1) are consistent W.R.T. A (D_i).
@@ -76,11 +97,11 @@ class DIAMDEC():
 					B_consistent.add(val_B)
 		return (A_consistent, B_consistent)
 
-	def __consistent(self, csp, curvar, value):
+	def __consistent(self, csp, curvar, curvar_values):
 		'''Evaluates unassigned D variables and returns consistent values.'''
 		curvar_index = int(curvar[1])
 		D_consistent = {"D"+str(i): set([]) for i in range(curvar_index, 8)}
-		D_consistent[curvar] = {value}
+		D_consistent[curvar] = curvar_values
 		examined = set([])
 		for i in range(curvar_index, 7):
 			var_A = "D"+str(i)

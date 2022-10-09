@@ -97,6 +97,7 @@ class test_LENDEC(unittest.TestCase):
         # assess
         self.assertEqual(out[0], CONTRADICTION)
         self.assertEqual(out[1], {"L3"})
+        self.assertEqual(out[2], {"L2"})
 
     def test_contradiction_occurs_2(self):
         '''Another case in which contradiction occurs.'''

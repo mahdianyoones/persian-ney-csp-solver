@@ -39,6 +39,7 @@ class Test_HOLE6(unittest.TestCase):
 		self.__reset_csp()
 		csp = self.__csp
 		csp.assign("L2", 24)
+		csp.assign("L3", 61)
 		csp.assign("L4", 24)
 		csp.assign("L5", 61)
 		csp.update_domain("L1", {"min": 287, "max": 287})
@@ -47,6 +48,7 @@ class Test_HOLE6(unittest.TestCase):
 		# assess
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L1"})
+		self.assertEqual(output[2], {"L2", "L3", "L4", "L5"})
 
 	def test_all_consistent(self):
 		'''Asserts that L1, L2, L3, L4, and L5 are consistnet.

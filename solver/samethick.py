@@ -33,7 +33,7 @@ class SAMETHICK():
         newdomains = self.__new_domains(value, D)
         examined_vars = {"T2", "T3", "T4", "T5", "T6", "T7"}
         if newdomains == CONTRADICTION:
-            return (CONTRADICTION, examined_vars)
+            return (CONTRADICTION, examined_vars, set([]))
         if len(newdomains.keys()) == 0:
             return (DOMAINS_INTACT, examined_vars)
         for vi, new_domain in newdomains.items():

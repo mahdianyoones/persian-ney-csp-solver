@@ -67,7 +67,7 @@ class SAMEROUND():
         newdomains = self.__new_domains(value, D)
         examined_vars = {"R2", "R3", "R4", "R5", "R6", "R7"}
         if newdomains == CONTRADICTION:
-            return (CONTRADICTION, examined_vars)
+            return (CONTRADICTION, examined_vars, set([]))
         if len(newdomains.keys()) == 0:
             return (DOMAINS_INTACT, examined_vars)
         for vi, new_domain in newdomains.items():

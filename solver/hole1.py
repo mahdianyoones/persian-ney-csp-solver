@@ -111,11 +111,21 @@ class HOLE1():
                 new_domain = {"min": D[var]["min"], "max": new_upper}
                 new_domains[var] = new_domain
         return new_domains
-            
+
+    def __confset(self, csp):
+        '''Returns the conflict set.'''
+        confset = set([])
+        A = csp.get_assignment()
+        for v in {"L1", "L2", "L3"}:
+            if v in A:
+                confset.add(v)
+        return confset
+
     def __update(self, csp, new_domains, ims):
         '''Carries out the final domain updates.'''
         if new_domains == CONTRADICTION:
-            return (CONTRADICTION, ims)
+            confset = self.__confset(csp)
+            return (CONTRADICTION, ims, confset)
         elif len(new_domains) > 0:
             for var, new_domain in new_domains.items():
                 csp.update_domain(var, new_domain)

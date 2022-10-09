@@ -37,6 +37,21 @@ class Test_HOLE1(unittest.TestCase):
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L2", "L3"})
 
+	def test_contradiction_after_establish(self):
+		'''Asserts the occurence of a contradictory case.'''
+		# arrange
+		self.__reset_csp()
+		csp = self.__csp
+		csp.update_domain("L3", {"min": 122, "max": 122})
+		csp.assign("L1", 132)
+		csp.assign("L2", 48)
+		# act
+		output = self.__sut.establish(csp, "L2", 48)
+		# assess
+		self.assertEqual(output[0], CONTRADICTION)
+		self.assertEqual(output[1], {"L3"})
+		self.assertEqual(output[2], {"L1", "L2"})
+
 	def test_domains_intact_after_propagation(self):
 		'''Asserts that L1, L2, and L3 are examined and remain intact.'''
 		# arrange

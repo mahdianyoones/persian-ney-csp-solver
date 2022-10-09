@@ -47,7 +47,7 @@ class test_DIAMDEC(unittest.TestCase):
     def __reset_csp(self):
         self.__csp.unassign_all()
 
-    def test_no_reduction(self):
+    def test_no_reduction_after_establish(self):
         '''Asserts a case that no reduction occurs.
                 
             All values in the domain of all unassigned variables have one of
@@ -68,6 +68,32 @@ class test_DIAMDEC(unittest.TestCase):
         # act
         csp.assign("D1", 14)
         output = self.__sut.establish(csp, "D1", 14)
+        # assess
+        self.assertEqual(output[0], DOMAINS_INTACT)
+        self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})
+
+    def test_no_reduction_after_propagation(self):
+        '''Asserts a case that no reduction occurs.
+                
+            All values in the domain of all unassigned variables have one of
+            these values to be considered consistent:
+
+            diff = 1.0          a boundary value
+            diff = 0.5          a boundary value
+            0.5 < diff < 1.0    between the boundaries'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("D1", {14})
+        csp.update_domain("D2", {13})
+        csp.update_domain("D3", {12.5})
+        csp.update_domain("D4", {11.5})
+        csp.update_domain("D5", {10.5})
+        csp.update_domain("D6", {9.5})
+        csp.update_domain("D7", {8.5, 8.6, 9})
+        # act
+        csp.assign("D1", 14)
+        output = self.__sut.propagate(csp, {"D5", "D4", "D1", "D7"})
         # assess
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})

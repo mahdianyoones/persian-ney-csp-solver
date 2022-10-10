@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 
-from solver.catalog import CATALOG
+from catalog import CATALOG
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -49,51 +49,61 @@ class test_STOCK(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         self.__catalog = CATALOG()
-        self.__sut = STOCK()
-    
-    def __reset_csp(self):
-        csp = self.__csp
-        csp.unassign_all()
+        self.__catalog.setup()
         self.__catalog.add_piece(1, 18, 0, 10) # (T, D, R, L)
         self.__catalog.add_piece(1, 19, 0, 10)
         self.__catalog.add_piece(1, 19, 0, 10)
         self.__catalog.add_piece(2, 19, 1, 10)
         self.__catalog.add_piece(2, 19, 0, 10)
         self.__catalog.add_piece(3, 20, 2, 10)
+        self.__sut = STOCK(self.__catalog)
+    
+    def __reset_csp(self):
+        csp = self.__csp
+        csp.unassign_all()
+        # node 1
         csp.update_domain("T1", {1, 2, 3})
         csp.update_domain("D1", {18, 19, 20})
         csp.update_domain("R1", {0, 1, 2})
-        csp.update_domain("L1", {1, 1000}) # arbitrary upper
+        csp.update_domain("L1", {"min": 1, "max": 1000}) # arbitrary upper
+        # node 2
         csp.update_domain("T2", {1, 2, 3})
         csp.update_domain("D2", {18, 19, 20})
         csp.update_domain("R2", {0, 1, 2})
-        csp.update_domain("L2", {1, 1000}) # arbitrary upper
+        csp.update_domain("L2", {"min": 1, "max": 1000}) # arbitrary upper
 
     def test_L_reduces(self):
-        '''Asserts a case that with D1, R1, and T1 assignments, L1 reduce.
-        
-        This case also covers the case that stock2 is performed.'''
+        '''Asserts a case that with D1, R1, and T1 assignments, L1 reduce.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp
+        csp.assign("T1", 1)
         csp.assign("D1", 19)
         csp.assign("R1", 0)
-        csp.assign("T1", 1)
-        csp.assign("D2", 18)
-        csp.assign("R2", 0)
-        csp.assign("T2", 1)
         # act
-        out1 = self.__sut.establish("T1", 1)
-        out2 = self.__sut.establish("T2", 1)
+        out = self.__sut.establish(csp, "T1", 1)
         # assess
         D = csp.get_domains()
-        self.assertEqual(out1[0], DOMAINS_REDUCED)
-        self.assertEqual(out1[1], {"L1"})
-        self.assertEqual(out1[2], {"L1"})
+        self.assertEqual(out[0], DOMAINS_REDUCED)
+        self.assertEqual(out[1], {"L1"})
+        self.assertEqual(out[2], {"L1"})
         self.assertEqual(D["L1"], {"min": 1, "max": 20})
-        self.assertEqual(out2[0], DOMAINS_REDUCED)
-        self.assertEqual(out2[1], {"L2"})
-        self.assertEqual(out2[2], {"L2"})
+
+    def test_L_reduces_2(self):
+        '''Asserts a case that with D2, R2, and T2 assignments, L2 reduce.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.assign("T2", 1)
+        csp.assign("D2", 18)
+        csp.assign("R2", 0)
+        # act
+        out = self.__sut.establish(csp, "T2", 1)
+        # assess
+        D = csp.get_domains()
+        self.assertEqual(out[0], DOMAINS_REDUCED)
+        self.assertEqual(out[1], {"L2"})
+        self.assertEqual(out[2], {"L2"})
         self.assertEqual(D["L2"], {"min": 1, "max": 10})
 
     def test_contradiction_occurs(self):
@@ -104,9 +114,9 @@ class test_STOCK(unittest.TestCase):
         csp.assign("D1", 19)
         csp.assign("R1", 0)
         csp.assign("T1", 1)
-        csp.update_domain("L1", {21, 100}) # arbitrary upper
+        csp.update_domain("L1", {"min": 21, "max": 100}) # arbitrary upper
         # act
-        out = self.__sut.establish("T1", 1)
+        out = self.__sut.establish(csp, "T1", 1)
         # assess
         D = csp.get_domains()
         self.assertEqual(out[0], CONTRADICTION)
@@ -122,14 +132,14 @@ class test_STOCK(unittest.TestCase):
         csp.assign("D1", 19)
         csp.assign("R1", 0)
         # act
-        out = self.__sut.establish("R1", 0)
+        out = self.__sut.establish(csp, "R1", 0)
         # assess
         self.assertEqual(out[0], DOMAINS_REDUCED)
         self.assertEqual(out[1], {"T1", "L1"})
         self.assertEqual(out[2], {"T1", "L1"})
         D = csp.get_domains()
-        self.assertEqual(D["T1"], {1})
-        self.assertEqual(D["L1"], {"min": 1, "max": 10})
+        self.assertEqual(D["T1"], {1, 2})
+        self.assertEqual(D["L1"], {"min": 1, "max": 30})
 
     def test_LTD_reduce(self):
         '''Asserts a case that L1, T1, and D1 are reduced.
@@ -140,15 +150,15 @@ class test_STOCK(unittest.TestCase):
         csp = self.__csp
         csp.assign("R1", 0)
         # act
-        out = self.__sut.establish("R1", 0)
+        out = self.__sut.establish(csp, "R1", 0)
         # assess
         self.assertEqual(out[0], DOMAINS_REDUCED)
         self.assertEqual(out[1], {"D1", "T1", "L1"})
         self.assertEqual(out[2], {"D1", "T1", "L1"})
         D = csp.get_domains()
-        self.assertEqual(D["T1"], {1})
+        self.assertEqual(D["T1"], {1, 2})
         self.assertEqual(D["D1"], {18, 19})
-        self.assertEqual(D["L1"], {"min": 1, "max": 30})
+        self.assertEqual(D["L1"], {"min": 1, "max": 40})
 
     def test_no_reduction(self):
         '''Asserts a case that no assignment impacts nothing.
@@ -159,7 +169,7 @@ class test_STOCK(unittest.TestCase):
         self.__reset_csp()
         csp = self.__csp
         # act
-        out = self.__sut.propagate("R1")
+        out = self.__sut.propagate(csp, {"R1"})
         # assess
         self.assertEqual(out[0], DOMAIN_INTACT)
         self.assertEqual(out[1], set([]))

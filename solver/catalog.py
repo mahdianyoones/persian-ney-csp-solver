@@ -1,5 +1,4 @@
 import csv
-import copy
 from constants import *
 
 class TREE():
@@ -17,7 +16,7 @@ class TREE():
 		return child
 
 	def update_meta(self, meta):
-		self.meta = meta	
+		self.__meta = meta	
 	
 	def has_child(self, key):
 		return key in self.__children_keys
@@ -52,19 +51,8 @@ class INDEX():
 		for key in self.__keys:
 			cursor.update_meta(cursor.get_meta() + L)
 			cursor = cursor.get_child(vals[key])
+		cursor.update_meta(cursor.get_meta() + L)
 	
-	def __build_route(self, T, D, R):
-		'''Creates nodes for the abset steps in the route.
-		
-		This function does not add L to the route.'''
-		vals = {"D": D, "R": R, "T": T}
-		cursor = self.__head
-		for key in self.__keys:
-			if not cursor.has_child(vals[key]):
-				cursor = cursor.add_child(vals[key])
-			else:		
-				cursor = cursor.get_child(vals[key])
-					
 	def find(self, filters):
 		'''Finds the node in the index tree given the filters.
 		
@@ -78,7 +66,19 @@ class INDEX():
 				if cursor == NODE_NOT_FOUND:
 					return NODE_NOT_FOUND
 		return cursor
-				
+
+	def __build_route(self, T, D, R):
+		'''Creates nodes for the absent steps in the route.
+		
+		This function does not add L to the route.'''
+		vals = {"D": D, "R": R, "T": T}
+		cursor = self.__head
+		for key in self.__keys:
+			if not cursor.has_child(vals[key]):
+				cursor = cursor.add_child(vals[key])
+			else:		
+				cursor = cursor.get_child(vals[key])
+									
 class CATALOG():
 	'''
 	Builds up 6 B+Tree indices to enable quick enquiries of the following formats:
@@ -130,7 +130,7 @@ class CATALOG():
 		return set([])
 	
 	def l(self, filters={}):
-		'''Given the filters, searchs in indices for L.'''
+		'''Given the filters, looks in indices for L.'''
 		idx = self.__locate_idx(filters)
 		node = idx.find(filters)
 		if node != NODE_NOT_FOUND:
@@ -164,7 +164,7 @@ class CATALOG():
 					self.__routes[route] = idx_name
 
 	def __idx_names(self):
-		return {	"D-R-T", "D-T-R", 
+		return {"D-R-T", "D-T-R", 
 				"R-D-T", "R-T-D",
 				"T-D-R", "T-R-D"}
 	

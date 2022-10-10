@@ -32,7 +32,7 @@ class STOCK():
 		examined = set([])
 		reduced_vars = set([])
 		new_domains = {}
-		confset = set(filters.keys())
+		confset = {v+str(node_index) for v in filters.keys()}
 		for var in {v+str(node_index) for v in {"T", "R", "D", "L"}}:
 			if var in A:
 				continue

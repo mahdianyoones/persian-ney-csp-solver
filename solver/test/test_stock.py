@@ -121,6 +121,7 @@ class test_STOCK(unittest.TestCase):
         D = csp.get_domains()
         self.assertEqual(out[0], CONTRADICTION)
         self.assertEqual(out[1], {"L1"})
+        self.assertEqual(out[2], {"D1", "R1", "T1"})
 
     def test_LT_reduce(self):
         '''Asserts a case that L1 and T1 are reduced.

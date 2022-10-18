@@ -146,7 +146,7 @@ class test_DIAMDEC(unittest.TestCase):
     def test_contradiction(self):
         '''Asserts a contradictory case.
                     
-           All values of one unassigned variables are removed.'''
+           All values of one unassigned variable are removed.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp

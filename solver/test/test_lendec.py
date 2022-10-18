@@ -11,7 +11,14 @@ from spec import specs
 from constants import *
 
 class test_LENDEC(unittest.TestCase):
-    '''Tests the behavior of len decrement consistency.'''
+    '''Tests the behavior of len decrement consistency.
+    
+    The following inequalities are established between variables L2 to L7:
+    L2 > L3
+    L3 > L4
+    L4 > L5
+    L5 > L6
+    L6 > L7'''
     
     def setUp(self):
         self.__csp = CSP()
@@ -25,93 +32,98 @@ class test_LENDEC(unittest.TestCase):
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("L4", {"min": 90, "max": 80})
-        csp.update_domain("L5", {"min": 59, "max": 80})     # to 60, 79
-        csp.update_domain("L6", {"min": 39, "max": 79})     # to 40, 78
-        csp.update_domain("L7", {"min": 39, "max": 78})     # to 39, 77
+        csp.update_domain("L2", {"min": 50, "max": 100})    # to 49, 99
+        csp.update_domain("L3", {"min": 49, "max": 99})     # to 48, 98
+        csp.update_domain("L4", {"min": 48, "max": 98})     # to 47, 97
+        csp.update_domain("L5", {"min": 47, "max": 97})     # to 46, 96
+        csp.update_domain("L6", {"min": 46, "max": 96})     # to 45, 95
+        csp.update_domain("L7", {"min": 45, "max": 95})     # to 44, 94
         # act
-        out = self.__sut.propagate(csp, {"L4", "L6", "L7"})
+        out = self.__sut.propagate(csp, {"L2"})
         # assess
         D = csp.get_domains()
         self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L5", "L6", "L7"})
-        self.assertEqual(out[2], {"L5", "L6", "L7"})
-        self.assertEqual(D["L5"], {"min": 60, "max": 79})
-        self.assertEqual(D["L6"], {"min": 40, "max": 78})
-        self.assertEqual(D["L7"], {"min": 39, "max": 77})
+        self.assertEqual(out[2], {"L2", "L3", "L4", "L5", "L6", "L7"})
+        self.assertEqual(D["L2"], {"min": 49, "max": 99})
+        self.assertEqual(D["L3"], {"min": 48, "max": 98})
+        self.assertEqual(D["L4"], {"min": 47, "max": 97})
+        self.assertEqual(D["L5"], {"min": 46, "max": 96})
+        self.assertEqual(D["L6"], {"min": 45, "max": 95})
+        self.assertEqual(D["L7"], {"min": 44, "max": 94})
 
     def test_establish_reduces_bounds(self):
         '''A case that all inconsistency conditions exist and are fixed.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("L3", {"min": 53, "max": 81})    # to 54, 80
-        csp.update_domain("L4", {"min": 35, "max": 80})    # to 36, 79
-        csp.update_domain("L5", {"min": 24, "max": 78})
-        csp.update_domain("L6", {"min": 15, "max": 77})    # to 16, 77
-        csp.update_domain("L7", {"min": 13, "max": 77})    # to 13, 76
+        csp.assign("L2", 50)
+        csp.update_domain("L3", {"min": 48, "max": 50})     # to 49, 49
+        csp.update_domain("L4", {"min": 47, "max": 49})     # to 48, 48
+        csp.update_domain("L5", {"min": 47, "max": 47})
+        csp.update_domain("L6", {"min": 45, "max": 47})     # to 46, 46
+        csp.update_domain("L7", {"min": 44, "max": 46})     # to 45, 45
         # act
-        csp.assign("L2", 81)
-        out = self.__sut.establish(csp, "L2", 81)
+        out = self.__sut.establish(csp, "L2", 50)
         # assess
         D = csp.get_domains()
         self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L3", "L4", "L5", "L6", "L7"})
         self.assertEqual(out[2], {"L3", "L4", "L6", "L7"})
-        self.assertEqual(D["L3"], {"min": 54, "max": 80})
-        self.assertEqual(D["L4"], {"min": 36, "max": 79})
-        self.assertEqual(D["L6"], {"min": 16, "max": 77})
-        self.assertEqual(D["L7"], {"min": 15, "max": 76})
+        self.assertEqual(D["L3"], {"min": 49, "max": 49})
+        self.assertEqual(D["L4"], {"min": 48, "max": 48})
+        self.assertEqual(D["L6"], {"min": 46, "max": 46})
+        self.assertEqual(D["L7"], {"min": 45, "max": 45})
 
     def test_establish_reduces_bounds_2(self):
         '''Another case in which inconsisten values are removed.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.assign("L2", 81)
-        csp.update_domain("L3", {"min": 53, "max": 81})    # to 54, 80
-        csp.assign("L4", 36)
-        csp.update_domain("L5", {"min": 23, "max": 36})    # to 24, 35
-        csp.assign("L6", 18)
-        csp.update_domain("L7", {"min": 16, "max": 18})    # to 17, 17
+        csp.assign("L2", 50)
+        csp.assign("L5", 47)
+        csp.update_domain("L3", {"min": 48, "max": 50})     # to 49, 49
+        csp.update_domain("L4", {"min": 47, "max": 49})     # to 48, 48
+        csp.update_domain("L6", {"min": 45, "max": 47})     # to 46, 46
+        csp.update_domain("L7", {"min": 44, "max": 46})     # to 45, 45
         # act
-        out = self.__sut.establish(csp, "L2", 81)
+        out = self.__sut.establish(csp, "L5", 47)
         # assess
         D = csp.get_domains()
         self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L3", "L5", "L7"})
-        self.assertEqual(out[2], {"L3", "L5", "L7"})
-        self.assertEqual(D["L3"], {"min": 54, "max": 80})
-        self.assertEqual(D["L5"], {"min": 24, "max": 35})
-        self.assertEqual(D["L7"], {"min": 17, "max": 17})
+        self.assertEqual(out[2], {"L3", "L4", "L6", "L7"})
+        self.assertEqual(D["L3"], {"min": 49, "max": 49})
+        self.assertEqual(D["L4"], {"min": 48, "max": 48})
+        self.assertEqual(D["L6"], {"min": 46, "max": 46})
+        self.assertEqual(D["L7"], {"min": 45, "max": 45})
 
     def test_contradiction_occurs(self):
         '''A case in which contradiction occurs.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("L3", {"min": 53, "max": 53}) # min cannot become 54
+        csp.update_domain("L3", {"min": 50, "max": 50}) # min cannot become 49
        # act
-        csp.assign("L2", 81)
-        out = self.__sut.establish(csp, "L2", 81)
+        csp.assign("L2", 50)
+        out = self.__sut.establish(csp, "L2", 50)
         # assess
         self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L3"})
         self.assertEqual(out[2], {"L2"})
 
-    def test_contradiction_occurs_2(self):
-        '''Another case in which contradiction occurs.'''
+    def test_establish_reduces_bounds_3(self):
+        '''Another case in which inconsisten values are removed.'''
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("L3", {"min": 54, "max": 80})
-        csp.update_domain("L4", {"min": 36, "max": 79})
-        csp.update_domain("L5", {"min": 24, "max": 78})
-        csp.update_domain("L6", {"min": 16, "max": 77})
-        csp.update_domain("L7", {"min": 16, "max": 76})
+        csp.assign("L2", 83)
+        csp.update_domain("L3", {"min": 40, "max": 100})    # to 82, 82
+        csp.update_domain("L4", {"min": 40, "max": 99})     # to 81, 81
+        csp.assign("L5", 80)
+        csp.assign("L6", 79)
+        csp.assign("L7", 78)
         # act
-        csp.assign("L2", 81)
-        out = self.__sut.establish(csp, "L2", 81)
+        out = self.__sut.establish(csp, "L5", 47)
         # assess
-        self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L3", "L4", "L5", "L6", "L7"})
+        D = csp.get_domains()
+        self.assertEqual(out[0], DOMAINS_REDUCED)
+        self.assertEqual(out[2], {"L3", "L4"})
+        self.assertEqual(D["L3"], {"min": 82, "max": 82})
+        self.assertEqual(D["L4"], {"min": 81, "max": 81})

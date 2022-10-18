@@ -17,7 +17,8 @@ class Test_HOLE6(unittest.TestCase):
 			
 	def setUp(self):
 		self.__csp = CSP()
-		self.__sut = HOLE6(specs["C"])
+		spec = specs["C"]
+		self.__sut = HOLE6(spec["h6"], spec["hmarg"])
 
 	def __reset_csp(self):
 		domain = {"min": 1, "max": 1000}

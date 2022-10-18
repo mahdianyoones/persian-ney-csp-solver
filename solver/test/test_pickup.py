@@ -63,6 +63,7 @@ class test_SELECT(unittest.TestCase):
             csp.update_domain("L"+str(i), {"min": 1, "max": 1})
         csp.update_domain("L7", {"min": 1, "max": 2})
         csp.update_domain("L3", {"min": 1, "max": 2})
+        csp.update_domain("L4", {"min": 1, "max": 2})
         # act
         D = csp.get_domains()
         for i in range(0, 28):
@@ -76,6 +77,6 @@ class test_SELECT(unittest.TestCase):
             self.assertEqual(selected_vars[i][0], "R")
         for i in range(14, 21):
             self.assertEqual(selected_vars[i][0], "D")
-        e = ["L2","L1","L3","L4","L5","L6","L7"]
+        e = ["L2","L3", "L1", "L4", "L5","L6","L7"]
         for i in range(21, 28):
             self.assertEqual(selected_vars[i], e[i-21])

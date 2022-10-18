@@ -8,8 +8,8 @@ class SELECT():
 		'''Initiates impact heuristic.
 		
 		This heuristic prioritizes the selection of TH and R variables over
-		others, since samethich and sameround algorithms reduce all
-		participating variables to 1 value quickly.
+		others, since samethick and sameround algorithms reduce all
+		participating variables to 1 value all at once.
 		
 		Fourthermore, due to the constraint diamdec, D variables with higher
 		indices have higher impacts, in that selecting D1 first makes 6 other

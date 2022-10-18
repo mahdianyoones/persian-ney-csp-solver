@@ -10,6 +10,7 @@ import test_diamdec
 import test_lendec
 import test_pickup
 import test_stock
+import test_mac
 
 cases = [
 	test_hole1,
@@ -22,7 +23,8 @@ cases = [
 	test_diamdec,
 	test_lendec,
 	test_pickup,
-	test_stock
+	test_stock,
+	test_mac
 ]
 
 if __name__ == "__main__":

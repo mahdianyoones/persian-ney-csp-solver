@@ -23,9 +23,9 @@ class HOLE6():
     
     L1_min + L2_min + L3_min + L4_min + L5_min + hole_margin >= h6.'''
 
-    def __init__(self, spec):
-        self.__h = spec["h6"]
-        self.__space = spec["hmarg"] * 1
+    def __init__(self, h6, hmarg):
+        self.__h = h6
+        self.__space = hmarg
         self.__impact_map = {
             "L1": {"L2", "L3", "L4", "L5"},
             "L2": {"L1", "L3", "L4", "L5"},
@@ -111,7 +111,7 @@ class HOLE6():
             ups["L5"] = h-lows["L1"]-lows["L2"]-lows["L3"]-lows["L4"]-s-1
         new_domains = {}			
         for var, new_upper in ups.items():
-            if not self.__inbounds(new_upper, D[var]):
+            if new_upper < D[var]["min"]:
                 return CONTRADICTION
             if new_upper < D[var]["max"]:
                 new_domain = {"min": D[var]["min"], "max": new_upper}

@@ -23,9 +23,9 @@ class HOLE1():
     In this case, consistency is impossible, since the lower bounds cannot
     be reduced.'''
 
-    def __init__(self, spec):
-        self.__h = spec["h1"]
-        self.__space = spec["hmarg"]
+    def __init__(self, h1, hmarg):
+        self.__h = h1
+        self.__space = hmarg
         self.__impact_map = {
             "L1": {"L2", "L3"},
             "L2": {"L1", "L3"},
@@ -90,10 +90,7 @@ class HOLE1():
             if not var in A:
                 ims.add(var)
         return ims
-    
-    def __inbound(self, val, bounds):
-         return val >= bounds["min"] and val <= bounds["max"]
-     
+         
     def __new_domains(self, D, lowers, ims, h, s):
         '''Calculates new consistent bounds.'''
         ups = {}
@@ -105,7 +102,7 @@ class HOLE1():
             ups["L3"] = h - lowers["L1"] - lowers["L2"] - s - 1
         new_domains = {}			
         for var, new_upper in ups.items():
-            if not self.__inbound(new_upper, D[var]):
+            if new_upper < D[var]["min"]:
                 return CONTRADICTION
             if new_upper < D[var]["max"]:
                 new_domain = {"min": D[var]["min"], "max": new_upper}

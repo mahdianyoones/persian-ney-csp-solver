@@ -72,13 +72,13 @@ class LENDEC():
             if Di != DOMAIN_INTACT:
                 reduced.add(Li)
                 csp.update_domain(Li, Di)
-            elif Dj != DOMAIN_INTACT:
+            if Dj != DOMAIN_INTACT:
                 reduced.add(Lj)
                 csp.update_domain(Lj, Dj)
             if len(new_pairs) > 0:
                 queue.update(new_pairs)
         if len(reduced) > 0:
-            return (DOMAINS_REDUCED, examined, confset)
+            return (DOMAINS_REDUCED, examined, reduced)
         return (DOMAINS_INTACT, examined)
 
     def __revise(self, Li, Lj, A, D):
@@ -104,22 +104,24 @@ class LENDEC():
             elif Di["min"] <= D[Li]["min"]:
                 Di = DOMAIN_INTACT
             else: # reduced
-                new_pairs.update(self.__new_pairs(int(Li[1])))
+                reduced_idx = int(Li[1])
+                new_pairs.update(self.__new_pairs(reduced_idx, Li, Lj))
         if Dj != DOMAIN_INTACT:
             if Dj["max"] < Dj["min"]:
                 Dj = CONTRADICTION
             elif Dj["max"] >= D[Lj]["max"]:
                 Dj = DOMAIN_INTACT
             else: # reduced
-                new_pairs.update(self.__new_pairs(int(Lj[1])))
+                reduced_idx = int(Lj[1])
+                new_pairs.update(self.__new_pairs(reduced_idx, Li, Lj))
         return (Di, Dj, new_pairs)
 
-    def __new_pairs(self, i):
-        pair1 = ("L"+str(i), "L"+str(i+1))
-        pair2 = ("L"+str(i-1), "L"+str(i))
+    def __new_pairs(self, reduced_idx, Li, Lj):
+        pair1 = ("L"+str(reduced_idx), "L"+str(reduced_idx+1))
+        pair2 = ("L"+str(reduced_idx-1), "L"+str(reduced_idx))
         new_pairs = set([])
-        if pair1 in self.__neighbors:
+        if pair1 in self.__neighbors and pair1 != (Li, Lj):
             new_pairs.add(pair1)
-        if pair2 in self.__neighbors:
+        if pair2 in self.__neighbors and pair2 != (Li, Lj):
             new_pairs.add(pair2)
         return new_pairs

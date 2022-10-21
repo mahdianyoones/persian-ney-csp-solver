@@ -86,6 +86,8 @@ class LENDEC():
         new_pairs = set([])
         Di = DOMAIN_INTACT
         Dj = DOMAIN_INTACT
+        i_idx = int(Li[1])
+        j_idx =  int(Lj[1])
         if not Li in A:
             if Lj in A:
                 new_min = A[Lj] + 1
@@ -104,16 +106,14 @@ class LENDEC():
             elif Di["min"] <= D[Li]["min"]:
                 Di = DOMAIN_INTACT
             else: # reduced
-                reduced_idx = int(Li[1])
-                new_pairs.update(self.__new_pairs(reduced_idx, Li, Lj))
+                new_pairs.update(self.__new_pairs(i_idx, Li, Lj))
         if Dj != DOMAIN_INTACT:
             if Dj["max"] < Dj["min"]:
                 Dj = CONTRADICTION
             elif Dj["max"] >= D[Lj]["max"]:
                 Dj = DOMAIN_INTACT
             else: # reduced
-                reduced_idx = int(Lj[1])
-                new_pairs.update(self.__new_pairs(reduced_idx, Li, Lj))
+                new_pairs.update(self.__new_pairs(j_idx, Li, Lj))
         return (Di, Dj, new_pairs)
 
     def __new_pairs(self, reduced_idx, Li, Lj):

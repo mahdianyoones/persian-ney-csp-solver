@@ -32,10 +32,13 @@ class SAMETHICK():
         D = csp.get_domains()
         newdomains = self.__new_domains(value, D)
         examined_vars = {"T2", "T3", "T4", "T5", "T6", "T7"}
+        reduced = set([])
         if newdomains == CONTRADICTION:
             return (CONTRADICTION, examined_vars, set([]))
         if len(newdomains.keys()) == 0:
             return (DOMAINS_INTACT, examined_vars)
         for vi, new_domain in newdomains.items():
-            csp.update_domain(vi, new_domain)
-        return (DOMAINS_REDUCED, examined_vars)
+            if len(new_domain) < len(D[vi]):
+                csp.update_domain(vi, new_domain)
+                reduced.add(vi)
+        return (DOMAINS_REDUCED, examined_vars, reduced)

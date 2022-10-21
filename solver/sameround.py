@@ -66,10 +66,13 @@ class SAMEROUND():
         D = csp.get_domains()
         newdomains = self.__new_domains(value, D)
         examined_vars = {"R2", "R3", "R4", "R5", "R6", "R7"}
+        reduced = set([])
         if newdomains == CONTRADICTION:
             return (CONTRADICTION, examined_vars, set([]))
         if len(newdomains.keys()) == 0:
             return (DOMAINS_INTACT, examined_vars)
         for vi, new_domain in newdomains.items():
-            csp.update_domain(vi, new_domain)
-        return (DOMAINS_REDUCED, examined_vars)
+            if len(new_domain) < len(D[vi]):
+                csp.update_domain(vi, new_domain)
+                reduced.add(vi)
+        return (DOMAINS_REDUCED, examined_vars, reduced)

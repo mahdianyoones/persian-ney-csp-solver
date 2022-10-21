@@ -92,10 +92,7 @@ class HOLE6():
             if not var in A:
                 ims.add(var)
         return ims
-    
-    def __inbounds(self, val, bounds):
-         return val >= bounds["min"] and val <= bounds["max"]
-     
+         
     def __new_domains(self, D, lows, ims, h, s):
         '''Calculates new consistent bounds.'''
         ups = {}

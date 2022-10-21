@@ -56,15 +56,18 @@ class MAC():
 		csp = self.__csp
 		constraints = self.__X2C[curvar]
 		reduced_vars = set([])
+		examined_vars = set([])
 		for constraint in constraints:
 			ref = self.__refs[constraint]
 			res = ref.establish(csp, curvar, value)
-			if res[0] == DOMAINS_REDUCED:	
+			examined_vars.update(res[1])
+			if res[0] == DOMAINS_REDUCED: 	
 				reduced_vars.update(res[2])
 			elif res[0] == CONTRADICTION:
-				return (CONTRADICTION, res[2]) # (indicator, conflict set)
+				# (indicator, examined, conflict set)
+				return (CONTRADICTION, examined_vars, res[2]) 
 		if len(reduced_vars) > 0:
-			return (DOMAINS_REDUCED, reduced_vars)
+			return (DOMAINS_REDUCED, examined_vars, reduced_vars)
 		return (DOMAINS_INTACT, set([]))
 
 	def propagate(self, reduced_vars):

@@ -59,7 +59,8 @@ class HOLE1():
         h = self.__h
         s = self.__space
         if self.__contradiction(lowers, h, s):
-            return (CONTRADICTION, ims)
+            confset = self.__confset(csp)
+            return (CONTRADICTION, ims, confset)
         new_domains = self.__new_domains(D, lowers, ims, h, s)
         return self.__update(csp, new_domains, ims)
     

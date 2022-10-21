@@ -1,3 +1,4 @@
+from math import exp
 import unittest
 import sys
 import os
@@ -13,12 +14,7 @@ from spec import specs
 from constants import *
 
 class test_MAC(unittest.TestCase):
-    '''Tests the behavior of mac.
-    
-    The behaviors:
-
-    
-    '''
+    '''Tests the behavior of mac.'''
 
     def setUp(self):
         self.__csp = CSP()
@@ -27,23 +23,29 @@ class test_MAC(unittest.TestCase):
         self.__spec = specs["C"]
         self.__sut = MAC(self.__csp, self.__catalog, self.__spec)
 
-    def test_L1_propagation_after_unary(self):
+    def test_L1_propagates_after_unary(self):
         # arrange
         csp = self.__csp
         UNARY.unarify(csp, self.__catalog, self.__spec)
         # act
         res = self.__sut.propagate({"L1"})
         # assess
-        D = csp.get_domains()
-        self.assertEqual(res, PROPAGATION_PROCEEDED)
-        self.assertEqual(D["L1"], {'min': 45, 'max': 69})
-        self.assertEqual(D["L2"], {'min': 90, 'max': 138})
-        self.assertEqual(D["L3"], {'min': 89, 'max': 137})
-        self.assertEqual(D["L4"], {'min': 88, 'max': 136})
-        self.assertEqual(D["L5"], {'min': 87, 'max': 135})
-        self.assertEqual(D["L6"], {'min': 58, 'max': 134})
-        self.assertEqual(D["L7"], {'min': 20, 'max': 133})
+        self.assertEqual(res[0], PROPAGATION_PROCEEDED)
+        expected = {"half", "len", "hole3", "hole6", "hole1"}
+        self.assertEqual(res[2], expected)
         
+    def test_X_propagates_after_unary(self):
+        # arrange
+        csp = self.__csp
+        UNARY.unarify(csp, self.__catalog, self.__spec)
+        # act
+        X = csp.get_variables()
+        res = self.__sut.propagate(X)
+        # assess
+        self.assertEqual(res[0], PROPAGATION_PROCEEDED)
+        expected = csp.get_constraints().keys()
+        self.assertEqual(res[2], expected)
+
     def test_T1_is_established(self):
         # arrange
         csp = self.__csp
@@ -55,11 +57,8 @@ class test_MAC(unittest.TestCase):
         res = self.__sut.establish("T1", 1.0)
         # assess
         D = csp.get_domains()
-        self.assertEqual(res[0], DOMAINS_REDUCED)
-        examined = {'T6', 'R1', 'T7', 'D1', 'L1', 'T5', 'T3', 'T4', 'T2'}
-        self.assertEqual(res[1], examined)
-        for v in {"T2", "T3", "T4", "T5", "T6", "T7"}:
-            self.assertEqual(D[v], {1.0})
+        expected_examined = {'T2','T3','T4','T5','T6','T7','R1','D1','L1'}
+        self.assertEqual(res[1], expected_examined)
 
     def test_R1_is_established(self):
         # arrange
@@ -73,9 +72,6 @@ class test_MAC(unittest.TestCase):
         # assess
         D = csp.get_domains()
         self.assertEqual(res[0], DOMAINS_REDUCED)
-        expected_examined = {'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'T1', 'D1', 'L1'}
-        expected_reduced = {"R2", "R3", "R4", "R5", "R6", "R7", "T1"}
+        expected_examined = {'R2','R3','R4','R5','R6','R7','T1','D1','L1'}
         self.assertEqual(res[1], expected_examined)
-        self.assertEqual(res[2], expected_reduced)
-        for v in {"R2", "R3", "R4", "R5", "R6", "R7"}:
-            self.assertEqual(D[v], {0.0})
+        self.assertEqual(res[3], {"stock1", "sameround"})

@@ -56,36 +56,43 @@ class MAC():
 		csp = self.__csp
 		constraints = self.__X2C[curvar]
 		reduced_vars = set([])
-		examined_vars = set([])
+		examined = set([])
+		evaled_consts = set([])
 		for constraint in constraints:
+			evaled_consts.add(constraint)
 			ref = self.__refs[constraint]
 			res = ref.establish(csp, curvar, value)
-			examined_vars.update(res[1])
+			examined.update(res[1])
 			if res[0] == DOMAINS_REDUCED: 	
 				reduced_vars.update(res[2])
 			elif res[0] == CONTRADICTION:
-				# (indicator, examined, conflict set)
-				return (CONTRADICTION, examined_vars, res[2]) 
+				return (CONTRADICTION, examined, res[2], evaled_consts)
 		if len(reduced_vars) > 0:
-			return (DOMAINS_REDUCED, examined_vars, reduced_vars)
-		return (DOMAINS_INTACT, set([]))
+			return (DOMAINS_REDUCED, examined, reduced_vars, evaled_consts)
+		return (DOMAINS_INTACT, set([]), evaled_consts)
 
 	def propagate(self, reduced_vars):
 		'''Recursively propagates domain reductions.'''
 		csp = self.__csp
+		evaled_consts = set([])
+		new_reduced_vars = set([])
+		examined = set([])
 		while len(reduced_vars) > 0:
 			_var = reduced_vars.pop()
 			constraints = self.__X2C[_var]
 			for constraint in constraints:
+				evaled_consts.add(constraint)
 				participants = csp.get_neighbors(constraint)
 				reduced_prtcns = reduced_vars.intersection(participants)
 				reduced_prtcns.add(_var)
 				res = self.__refs[constraint].propagate(csp, reduced_prtcns)
+				examined.update(res[1])
 				if res[0] == CONTRADICTION:
-					return (CONTRADICTION, res[2]) # (indocator, conflict set)
+					return (CONTRADICTION, res[2], examined, evaled_consts)
 				if res[0] == DOMAINS_REDUCED:
+					new_reduced_vars.update(res[2])
 					reduced_vars.update(res[2])
-		return PROPAGATION_PROCEEDED
+		return (PROPAGATION_PROCEEDED, new_reduced_vars, evaled_consts)
 		
 	def __init_c_order(self, csp):
 		'''Determines the order of constraints.

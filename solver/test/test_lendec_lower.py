@@ -41,13 +41,32 @@ class test_LENDEC_LOWER(unittest.TestCase):
         csp.update_domain("L5", {"min": 39, "max": 88})     # to 40, 88
         csp.update_domain("L6", {"min": 35, "max": 87})
         # act
-        out = self.__sut.establish(csp, {"L2", 121})
+        out = self.__sut.establish(csp, "L3", 90)
         # assess
         D = csp.get_domains()
         self.assertEqual(out[0], DOMAINS_REDUCED)
         self.assertEqual(out[2], {"L4", "L5"})
         self.assertEqual(D["L4"], {"min": 60, "max": 89})
         self.assertEqual(D["L5"], {"min": 40, "max": 88})
+
+    def test_bug1212(self):
+        '''A case in which propagate detects and removes inconsistent values.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("L2", {"min": 90, "max": 172}) # examined, intact
+        csp.update_domain("L3", {"min": 89, "max": 171}) # examined, intact
+        csp.update_domain("L4", {"min": 88, "max": 170}) # examined, intact
+        csp.update_domain("L5", {"min": 87, "max": 169}) # examined, intact
+        csp.update_domain("L6", {"min": 30, "max": 248}) # reduced
+        # act
+        out = self.__sut.propagate(csp, {"L2","L3","L4","L5","L6"})
+        # assess
+        D = csp.get_domains()
+        self.assertEqual(out[0], DOMAINS_REDUCED)
+        self.assertEqual(out[1], {"L2","L3","L4","L5","L6"})
+        self.assertEqual(out[2], {"L6"})
+        self.assertEqual(D["L6"], {"min": 58, "max": 248})
 
     def test_contradiction_occurs(self):
         '''A case in which contradiction occurs.'''

@@ -74,61 +74,42 @@ class LENDEC_LOWER():
                 confset.add(Lj)
             else:
                 examined.add(Lj)
-            (Di, Dj, new_pairs) = self.__revise(Li, Lj, A, D)
-            if Di == CONTRADICTION or Dj == CONTRADICTION:
+            (Dj, new_pairs) = self.__revise(Li, Lj, A, D)
+            if Dj == CONTRADICTION:
                 return (CONTRADICTION, examined, confset)
-            if Di != DOMAIN_INTACT:
-                reduced.add(Li)
-                csp.update_domain(Li, Di)
             elif Dj != DOMAIN_INTACT:
                 reduced.add(Lj)
                 csp.update_domain(Lj, Dj)
-            if len(new_pairs) > 0:
                 queue.update(new_pairs)
         if len(reduced) > 0:
-            return (DOMAINS_REDUCED, examined, confset)
+            return (DOMAINS_REDUCED, examined, reduced)
         return (DOMAINS_INTACT, examined)
 
     def __revise(self, Li, Lj, A, D):
-        '''Canculates a new value to make Li and Lj consistent.
+        '''Canculates new consistent bounds for Lj, if possible.
         
-        Enforces Lj >= 2/3 Li'''
-        new_pairs = set([])
-        if Li in A: # Lj is not assigned
-            Dj["min"] = math.ceil(2/3 * A[Li])
-            if Dj["min"] > D[Lj]["max"]:
-                return (DOMAIN_INTACT, CONTRADICTION, set([]))
-            if Dj["min"] == D[Lj]["min"]:
-                return (DOMAIN_INTACT, DOMAIN_INTACT, set([]))
-        elif Lj in A:  # Li is not assigned
-            Di["min"] = math.ceil(3/2 * A[Lj])
-            if Di["min"] > D[Li]["max"]:
-                return (CONTRADICTION, DOMAIN_INTACT, set([]))
-            if Di["min"] == D[Li]["min"]:
-                return (DOMAIN_INTACT, DOMAIN_INTACT, set([]))
-        else:
-            Di = copy.deepcopy(D[Li])
-            Dj = copy.deepcopy(D[Lj])
-            Di["min"] = math.ceil(3/2 * Dj["min"])
-            Dj["min"] = math.ceil(2/3 * Di["min"])
-            if Di["min"] == D[Li]["min"]: # both already consistent
-                return (DOMAIN_INTACT, DOMAIN_INTACT, set([]))
-            elif Di["min"] > D[Li]["min"] and Di["max"] <= D[Li]["max"]:
-                new_pairs = self.__new_pairs(int(Li[1]))
-                return (Di, DOMAIN_INTACT, new_pairs)
-            elif Dj["min"] > D[Lj]["min"] and Dj["max"] <= D[Lj]["max"]:
-                new_pairs = self.__new_pairs(int(Lj[1]))
-                return (DOMAIN_INTACT, Dj, new_pairs)
-            else:
-                return (CONTRADICTION, CONTRADICTION, set([]))
-        return (Di, Dj, new_pairs)
+        Or checks the boundaries of Li if Lj is assigned.
 
-    def __new_pairs(self, i):
-        pair1 = ("L"+str(i), "L"+str(i+1))
-        pair2 = ("L"+str(i-1), "L"+str(i))
+        Enforces Lj >= 2/3 Li
+        
+        The assumption is that at least one of Li and Lj are not assigned.'''
         new_pairs = set([])
-        if pair1 in self.__neighbors:
-            new_pairs.add(pair1)
-        if pair2 in self.__neighbors:
-            new_pairs.add(pair2)
-        return new_pairs        
+        Di = DOMAIN_INTACT
+        Dj = DOMAIN_INTACT
+        if Li in A:
+            threshold = math.ceil(2/3 * A[Li])        
+        else:
+            threshold = math.ceil(2/3 * D[Li]["min"])
+        if Lj in A:
+            if A[Lj] < threshold:
+                Dj = CONTRADICTION
+        elif D[Lj]["min"] < threshold:
+            if D[Lj]["max"] >= threshold:
+                Dj = {"min": threshold, "max": D[Lj]["max"]}
+                idx = int(Lj[1])
+                new_pair = ("L"+str(idx), "L"+str(idx+1))
+                if new_pair in self.__neighbors:
+                    new_pairs.add(new_pair)
+            else:
+                Dj = CONTRADICTION
+        return (Dj, new_pairs)

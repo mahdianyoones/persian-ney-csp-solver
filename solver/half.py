@@ -37,42 +37,43 @@ class HALF():
 
 	def propagate(self, csp, reduced_vars):
 		'''Establishes consistency when L1 andor L2 are reduced elsewhere.'''
-		L1 = csp.get_domain("L1")
-		L2 = csp.get_domain("L2")
-		if self.__consistent(L1, L2):
+		D = csp.get_domains()
+		if self.__consistent(D):
 			return (DOMAINS_INTACT, {"L1", "L2"})
-		elif self.__contradiction(L1, L2):
-				return (CONTRADICTION, {"L1", "L2"}, set([]))
+		elif self.__contradiction(D):
+			return (CONTRADICTION, {"L1", "L2"}, set([]))
 		reduced = set([])
-		if L1["min"] * 2 > L2["min"]: # min of L2 can adjust
-			csp.update_domain("L2", {"min": L1["min"] * 2, "max": L2["max"]})
+		if D["L1"]["min"] * 2 > D["L2"]["min"]: # min of L2 can adjust
+			new_domain = {"min": D["L1"]["min"] * 2, "max": D["L2"]["max"]}
+			csp.update_domain("L2", new_domain)
 			reduced.add("L2")
-		elif L1["min"] * 2 < L2["min"]: # min of L1 can adjust
-			new_min = math.ceil(L2["min"] / 2)
-			csp.update_domain("L1", {"min": new_min, "max": L1["max"]})
+		elif D["L1"]["min"] * 2 < D["L2"]["min"]: # min of L1 can adjust
+			new_min = math.ceil(D["L2"]["min"] / 2)
+			csp.update_domain("L1", {"min": new_min, "max": D["L1"]["max"]})
 			reduced.add("L1")
-		if L1["max"] * 2 > L2["max"]: # max of L1 can adjust
-			new_max = math.ceil(L2["max"] / 2)
-			csp.update_domain("L1", {"min": L1["min"], "max": new_max})
+		if D["L1"]["max"] * 2 > D["L2"]["max"]: # max of L1 can adjust
+			new_max = math.ceil(D["L2"]["max"] / 2)
+			csp.update_domain("L1", {"min": D["L1"]["min"], "max": new_max})
 			reduced.add("L1")
-		elif L1["max"] * 2 < L2["max"]: # max of L2 can adjust
-			csp.update_domain("L2", {"min": L2["min"], "max": L1["max"] * 2})
+		elif D["L1"]["max"] * 2 < D["L2"]["max"]: # max of L2 can adjust
+			new_domain = {"min": D["L2"]["min"], "max": D["L1"]["max"] * 2}
+			csp.update_domain("L2", new_domain)
 			reduced.add("L2")
 		return (DOMAINS_REDUCED, {"L1", "L2"}, reduced)
 
-	def __contradiction(self, L1, L2):
+	def __contradiction(self, D):
 		'''Checkes if the domains are inconsistent but cannot adjust.
 		
 		A reduction that reduces one of the domains to one value is likely
 		causing a contradiction--if the other domain does not match.
 		'''
-		if L1["min"] == L1["max"] or L2["min"] == L2["max"]:
+		if D["L1"]["min"] == D["L1"]["max"] or D["L2"]["min"]==D["L2"]["max"]:
 			return True
 		return False
 
-	def __consistent(self, L1, L2):
+	def __consistent(self, D):
 		'''Checks if the domains are already consistent.'''
-		if L1["min"] * 2 == L2["min"]:
-			if L1["max"] * 2 == L2["max"]:
+		if D["L1"]["min"] * 2 == D["L2"]["min"]:
+			if D["L1"]["max"] * 2 == D["L2"]["max"]:
 				return True
 		return False

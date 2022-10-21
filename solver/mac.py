@@ -80,7 +80,6 @@ class MAC():
 				res = self.__refs[constraint].propagate(csp, reduced_prtcns)
 				if res[0] == CONTRADICTION:
 					return (CONTRADICTION, res[2]) # (indocator, conflict set)
-				reduced_vars = reduced_vars.difference(reduced_prtcns)
 				if res[0] == DOMAINS_REDUCED:
 					reduced_vars.update(res[2])
 		return PROPAGATION_PROCEEDED

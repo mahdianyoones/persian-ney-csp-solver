@@ -104,13 +104,13 @@ class SOLVER():
 		Note: If the contradiction occurs due to indirect consistency
 		maintenance, no conflict set is returned. In fact, only curvar
 		is responsible for this inconsistency.'''
-		dir_res = self.mac.direct(curvar, value)
+		establish_res = self.__mac.establish(curvar, value)
 		self.asmnt.assign(curvar, value)
-		if dir_res[0] == CONTRADICTION:
-			return (INCONSISTENT_ASSIGNMENT, dir_res[1])
-		if dir_res[0] == DOMAINS_REDUCED:
-			indir_res = self.mac.indirect(dir_res[1])
-			if indir_res[0] == CONTRADICTION:
+		if establish_res[0] == CONTRADICTION:
+			return (INCONSISTENT_ASSIGNMENT, establish_res[1])
+		if establish_res[0] == DOMAINS_REDUCED:
+			propagate_res = self.__mac.propagate(establish_res[1])
+			if propagate_res == CONTRADICTION:
 				return (INCONSISTENT_ASSIGNMENT, set([]))
 		return (CONSISTENT_ASSIGNMENT, set([]))
 		

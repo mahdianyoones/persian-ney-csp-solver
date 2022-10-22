@@ -82,6 +82,6 @@ class CSP():
 		return self.__C[constraint]
 	
 	def unassign(self, var):
-		del self.assignment[var]
-		self.unassigned.add(var)
-		del self.assigned[self.assigned.index(var)]
+		del self.__assignment[var]
+		self.__unassigned.add(var)
+		del self.__assigned[self.__assigned.index(var)]

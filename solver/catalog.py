@@ -107,9 +107,11 @@ class CATALOG():
 	* Any combinations of TH, R, and D could be given as filters to both values and getL methods.
 	* Both methods execute in constant time.	
 	'''
-	def __init__(self):
+	def __init__(self, csvfile=""):
 		self.__idxs = {}
 		self.__routes = {}
+		if csvfile != "":
+			self.setup(csvfile)
 
 	def setup(self, csvfile=""):
 		'''Performs everything required before a query can be executed.

@@ -140,10 +140,10 @@ class SOLVER():
 				csp.revert_domains() # undo establish and propagation effects
 				continue # try the next value
 			dfs_res = self.__dfs()
-			csp.unassign(curvar)
-			csp.revert_domains()
 			if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
 				return dfs_res
+			csp.unassign(curvar)
+			csp.revert_domains()
 			if dfs_res[0] == BACKTRACK:
 				continue
 			if dfs_res[0] == BACKJUMP:
@@ -165,6 +165,14 @@ class SOLVER():
 			return CONTRADICTION
 		return self.__dfs()
 
+def human_readable(solution):
+	for v in ["L1", "L2", "L3", "L4", "L5", "L6", "L7"]:
+		print(v, ": ", solution[v])
+	for v in ["D1", "D2", "D3", "D4", "D5", "D6", "D7"]:
+		print(v, ": ", solution[v])
+	print("T: ", solution["T1"])
+	print("R: ", solution["R1"])
+
 def main():
 	catalog = CATALOG(current+"/pieces.csv")
 	csp = CSP()
@@ -173,7 +181,7 @@ def main():
 	solver = SOLVER(csp, select, mac)
 	res = solver.find(catalog, specs["C"])
 	if res[0] == SOLUTION:
-		print("Solution found: ", res[1])
+		human_readable(res[1])
 	else:
 		print("No solution was found!")
 			

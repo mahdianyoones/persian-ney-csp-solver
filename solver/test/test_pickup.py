@@ -15,8 +15,7 @@ class test_SELECT(unittest.TestCase):
 
     def setUp(self):
         self.__csp = CSP()
-        self.__sut = SELECT()
-        self.__sut.init_degree(self.__csp)
+        self.__sut = SELECT(self.__csp)
 
     def test_impact_heuristic_works(self):
         # arrange

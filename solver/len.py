@@ -16,21 +16,27 @@ class LEN():
     def establish(self, csp, curvar, value):
         '''Establishes consistency after curvar: value.
         
-        Consistency is possible only when at least 6 variables are assigned.'''
+        Consistency is possible only when at exactly 6 variables are assigned.
+        Contradiction, however, can be detected by examining variables bounds
+        at any time.'''
         A = csp.get_assignment()
         D = csp.get_domains()
         unassigned = None
+        assigned_members = set([])
         confset = set([])
         assigned_sum = 0
         _len = self.__len
         for v in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
-            if not v in A:
-                if unassigned != None: # more than two vars are unassigned
-                    return self.__examine_bounds(D, A, _len)
-                unassigned = v
-            else:
+            if v in A:
+                assigned_members.add(v)
                 assigned_sum += A[v]
                 confset.add(v)
+            else:
+                unassigned = v
+        if len(assigned_members) == 7:
+            return (DOMAIN_INTACT, set([]))
+        if len(assigned_members) < 6:
+            return self.__examine_bounds(D, A, _len)                
         new_val = _len - assigned_sum
         if new_val > D[unassigned]["max"] or new_val < D[unassigned]["min"]:
             return (CONTRADICTION, {unassigned}, confset)

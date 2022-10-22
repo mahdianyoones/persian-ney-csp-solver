@@ -30,6 +30,7 @@ class test_SAMETHICK(unittest.TestCase):
         T1 = 0
         0 does not exist in T2'''
         csp = self.__csp
+        csp.update_domain("T1", {0})
         csp.update_domain("T2", {2.5})
         csp.update_domain("T3", {0, 2.5})
         csp.update_domain("T4", {0, 2.5})
@@ -46,6 +47,7 @@ class test_SAMETHICK(unittest.TestCase):
         T1 = 2.5
         2.5 exists in all variables'''
         csp = self.__csp
+        csp.update_domain("T1", {2.5})
         csp.update_domain("T2", {2.5})
         csp.update_domain("T3", {0, 2.5})
         csp.update_domain("T4", {0, 2.5})
@@ -79,6 +81,7 @@ class test_SAMETHICK(unittest.TestCase):
         
         The domains remain intact in this case, but they are all examined.'''
         csp = self.__csp
+        csp.update_domain("T1", {2.5})
         csp.update_domain("T2", {2.5})
         csp.update_domain("T3", {2.5})
         csp.update_domain("T4", {2.5})

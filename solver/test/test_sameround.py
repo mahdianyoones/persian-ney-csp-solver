@@ -29,6 +29,7 @@ class test_SAMEROUND(unittest.TestCase):
         R1 = 0
         0 does not exist in R2'''
         csp = self.__csp
+        csp.update_domain("R1", {0})
         csp.update_domain("R2", {2.5})
         csp.update_domain("R3", {0, 2.5})
         csp.update_domain("R4", {0, 2.5})
@@ -44,6 +45,7 @@ class test_SAMEROUND(unittest.TestCase):
         R1 = 2.5
         2.5 exists in all variables'''
         csp = self.__csp
+        csp.update_domain("R1", {2.5})
         csp.update_domain("R2", {2.5})
         csp.update_domain("R3", {0, 2.5})
         csp.update_domain("R4", {0, 2.5})
@@ -77,6 +79,7 @@ class test_SAMEROUND(unittest.TestCase):
         
         The domains remain intact in this case, but they are all examined.'''
         csp = self.__csp
+        csp.update_domain("R1", {2.5})
         csp.update_domain("R2", {2.5})
         csp.update_domain("R3", {2.5})
         csp.update_domain("R4", {2.5})

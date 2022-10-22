@@ -28,7 +28,7 @@ class SAMETHICK():
         for v in {"T1", "T2", "T3", "T4", "T5", "T6", "T7"}:
             if v in A and v != curvar:
                 return (DOMAINS_INTACT, set([]))
-            else:
+            if not v in A and v != curvar:
                 examined.add(v)
         D = csp.get_domains()
         newdomains = self.__new_domains(value, D, examined)

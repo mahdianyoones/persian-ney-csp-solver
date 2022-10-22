@@ -62,7 +62,7 @@ class SAMEROUND():
         for v in {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}:
             if v in A and v != curvar:
                 return (DOMAINS_INTACT, set([]))
-            else:
+            if not v in A and v != curvar:
                 examined.add(v)
         D = csp.get_domains()
         newdomains = self.__new_domains(value, D, examined)

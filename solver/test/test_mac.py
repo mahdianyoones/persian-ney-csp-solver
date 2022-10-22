@@ -35,7 +35,7 @@ class test_MAC(unittest.TestCase):
         expected = csp.get_constraints().keys()
         self.assertEqual(res[2], expected)
 
-    def test_R1_is_established(self):
+    def test_R1_gets_established(self):
         # arrange
         csp = self.__csp
         X = csp.get_variables()

@@ -4,7 +4,7 @@ from constants import *
 class SELECT():
 	'''Helps select next variable and next value for assignment.'''
 		
-	def __init__(self):
+	def __init__(self, csp):
 		'''Initiates impact heuristic.
 		
 		This heuristic prioritizes the selection of TH and R variables over
@@ -18,6 +18,7 @@ class SELECT():
 		
 		The numbers are chosen by trial and error. More analysis is required.'''
 		self.__degree = {}
+		self.__init_degree(csp)
 		self.__impact = {
 			"T1": 100,
 			"T2": 100,
@@ -67,22 +68,21 @@ class SELECT():
 				best = {"var": unassigned_var, "size": size, "rank": rank}
 		return best["var"]
 		
-	def nextval(self, curvar, domain, offset):
-		'''Returns the next value in the domain curvar W.R.T. offset.
-		
-		This is a mathematical function.
-		'''		
+	def nextval(self, curvar, domain):
+		'''Returns the next value in the domain of curvar.'''		
 		if curvar[0] == "L":
-			if offset > domain["max"] - domain["min"]:
-				value = DOMAIN_EXHAUSTED
+			if domain["min"] > domain["max"]:
+				return DOMAIN_EXHAUSTED
+			elif curvar == "L2":
+				domain["min"] += 2
 			else:
-				value = domain["min"] + offset
-		else:
-			value = DOMAIN_EXHAUSTED if len(domain) == 0 else domain.pop()
-		offset += 2 if curvar == "L2" else 1
-		return (value, offset)
+				domain["min"] += 1
+			return domain["min"]
+		elif len(domain) == 0: # D, T, and R variables
+			return DOMAIN_EXHAUSTED
+		return domain.pop()
 
-	def init_degree(self, csp):
+	def __init_degree(self, csp):
 		'''Determines the degree of variables'''
 		constraints = csp.get_constraints()
 		for v in csp.get_variables():

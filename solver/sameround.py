@@ -44,12 +44,10 @@ class SAMEROUND():
         '''Establishes indirect consistency W.R.T. same_r.'''
         return (DOMAINS_INTACT, set([]))
     
-    def __new_domains(self, value, D):
-        '''Returns new domains for participating variables.
-        
-        This is a mathematical function.'''
+    def __new_domains(self, value, D, examined):
+        '''Returns new domains for participating variables.'''
         newdomains = {}
-        for _var in {"R2", "R3", "R4", "R5", "R6", "R7"}:
+        for _var in examined:
             if not value in D[_var]:
                 return CONTRADICTION
             elif len(D[_var]) == 1:
@@ -58,21 +56,22 @@ class SAMEROUND():
         return newdomains
              
     def establish(self, csp, curvar, value):
-        '''Establishes consistency W.R.T. same_r constraint.
-        
-        W.R.T. the assignment curvar: value.'''
-        if curvar != "R1":
-            return (DOMAINS_INTACT, set([]))
+        '''Establishes consistency after assignment curvar: value.'''
+        A = csp.get_assignment()
+        examined = set([])
+        for v in {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}:
+            if v in A and v != curvar:
+                return (DOMAINS_INTACT, set([]))
+            else:
+                examined.add(v)
         D = csp.get_domains()
-        newdomains = self.__new_domains(value, D)
-        examined_vars = {"R2", "R3", "R4", "R5", "R6", "R7"}
+        newdomains = self.__new_domains(value, D, examined)
         reduced = set([])
         if newdomains == CONTRADICTION:
-            return (CONTRADICTION, examined_vars, set([]))
+            return (CONTRADICTION, examined, set([]))
         if len(newdomains.keys()) == 0:
-            return (DOMAINS_INTACT, examined_vars)
+            return (DOMAINS_INTACT, examined)
         for vi, new_domain in newdomains.items():
-            if len(new_domain) < len(D[vi]):
-                csp.update_domain(vi, new_domain)
-                reduced.add(vi)
-        return (DOMAINS_REDUCED, examined_vars, reduced)
+            csp.update_domain(vi, new_domain)
+            reduced.add(vi)
+        return (DOMAINS_REDUCED, examined, reduced)

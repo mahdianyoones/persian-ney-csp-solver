@@ -6,6 +6,9 @@ from pickup import SELECT
 from constants import *
 from unary import UNARY
 import copy
+import os
+
+current = os.path.dirname(os.path.realpath(__file__))
 
 class SOLVER():
 
@@ -14,17 +17,17 @@ class SOLVER():
 		self.__select = select
 		self.__mac = mac
 		X = self.__csp.get_variables()
-		self.__confsets = {v: [] for v in X} # order matters
+		self.__confsets = {v: [] for v in X}
 		
 	def __confvars(self, A, inconsistents, confset, curvar):
 		'''Decides which variables can be added to the conflict set.
 		
-		This is a mathematical function.'''
+		Returns conflicting variables in the order of assignment.'''
 		confvars = []
 		for var in A:
-			if not var in confvars:
+			if not var in inconsistents:
 				continue
-			if var == curvar:
+			if var == curvar: # would be redundant
 				continue
 			if var in confset: # prevent duplicates
 				continue
@@ -41,22 +44,22 @@ class SOLVER():
 		
 		Example:
 		
-		D1 -> R1 -> TH1 -> L1 (if failes due to TH1 and D1)
+		D1 -> R1 -> T1 -> L1 (if failes due to T1 and D1)
 		
-		confset[L1] = [D1, TH1] so that jump happens to TH1 not D1
+		confset[L1] = [D1, T1] so that jump happens first to T1 not D1
 		
 		Jumping must happen to the near past not distant past.
 		
 		Why would we repeat a long history? Why not jump to yesterday and
-		make a tiny difference and quicky proceed to today?
+		make a tiny change and quicky get back to today?
 		
-		If we jumped to the last year instead, we would have to to live a
-		full year again to see if that solves the issue or not!
+		If we jumped to the last year instead, we would have to repeat a
+		full year again to see if that solves the issue of today!
 		'''
 		if len(inconsistents) == 0:
 			return
 		A = self.__csp.get_assignment() # time sorted
-		confset = self.__confsets[curvar]		
+		confset = self.__confsets[curvar]	
 		confvars = self.__confvars(A, inconsistents, confset, curvar)
 		if len(confvars) > 0:
 			self.__confsets[curvar].extend(confvars)
@@ -82,18 +85,6 @@ class SOLVER():
 		confvars = self.__confvars(A, inconsistents, confset, curvar)
 		if len(confvars) > 0:
 			self.__confsets[curvar].extend(confvars)
-				
-	def __retreat(self, curvar, confsets, ac):
-		'''Decides to backjump or backtrack in case an assignment fails.
-		
-		This is a mathematical function.'''
-		if self.__csp.assigned_count() == 0:
-			return (SEARCH_SPACE_EXHAUSTED, None)
-		if curvar in self.__confsets:
-			jump_target = self.__confsets[curvar][-1]
-			confset = self.__confsets[curvar]
-			return (BACKJUMP, confset, jump_target)
-		return (BACKTRACK, None)
 							
 	def __assign(self, curvar, value):
 		'''Tries assigning curvar: value.
@@ -101,16 +92,16 @@ class SOLVER():
 		If the assignment would cause coontradiction, a conflict set is
 		returned.
 		
-		Note: If the contradiction occurs due to indirect consistency
-		maintenance, no conflict set is returned. In fact, only curvar
-		is responsible for this inconsistency.'''
-		establish_res = self.__mac.establish(curvar, value)
-		self.asmnt.assign(curvar, value)
-		if establish_res[0] == CONTRADICTION:
-			return (INCONSISTENT_ASSIGNMENT, establish_res[1])
-		if establish_res[0] == DOMAINS_REDUCED:
-			propagate_res = self.__mac.propagate(establish_res[1])
-			if propagate_res == CONTRADICTION:
+		Note: If the contradiction occurs due to propagation, no conflict set
+		is returned. In fact, only curvar is responsible for this.'''
+		csp = self.__csp
+		csp.assign(curvar, value)
+		res = self.__mac.establish(curvar, value)
+		if res[0] == CONTRADICTION:
+			return (INCONSISTENT_ASSIGNMENT, res[2])
+		if res[0] == DOMAINS_REDUCED:
+			propagate_res = self.__mac.propagate(res[2])
+			if propagate_res[0] == CONTRADICTION:
 				return (INCONSISTENT_ASSIGNMENT, set([]))
 		return (CONSISTENT_ASSIGNMENT, set([]))
 		
@@ -126,28 +117,33 @@ class SOLVER():
 		adding this contradiction to a new constraint may help optimization 
 		in the next phase of the project.
 		'''
-		if self.__csp.unassigned_count() == 0: # solution
-			return (SOLUTION, None)
-		curvar = self.__select.nextvar()
-		domain = copy.deepcopy(self.__csp.get_domain(curvar))
-		offset = 0
+		csp = self.__csp
+		if csp.unassigned_count() == 0: # solution
+			return (SOLUTION, csp.get_assignment())
+		curvar = self.__select.nextvar(csp)
+		domain = copy.deepcopy(csp.get_domain(curvar))
 		while True:
-			(val, offset) = self.__select.nextval(curvar, domain, offset)				
+			val = self.__select.nextval(curvar, domain)				
 			if val == DOMAIN_EXHAUSTED:
-				ac = self.__csp.assigned_count()
-				return self.__retreat(curvar, self.__confsets, ac)
-			self.__csp.backup_domains()
+				if csp.assigned_count() == 0:
+					return (SEARCH_SPACE_EXHAUSTED, None)
+				if curvar in self.__confsets and len(self.__confsets[curvar]) > 0:
+					jump_target = self.__confsets[curvar][-1]
+					confset = self.__confsets[curvar]
+					return (BACKJUMP, confset, jump_target)
+				return (BACKTRACK, None)
+			csp.backup_domains()
 			assign_res = self.__assign(curvar, val)
 			if assign_res[0] == INCONSISTENT_ASSIGNMENT:
 				self.__accumulate(curvar, assign_res[1])
-				self.__csp.unassign(curvar)
-				self.__csp.revert_domains()
-				continue
-			dfs_res = self.dfs()
-			self.__csp.unassign(curvar)
-			self.__csp.revert_domains()
+				csp.unassign(curvar)
+				csp.revert_domains() # undo establish and propagation effects
+				continue # try the next value
+			dfs_res = self.__dfs()
+			csp.unassign(curvar)
+			csp.revert_domains()
 			if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
-				return dfs_res[0]
+				return dfs_res
 			if dfs_res[0] == BACKTRACK:
 				continue
 			if dfs_res[0] == BACKJUMP:
@@ -162,24 +158,24 @@ class SOLVER():
 		
 		If MAC figures out any contradiction before search begins, no
 		solution could ever be found.'''
-		unary = UNARY()
-		unary.unarify(self.__csp, catalog, spec)
-		res = self.__mac.indirect()
+		UNARY.unarify(self.__csp, catalog, spec)
+		X = copy.deepcopy(self.__csp.get_variables())
+		res = self.__mac.propagate(X)
 		if res[0] == CONTRADICTION:
 			return CONTRADICTION
 		return self.__dfs()
 
 def main():
-	catalog = CATALOG("measures_of_drained_pieces.csv")
+	catalog = CATALOG(current+"/pieces.csv")
 	csp = CSP()
 	select = SELECT(csp)
-	mac = MAC(csp, catalog)
+	mac = MAC(csp, catalog, specs["C"])
 	solver = SOLVER(csp, select, mac)
 	res = solver.find(catalog, specs["C"])
-	if res == SOLUTION:
-		print(solver.stats)
+	if res[0] == SOLUTION:
+		print("Solution found: ", res[1])
 	else:
-		print("No solution", res)
+		print("No solution was found!")
 			
 if __name__ == "__main__":	
 	main()

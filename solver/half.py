@@ -18,25 +18,37 @@ class HALF():
 	def establish(self, csp, curvar, value):
 		'''Establishes consistency after assignment curvar: value.
 		
-		The domain of L2 reduces to L1 * 2.
+		The domain of L2 reduces to L1 * 2. Or, the domain of L1 reduces to
+		L2 / 2.
 	
-		The assumption is that L1 is always assigned before L2. Therefore,
-		when L2 is assigned, there is no variable left to be examined.
-
-		After consistency, L2 reduces to one value only; however, its domain
-		is now represented via bounds with equal min & max.'''
-		if curvar != "L1":
+		After consistency, L2 or L1 reduces to one value only; however, its
+		domain is now represented via bounds with equal min & max.'''
+		A = csp.get_assignment()
+		D = csp.get_domains()
+		if "L1" in A and "L2" in A:
 			return (DOMAINS_INTACT, set([]))
-		L2 = csp.get_domain("L2")
-		if L2["min"] > value * 2 or L2["max"] < value * 2:
-			return (CONTRADICTION, {"L2"}, {"L1"})
-		if L2["max"] == L2["max"] and value * 2 == L2["max"]:
-			return (DOMAINS_INTACT, {"L2"})
-		csp.update_domain("L2", {"min": value * 2, "max": value * 2})
-		return (DOMAINS_REDUCED, {"L2"}, {"L2"})
+		if curvar == "L1": # L2 is not assigned
+			new_value = value * 2
+			if new_value < D["L2"]["min"] or new_value > D["L2"]["max"]:
+				return (CONTRADICTION, {"L2"}, {"L1"})
+			if D["L2"]["min"] == D["L2"]["max"]:
+				return (DOMAINS_INTACT, {"L2"})
+			else:
+				csp.update_domain("L2", {"min": new_value, "max": new_value})
+				return (DOMAINS_REDUCED, {"L2"}, {"L2"})
+		else: # L1 is not assigned
+			new_value = math.ceil(value / 2)
+			if new_value < D["L1"]["min"] or new_value > D["L1"]["max"]:
+				return (CONTRADICTION, {"L1"}, {"L2"})
+			if D["L1"]["min"] == D["L1"]["max"]:
+				return (DOMAINS_INTACT, {"L1"})
+			else:
+				csp.update_domain("L1", {"min": new_value, "max": new_value})
+				return (DOMAINS_REDUCED, {"L1"}, {"L1"})
 
 	def propagate(self, csp, reduced_vars):
 		'''Establishes consistency when L1 andor L2 are reduced elsewhere.'''
+		A = csp.get_assignment()
 		D = csp.get_domains()
 		if self.__consistent(D):
 			return (DOMAINS_INTACT, {"L1", "L2"})

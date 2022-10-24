@@ -123,8 +123,8 @@ class test_HALF(unittest.TestCase):
         # arrange
         self.__reset_csp()
         csp = self.__csp
-        csp.update_domain("L1", {"min": 22, "max": 22})
-        csp.update_domain("L2", {"min": 40, "max": 70})
+        csp.update_domain("L1", {"min": 20, "max": 20})
+        csp.update_domain("L2", {"min": 41, "max": 70})
         # act
         out = self.__sut.propagate(csp, {"L1"})
         # assess

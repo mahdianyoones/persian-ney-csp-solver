@@ -14,7 +14,7 @@ players, a few characteristics including the shape of the final pipe, the relati
 several unary, binary, and higher level constraints.
 
 Based on the nature of constraints, efficient algorithms were found to establish binary and n-ary consistency. Hence, the sover does not use algorithms like
-arc3, and instead conducts the search by maintaining the domains consistent. Some domains are defined as a range of values.
+arc3, and instead conducts the search by maintaining the domains consistent, reducing the search space significantly. Some domains are defined as a range of values.
 
 Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping). In the final phase of the project, constraint learning will be added.
 

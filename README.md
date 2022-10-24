@@ -1,6 +1,6 @@
 # Persian Ney csp solver
 
-If you don't know what Persian Ney is, please read [this website](https://www.persianney.com/) and this [Wikipedia article](https://en.wikipedia.org/wiki/Ney).
+If you don't know what Persian Ney is and how it is traditionally constructed, please read [this website](https://www.persianney.com/) and this [Wikipedia article](https://en.wikipedia.org/wiki/Ney).
 
 As part of a research on constructing Persian Ney reliably, accurately, and efficiently, this CSP solver acts a design-aid tool.
 The problem of designing and constructing this woodwind instrument, after some studies on Physics and music theory as well as a few informal experiments, 

@@ -16,6 +16,6 @@ several unary, binary, and higher level constraints.
 Based on the nature of constraints, efficient algorithms were found to establish binary and n-ary consistency. Hence, the sover does not use algorithms like
 arc3, and instead conducts the search by maintaining the domains consistent, reducing the search space significantly. Some domains are defined as ranges of integer values and some are defined as a set of values.
 
-Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping). In the final phase of the project, constraint learning will be added.
+Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping). In the final phase of the project, constraint learning will be added to make constructing different sound registers efficient and fast.
 
 **This is still a work in progress and a paper explaining the details will be authored.**

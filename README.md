@@ -6,7 +6,7 @@ As part of a research on constructing Persian Ney reliably, accurately, and effi
 The problem of designing and constructing this woodwind instrument, after some studies on Physics and music theory as well as a few informal experiments, 
 led to the invention of a relatively new technique.
 
-In this new technique, the instrument is built with natural canes extracted from canebrakes, cut at their nodes junctions, 
+In this new technique, the instrument is built with [natural canes](https://en.wikipedia.org/wiki/Arundo_donax) extracted from [canebrakes](https://en.wikipedia.org/wiki/Canebrake), cut at their nodes junctions, 
 mix and match the pieces, stick them together, and build holes on the final pipe.
 
 This tool helps in the mix-and-match part, which turns out to be a combinatorial search problem. Based on advises from professional Ney constructors and 

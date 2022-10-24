@@ -18,16 +18,26 @@ from constants import *
 
 class test_SOLVER(unittest.TestCase):
 
-    def setUp(self):
-        self.__catalog = CATALOG(current+"/pieces2.csv")
-        self.__csp = CSP()
-        self.__select = SELECT(self.__csp)
-        self.__mac = MAC(self.__csp, self.__catalog, specs["C"])
-        self.__sut = SOLVER(self.__csp, self.__select, self.__mac)
-
     def test_finds_a_solution(self):
         # arrange
+        catalog = CATALOG(current+"/contains_solutions.csv")
+        csp = CSP()
+        select = SELECT(csp)
+        mac = MAC(csp, catalog, specs["C"])
+        sut = SOLVER(csp, select, mac)
         # act
-        res = self.__sut.find(self.__catalog, specs["C"])
+        res = sut.find(catalog, specs["C"])
         # assess
         self.assertEqual(res[0], SOLUTION)
+
+    def test_finds_no_solution(self):
+        # arrange
+        catalog = CATALOG(current+"/contains_no_solution.csv")
+        csp = CSP()
+        select = SELECT(csp)
+        mac = MAC(csp, catalog, specs["C"])
+        sut = SOLVER(csp, select, mac)
+        # act
+        res = sut.find(catalog, specs["C"])
+        # assess
+        self.assertNotEqual(res[0], SOLUTION)

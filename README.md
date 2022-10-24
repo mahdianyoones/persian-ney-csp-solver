@@ -1,6 +1,6 @@
 # Persian Ney csp solver
 
-As part of a research on constructing Persian Ney reliabaly, accurately, and efficiently, this CSP solver acts a design-aid tool.
+As part of a research on constructing Persian Ney reliably, accurately, and efficiently, this CSP solver acts a design-aid tool.
 The problem of designing and constructing this woodwind instrument, after some studies on Physics and music theory as well as a few informal experiments, 
 led to the invention of a relatively new technique.
 

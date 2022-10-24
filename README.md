@@ -18,4 +18,4 @@ arc3, and instead conducts the search by maintaining the domains consistent. Som
 
 Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping). In the final phase of the project, constraint learning will be added.
 
-This is still a work in progress and a paper explaining the details will be authored.
+**This is still a work in progress and a paper explaining the details will be authored.**

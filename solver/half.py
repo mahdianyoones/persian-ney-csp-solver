@@ -49,43 +49,72 @@ class HALF():
 	def propagate(self, csp, reduced_vars):
 		'''Establishes consistency when L1 andor L2 are reduced elsewhere.'''
 		A = csp.get_assignment()
+		if "L1" in A or "L2" in A:	# Already made consistent by establish
+			return (DOMAINS_INTACT, set([]))
 		D = csp.get_domains()
-		if self.__consistent(D):
-			return (DOMAINS_INTACT, {"L1", "L2"})
-		elif self.__contradiction(D):
-			return (CONTRADICTION, {"L1", "L2"}, set([]))
 		reduced = set([])
-		if D["L1"]["min"] * 2 > D["L2"]["min"]: # min of L2 can adjust
-			new_domain = {"min": D["L1"]["min"] * 2, "max": D["L2"]["max"]}
-			csp.update_domain("L2", new_domain)
-			reduced.add("L2")
-		elif D["L1"]["min"] * 2 < D["L2"]["min"]: # min of L1 can adjust
-			new_min = math.ceil(D["L2"]["min"] / 2)
-			csp.update_domain("L1", {"min": new_min, "max": D["L1"]["max"]})
+		(low1, up1) = self.__revise_L1(D)
+		(low2, up2) = self.__revise_L2(D)
+		if self.___consistent(low1, up1, low2, up2):
+			return (DOMAINS_INTACT, {"L1", "L2"})
+		if self.__contradiction(low1, up1, low2, up2):
+			return (CONTRADICTION, {"L1", "L2"}, set([]))
+		(low1, up1, low2, up2) = self.__mix(D, low1, up1, low2, up2)
+		if up1 - low1 < D["L1"]["max"] - D["L1"]["min"]:
 			reduced.add("L1")
-		if D["L1"]["max"] * 2 > D["L2"]["max"]: # max of L1 can adjust
-			new_max = math.ceil(D["L2"]["max"] / 2)
-			csp.update_domain("L1", {"min": D["L1"]["min"], "max": new_max})
-			reduced.add("L1")
-		elif D["L1"]["max"] * 2 < D["L2"]["max"]: # max of L2 can adjust
-			new_domain = {"min": D["L2"]["min"], "max": D["L1"]["max"] * 2}
-			csp.update_domain("L2", new_domain)
+			csp.update_domain("L1", {"min": low1, "max": up1})
+		if up2 - low2 < D["L2"]["max"] - D["L2"]["min"]:
 			reduced.add("L2")
+			csp.update_domain("L2", {"min": low2, "max": up2})
+		if len(reduced) == 0:
+			return (DOMAINS_INTACT, {"L1", "L2"})
 		return (DOMAINS_REDUCED, {"L1", "L2"}, reduced)
+	
+	def __mix(self, D, low1, up1, low2, up2):
+		if low1 in (DOMAIN_INTACT, CONTRADICTION):
+			low1 = D["L1"]["min"]
+		if up1 in (DOMAIN_INTACT, CONTRADICTION):
+			up1 = D["L1"]["max"]
+		if low2 in (DOMAIN_INTACT, CONTRADICTION):
+			low2 = D["L2"]["min"]
+		if up2 in (DOMAIN_INTACT, CONTRADICTION):
+			up2 = D["L2"]["max"]
+		return (low1, up1, low2, up2)		
 
-	def __contradiction(self, D):
-		'''Checkes if the domains are inconsistent but cannot adjust.
-		
-		A reduction that reduces one of the domains to one value is likely
-		causing a contradiction--if the other domain does not match.
-		'''
-		if D["L1"]["min"] == D["L1"]["max"] or D["L2"]["min"]==D["L2"]["max"]:
-			return True
-		return False
-
-	def __consistent(self, D):
-		'''Checks if the domains are already consistent.'''
-		if D["L1"]["min"] * 2 == D["L2"]["min"]:
-			if D["L1"]["max"] * 2 == D["L2"]["max"]:
+	def __contradiction(self, low1, up1, low2, up2):
+		if low1 == CONTRADICTION and up1 == CONTRADICTION:
+			if low2 == CONTRADICTION and up2 == CONTRADICTION:
 				return True
 		return False
+
+	def ___consistent(self, low1, up1, low2, up2):
+		if low1 == DOMAIN_INTACT and up1 == DOMAIN_INTACT:
+			if low2 == DOMAIN_INTACT and up2 == DOMAIN_INTACT:
+				return True
+		return False
+
+	def __revise_L1(self, D):
+		low = math.ceil(D["L2"]["min"] / 2)
+		if low == D["L1"]["min"]:
+			low = DOMAIN_INTACT
+		elif low < D["L1"]["min"] or low > D["L1"]["max"]:
+			low = CONTRADICTION
+		up = math.ceil(D["L2"]["max"] / 2)
+		if up == D["L1"]["max"]:
+			up = DOMAIN_INTACT
+		elif up < D["L1"]["min"] or up > D["L1"]["max"]:
+			up = CONTRADICTION
+		return (low, up)
+		
+	def __revise_L2(self, D):
+		low = D["L1"]["min"] * 2
+		if low == D["L2"]["min"]:
+			low = DOMAIN_INTACT
+		elif low < D["L2"]["min"] or low > D["L2"]["max"]:
+			low = CONTRADICTION
+		up = D["L1"]["max"] * 2
+		if up == D["L2"]["max"]:
+			up = DOMAIN_INTACT
+		elif up < D["L2"]["min"] or up > D["L2"]["max"]:
+			up = CONTRADICTION
+		return (low, up)

@@ -43,6 +43,8 @@ class LEN():
         if new_val < D[unassigned]["max"] or new_val > D[unassigned]["min"]:
             csp.update_domain(unassigned, {"min": new_val, "max": new_val})
             return (DOMAIN_REDUCED, {unassigned}, {unassigned})
+        return (DOMAIN_INTACT, set([]))
+        
 
     def propagate(self, csp, reduced_vars):
         '''Establishes consistency after reduction of reduced_vars.

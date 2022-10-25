@@ -11,7 +11,6 @@ from constants import *
 from pickup import SELECT
 
 class test_SELECT(unittest.TestCase):
-    '''Tests the behavior of pickup class: select next variable and value.'''
 
     def setUp(self):
         self.__csp = CSP()

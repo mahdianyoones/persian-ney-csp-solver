@@ -34,17 +34,6 @@ class test_SOLVER(unittest.TestCase):
             res = self.__find(data_set_path, kook)
             self.assertEqual(res[0], SOLUTION)
             
-    def test_finds_an_existing_solution(self):
-        '''Asserts that the algorithm works the same in separate executions.'''
-        no_solution_data_set_path = current+"/contains_no_solution.csv"
-        with_solutions_data_set_path = current+"/contains_solutions.csv"
-        for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
-            for i in range(0, 20):
-                res = self.__find(with_solutions_data_set_path, kook)
-                self.assertEqual(res[0], SOLUTION)
-                res = self.__find(no_solution_data_set_path, kook)
-                self.assertNotEqual(res[0], SOLUTION)
-
     def test_finds_no_solution(self):
         data_set_path = current+"/contains_no_solution.csv"
         for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:

@@ -18,8 +18,9 @@ from constants import *
 
 class test_SOLVER(unittest.TestCase):
 
-    def __find_existing_solution(self, kook):
-        catalog = CATALOG(current+"/contains_solutions.csv")
+    def __find(self, data_set_path, kook):
+        '''Generalises arrange and act of all test cases in this suite.'''
+        catalog = CATALOG(data_set_path)
         csp = CSP()
         select = SELECT(csp)
         mac = MAC(csp, catalog, specs[kook])
@@ -27,60 +28,26 @@ class test_SOLVER(unittest.TestCase):
         res = sut.find(catalog, specs[kook])
         return res
 
-    def test_finds_Ftall_solution(self):
-        res = self.__find_existing_solution("F_tall")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_G_solution(self):
-        res = self.__find_existing_solution("G")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_A_solution(self):
-        res = self.__find_existing_solution("A")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_Bb_solution(self):
-        res = self.__find_existing_solution("Bb")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_C_solution(self):
-        res = self.__find_existing_solution("C")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_D_solution(self):
-        res = self.__find_existing_solution("D")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_E_solution(self):
-        res = self.__find_existing_solution("E")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_Fshort_solution(self):
-        res = self.__find_existing_solution("F_short")
-        self.assertEqual(res[0], SOLUTION)
-
-    def test_finds_an_existing_solution(self):
-        '''Ensures that an existing solution is discovered across executions.'''
-        for i in range(0, 20):
-            catalog = CATALOG(current+"/contains_solutions.csv")
-            csp = CSP()
-            select = SELECT(csp)
-            mac = MAC(csp, catalog, specs["C"])
-            sut = SOLVER(csp, select, mac)
-            # act
-            res = sut.find(catalog, specs["C"])
-            # assess
+    def test_finds_solutions_4_all_kooks(self):
+        data_set_path = current+"/contains_solutions.csv"
+        for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
+            res = self.__find(data_set_path, kook)
             self.assertEqual(res[0], SOLUTION)
+            
+    def test_finds_an_existing_solution(self):
+        '''Asserts that the algorithm works the same in separate executions.'''
+        no_solution_data_set_path = current+"/contains_no_solution.csv"
+        with_solutions_data_set_path = current+"/contains_solutions.csv"
+        for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
+            for i in range(0, 20):
+                res = self.__find(with_solutions_data_set_path, kook)
+                self.assertEqual(res[0], SOLUTION)
+                res = self.__find(no_solution_data_set_path, kook)
+                self.assertNotEqual(res[0], SOLUTION)
 
     def test_finds_no_solution(self):
+        data_set_path = current+"/contains_no_solution.csv"
         for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
-            # arrange
-            catalog = CATALOG(current+"/contains_no_solution.csv")
-            csp = CSP()
-            select = SELECT(csp)
-            mac = MAC(csp, catalog, specs[kook])
-            sut = SOLVER(csp, select, mac)
-            # act
-            res = sut.find(catalog, specs[kook])
-            # assess
+            res = self.__find(data_set_path, kook)
             self.assertNotEqual(res[0], SOLUTION)
+

@@ -42,12 +42,12 @@ holes["A"] = {
  
 holes["Bb"] = {
 	"len": round(588.6),
-	"h1": round(524.4),
-	"h2": round(480.9),
-	"h3": round(441.0),
-	"h4": round(416.2),
-	"h5": round(392.9),
-	"h6": round(350.0),
+	"h6": round(524.4),
+	"h5": round(480.9),
+	"h4": round(441.0),
+	"h3": round(416.2),
+	"h2": round(392.9),
+	"h1": round(350.0),
 }
 
 holes["C"] = {

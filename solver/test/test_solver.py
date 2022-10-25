@@ -18,7 +18,8 @@ from constants import *
 
 class test_SOLVER(unittest.TestCase):
 
-    def test_finds_a_solution(self):
+    @unittest.skip
+    def test_finds_a_solution_4_all_cooks(self):
         for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
             # arrange
             catalog = CATALOG(current+"/contains_solutions.csv")
@@ -28,6 +29,18 @@ class test_SOLVER(unittest.TestCase):
             sut = SOLVER(csp, select, mac)
             # act
             res = sut.find(catalog, specs[kook])
+            # assess
+            self.assertEqual(res[0], SOLUTION)
+
+    def test_finds_a_solution_every_time(self):
+        for i in range(0, 100):
+            catalog = CATALOG(current+"/contains_solutions.csv")
+            csp = CSP()
+            select = SELECT(csp)
+            mac = MAC(csp, catalog, specs["C"])
+            sut = SOLVER(csp, select, mac)
+            # act
+            res = sut.find(catalog, specs["C"])
             # assess
             self.assertEqual(res[0], SOLUTION)
 

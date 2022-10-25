@@ -166,6 +166,7 @@ class SOLVER():
 		return self.__dfs()
 
 def human_readable(solution):
+	'''Prints a prettified view of the given solution.'''
 	for v in ["L1", "L2", "L3", "L4", "L5", "L6", "L7"]:
 		print(v, ": ", solution[v])
 	for v in ["D1", "D2", "D3", "D4", "D5", "D6", "D7"]:

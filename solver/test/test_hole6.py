@@ -9,6 +9,7 @@ from csp import CSP
 from hole6 import HOLE6
 from spec import specs
 from constants import *
+import copy
 
 class Test_HOLE6(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
@@ -17,7 +18,8 @@ class Test_HOLE6(unittest.TestCase):
 			
 	def setUp(self):
 		self.__csp = CSP()
-		spec = specs["C"]
+		spec = copy.deepcopy(specs["C"])
+		spec["hmarg"] = 10
 		self.__sut = HOLE6(spec["h6"], spec["hmarg"])
 
 	def __reset_csp(self):

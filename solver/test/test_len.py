@@ -9,14 +9,16 @@ from csp import CSP
 from len import LEN
 from spec import specs
 from constants import *
+import copy
 
 class test_LEN(unittest.TestCase):
     '''Test the behavior of len consistency.'''
     
     def setUp(self):
         self.__csp = CSP()
-        spec = specs["C"]
-        self.__sut = LEN(524)
+        spec = copy.deepcopy(specs["C"])
+        spec["hmarg"] = 10
+        self.__sut = LEN(spec["len"])
     
     def __reset_csp(self):
         domain = {"min": 1, "max": 1000}

@@ -9,13 +9,15 @@ from csp import CSP
 from hole1 import HOLE1
 from spec import specs
 from constants import *
+import copy
 
 class Test_HOLE1(unittest.TestCase):
 	'''Tests the behavior of hole1 constraint.'''
 			
 	def setUp(self):
 		self.__csp = CSP()
-		spec = specs["C"]
+		spec = copy.deepcopy(specs["C"])
+		spec["hmarg"] = 10
 		self.__sut = HOLE1(spec["h1"], spec["hmarg"])
 
 	def __reset_csp(self):

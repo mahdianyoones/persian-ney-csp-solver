@@ -3,8 +3,8 @@ from constants import *
 import copy
 
 class DIAMDEC():
-	'''Implements diameter decrement consistency.
-	
+    '''Implements diameter decrement consistency.
+    
         The constraint makes sure the following relations exist between D
         variables:
     
@@ -26,92 +26,109 @@ class DIAMDEC():
 
         This constraint restricts final solutions to conic-shape ones.'''
 
-	def __init__(self, ddiff):
-		self.__ddiff = ddiff
+    def __init__(self, ddiff):
+        self.__ddiff = ddiff
+        self.__neighbors = {("D1", "D2"), ("D2", "D3"), ("D3", "D4"),
+                ("D4", "D5"), ("D5", "D6"), ("D6", "D7")}
 
-	def establish(self, csp, curvar, value):
-		'''Establishes consistency W.R.T. diameter dececrement constraint.'''
-		if curvar == "D7":
-			return (DOMAINS_INTACT, set([]))
-		(D_consistent, examined) = self.__consistent(csp, curvar, {value})
-		return self.__establish(curvar, csp, D_consistent, examined)
+    def establish(self, csp, curvar, value):
+        '''Establishes consistency after curvar: value assignment.'''
+        A = csp.get_assignment()
+        queue = set([])
+        i = int(curvar[1])
+        c1 = ("D"+str(i), "D"+str(i+1))
+        c2 = ("D"+str(i-1), "D"+str(i))
+        if c1 in self.__neighbors:
+            queue.add(c1)
+        if c2 in self.__neighbors:
+            queue.add(c2)
+        D = csp.get_domains()
+        ddiff = self.__ddiff
+        return self.__ac3(csp, A, D, queue, ddiff)
 
-	def propagate(self, csp, reduced_vars):
-		'''Establishes boundary consistency w.r.t. diamdec constraint.
-		
-		It is unclear whether a strong consistency algorithm exists for
-		propagation of boundary reductions. Temporarily, the propagate
-		in this constraint does nothing to see the performance of the
-		algorithm without it.
-		
-		If the impact is significant, then we shall look for an efficient
-		algorithm.'''
-		curvar = sorted(reduced_vars)[0]
-		if curvar == "D7":
-			return (DOMAINS_INTACT, set([]))
-		values = csp.get_domain(curvar)
-		(D_consistent, examined) = self.__consistent(csp, curvar, values)
-		return self.__establish(curvar, csp, D_consistent, examined)
+    def propagate(self, csp, reduced_vars):
+        '''Establishes consistency after reduction of some variables.'''
+        A = csp.get_assignment()
+        queue = set([])
+        for rvar in reduced_vars:
+            i = int(rvar[1])
+            c1 = ("D"+str(i), "D"+str(i+1))
+            c2 = ("D"+str(i-1), "D"+str(i))
+            if c1 in self.__neighbors:
+                queue.add(c1)
+            if c2 in self.__neighbors:
+                queue.add(c2)        
+        D = csp.get_domains()
+        ddiff = self.__ddiff
+        return self.__ac3(csp, A, D, queue, ddiff)
 
-	def __confset(self, curvar, csp):
-		'''Returns the conflict set.'''
-		confset = set([])
-		A = csp.get_assignment()
-		curvar_index = int(curvar[1])
-		for i in range(1, curvar_index+1):
-			vari = "D"+str(i)
-			if vari in A:
-				confset.add(vari)
-		return confset
+    def __ac3(self, csp, A, D, queue, ddiff):
+        examined = set([])
+        confset = set([])
+        reduced = set([])
+        while len(queue) > 0:
+            (Dvari, Dvarj) = queue.pop()
+            if Dvari in A and Dvarj in A:
+                confset.update({Dvari, Dvarj})
+                continue
+            if Dvari in A:
+                confset.add(Dvari)
+            else:
+                examined.add(Dvari)
+            if Dvarj in A:
+                confset.add(Dvarj)
+            else:
+                examined.add(Dvarj)
+            (Di, Dj, new_pairs) = self.__revise(Dvari, Dvarj, A, D, ddiff)
+            if Di == CONTRADICTION or Dj == CONTRADICTION:
+                return (CONTRADICTION, examined, confset)
+            if Di != DOMAIN_INTACT:
+                reduced.add(Dvari)
+                csp.update_domain(Dvari, Di)
+            if Dj != DOMAIN_INTACT:
+                reduced.add(Dvarj)
+                csp.update_domain(Dvarj, Dj)
+            if len(new_pairs) > 0:
+                queue.update(new_pairs)
+        if len(reduced) > 0:
+            return (DOMAINS_REDUCED, examined, reduced)
+        return (DOMAINS_INTACT, examined)
 
-	def __establish(self, curvar, csp, D_consistent, examined):
-		if D_consistent == CONTRADICTION:
-			confset = self.__confset(curvar, csp)
-			return (CONTRADICTION, examined, confset)
-		del D_consistent[curvar]
-		reduced = set([])
-		D = csp.get_domains()
-		for v, new_domain in D_consistent.items():
-			if len(new_domain) < len(D[v]):
-				csp.update_domain(v, new_domain)
-				reduced.add(v)
-		if len(reduced) > 0:
-			return (DOMAINS_REDUCED, examined, reduced)
-		return (DOMAINS_INTACT, examined)
+    def __revise(self, Dvari, Dvarj, A, D, ddiff):
+        '''Canculates new consistent bounds for Diam_i and Diam_j.'''
+        Di = set([])
+        Dj = set([])
+        new_pairs = set([])
+        i_diams = {A[Dvari]} if Dvari in A else D[Dvari]
+        j_diams = {A[Dvarj]} if Dvarj in A else D[Dvarj]
+        for di in i_diams:
+            for dj in j_diams:
+                diff = di - dj
+                if diff <= ddiff["max"] and diff >= ddiff["min"]:
+                    Di.add(di)
+                    Dj.add(dj)
+        if len(Di) == 0:
+            Di = CONTRADICTION
+        elif Dvari in A or len(Di) == len(D[Dvari]):
+            Di = DOMAIN_INTACT
+        else: # i reduced
+            reduced_idx = int(Dvari[1])
+            new_pairs.update(self.__new_pairs(reduced_idx, Dvari, Dvarj))
+        if len(Dj) == 0:
+            Dj = CONTRADICTION
+        elif Dvarj in A or len(Dj) == len(D[Dvarj]):
+            Dj = DOMAIN_INTACT
+        else: # j reduced
+            reduced_idx = int(Dvarj[1])
+            new_pairs.update(self.__new_pairs(reduced_idx, Dvari, Dvarj))
+        return (Di, Dj, new_pairs)
 
-
-	def __compare(self, A, B, diff):
-		'''Checks if values in B (D_i+1) are consistent W.R.T. A (D_i).
-		
-		i.e. A and B contain domain values for D1&D2, D2&D3, etc
-		'''
-		mindiff = diff["min"]
-		maxdiff = diff["max"]
-		A_consistent = set([])
-		B_consistent = set([])
-		for val_A in A:
-			for val_B in B:
-				diff = val_A - val_B
-				if diff <= maxdiff and diff >= mindiff:
-					A_consistent.add(val_A)
-					B_consistent.add(val_B)
-		return (A_consistent, B_consistent)
-
-	def __consistent(self, csp, curvar, curvar_values):
-		'''Evaluates unassigned D variables and returns consistent values.'''
-		curvar_index = int(curvar[1])
-		D_consistent = {"D"+str(i): set([]) for i in range(curvar_index, 8)}
-		D_consistent[curvar] = curvar_values
-		examined = set([])
-		for i in range(curvar_index, 7):
-			var_A = "D"+str(i)
-			var_B = "D"+str(i+1)
-			A = D_consistent[var_A]
-			B = csp.get_domain(var_B)
-			(A_consistent, B_consistent) = self.__compare(A, B, self.__ddiff)
-			examined.add(var_B)
-			if len(A_consistent) == 0 or len(B_consistent) == 0:
-				return (CONTRADICTION, examined)
-			D_consistent[var_A] = A_consistent
-			D_consistent[var_B] = B_consistent
-		return (D_consistent, examined)
+    def __new_pairs(self, reduced_idx, Dvari, Dvarj):
+        pair1 = ("D"+str(reduced_idx), "D"+str(reduced_idx+1))
+        pair2 = ("D"+str(reduced_idx-1), "D"+str(reduced_idx))
+        new_pairs = set([])
+        if pair1 in self.__neighbors and pair1 != (Dvari, Dvarj):
+            new_pairs.add(pair1)
+        if pair2 in self.__neighbors and pair2 != (Dvari, Dvarj):
+            new_pairs.add(pair2)
+        return new_pairs

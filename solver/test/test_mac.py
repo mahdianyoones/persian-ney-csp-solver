@@ -14,12 +14,11 @@ from spec import specs
 from constants import *
 
 class test_MAC(unittest.TestCase):
-    '''Tests the behavior of mac.'''
 
     def setUp(self):
         self.__csp = CSP()
         self.__catalog = CATALOG()
-        self.__catalog.setup(current+"/pieces.csv")
+        self.__catalog.setup(current+"/contains_solutions.csv")
         self.__spec = specs["C"]
         self.__sut = MAC(self.__csp, self.__catalog, self.__spec)
         
@@ -49,3 +48,9 @@ class test_MAC(unittest.TestCase):
         expected_examined = {'R2','R3','R4','R5','R6','R7','T1','D1','L1'}
         self.assertEqual(res[1], expected_examined)
         self.assertEqual(res[3], {"stock1", "sameround"})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_MAC)
+    runner.run(suite)

@@ -11,26 +11,7 @@ from spec import specs
 from constants import *
 
 class test_HALF(unittest.TestCase):
-    '''The goal is to enforce the half constraint.
-    
-        Actions:
-
-        - Contradiction is detected and reported.
-        - Inconsistency is detected and fixed.
-        - Consistency is detected and no action is taken.
-        - No action is taken at all.
-
-        When L2 is being assigned in the establish entry, since L1 is assumed
-        to be already assigned, no action is left to take.
-
-        Contradiction can occurs due to reduction of domains elsewhere.
-        
-        Reduction happens when:
-        
-        L1 > L2 / 2
-        L1 < L2 / 2
-        L2 > L1 * 2
-        L2 < L1 * 2'''
+    '''The goal is to test the behavior of half constraint.'''
     
     def setUp(self):
         self.__csp = CSP()
@@ -130,6 +111,7 @@ class test_HALF(unittest.TestCase):
         # assess
         self.assertEqual(out[0], CONTRADICTION)
         self.assertEqual(out[1], {"L1", "L2"})
+        self.assertEqual(out[2], set([]))
 
     def test_contradiction_after_propagation_2(self):
         '''Asserts another case that contradiction occurs in propagate.'''
@@ -142,4 +124,5 @@ class test_HALF(unittest.TestCase):
         out = self.__sut.propagate(csp, {"L1"})
         # assess
         self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L1", "L2"})        
+        self.assertEqual(out[1], {"L1", "L2"})
+        self.assertEqual(out[2], set([]))     

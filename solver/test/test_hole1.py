@@ -39,6 +39,7 @@ class Test_HOLE1(unittest.TestCase):
 		# assess
 		self.assertEqual(output[0], CONTRADICTION)
 		self.assertEqual(output[1], {"L2", "L3"})
+		self.assertEqual(output[2], set([]))
 
 	def test_contradiction_after_establish(self):
 		'''Asserts the occurence of a contradictory case.'''

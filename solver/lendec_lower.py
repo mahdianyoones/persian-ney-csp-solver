@@ -64,18 +64,14 @@ class LENDEC_LOWER():
         while len(queue) > 0:
             (Li, Lj) = queue.pop()
             if Li in A and Lj in A:
-                confset.update({Li, Lj})
                 continue
-            if Li in A:
-                confset.add(Li)
-            else:
+            if not Li in A:
                 examined.add(Li)
-            if Lj in A:
-                confset.add(Lj)
-            else:
+            if not Lj in A:
                 examined.add(Lj)
             (Dj, new_pairs) = self.__revise(Li, Lj, A, D)
             if Dj == CONTRADICTION:
+                confset = self.__confset(csp)
                 return (CONTRADICTION, examined, confset)
             elif Dj != DOMAIN_INTACT:
                 reduced.add(Lj)
@@ -113,3 +109,9 @@ class LENDEC_LOWER():
             else:
                 Dj = CONTRADICTION
         return (Dj, new_pairs)
+
+    def __confset(self, csp):
+        '''Returns the conflict set.'''
+        members = {"L2", "L3", "L4", "L5", "L6"}
+        assigned = csp.get_assigned_vars()
+        return members.intersection(assigned)

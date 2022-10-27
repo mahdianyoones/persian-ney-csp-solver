@@ -51,23 +51,18 @@ class LENDEC():
 
     def __ac3(self, csp, A, D, queue):
         examined = set([])
-        confset = set([])
         reduced = set([])
         while len(queue) > 0:
             (Li, Lj) = queue.pop()
             if Li in A and Lj in A:
-                confset.update({Li, Lj})
                 continue
-            if Li in A:
-                confset.add(Li)
-            else:
+            if not Li in A:
                 examined.add(Li)
-            if Lj in A:
-                confset.add(Lj)
-            else:
+            if not Lj in A:
                 examined.add(Lj)
             (Di, Dj, new_pairs) = self.__revise(Li, Lj, A, D)
             if Di == CONTRADICTION or Dj == CONTRADICTION:
+                confset = self.__confset(csp)
                 return (CONTRADICTION, examined, confset)
             if Di != DOMAIN_INTACT:
                 reduced.add(Li)
@@ -125,3 +120,9 @@ class LENDEC():
         if pair2 in self.__neighbors and pair2 != (Li, Lj):
             new_pairs.add(pair2)
         return new_pairs
+
+    def __confset(self, csp):
+        '''Returns the conflict set.'''
+        members = {"L2", "L3", "L4", "L5", "L6", "L7"}
+        assigned = csp.get_assigned_vars()
+        return members.intersection(assigned)

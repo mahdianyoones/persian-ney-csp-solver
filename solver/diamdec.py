@@ -69,18 +69,14 @@ class DIAMDEC():
         while len(queue) > 0:
             (Dvari, Dvarj) = queue.pop()
             if Dvari in A and Dvarj in A:
-                confset.update({Dvari, Dvarj})
                 continue
-            if Dvari in A:
-                confset.add(Dvari)
-            else:
+            if not Dvari in A:
                 examined.add(Dvari)
-            if Dvarj in A:
-                confset.add(Dvarj)
-            else:
+            if not Dvarj in A:
                 examined.add(Dvarj)
             (Di, Dj, new_pairs) = self.__revise(Dvari, Dvarj, A, D, ddiff)
             if Di == CONTRADICTION or Dj == CONTRADICTION:
+                confset = self.__confset(csp)
                 return (CONTRADICTION, examined, confset)
             if Di != DOMAIN_INTACT:
                 reduced.add(Dvari)
@@ -132,3 +128,8 @@ class DIAMDEC():
         if pair2 in self.__neighbors and pair2 != (Dvari, Dvarj):
             new_pairs.add(pair2)
         return new_pairs
+
+    def __confset(self, csp):
+        members = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+        assigned = csp.get_assigned_vars()
+        return members.intersection(assigned)

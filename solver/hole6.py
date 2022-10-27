@@ -117,12 +117,9 @@ class HOLE6():
             
     def __confset(self, csp):
         '''Returns the conflict set.'''
-        confset = set([])
-        A = csp.get_assignment()
-        for v in {"L1", "L2", "L3", "L4", "L5"}:
-            if v in A:
-                confset.add(v)
-        return confset
+        members = {"L1", "L2", "L3", "L4", "L5"}
+        assigned = csp.get_assigned_vars()
+        return members.intersection(assigned)
 
     def __update(self, csp, new_domains, ims):
         '''Carries out the final domain updates.'''

@@ -1,8 +1,6 @@
-import unittest
 import sys
 import os
 
-from catalog import CATALOG
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -40,3 +38,8 @@ class test_SOLVER(unittest.TestCase):
             res = self.__find(data_set_path, kook)
             self.assertNotEqual(res[0], SOLUTION)
 
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_SOLVER)
+    runner.run(suite)

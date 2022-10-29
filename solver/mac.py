@@ -88,7 +88,7 @@ class MAC():
 				res = self.__refs[constraint].propagate(csp, reduced_prtcns)
 				examined.update(res[1])
 				if res[0] == CONTRADICTION:
-					return (CONTRADICTION, res[2], examined, evaled_consts)
+					return (CONTRADICTION, examined, res[2], evaled_consts)
 				if res[0] == DOMAINS_REDUCED:
 					new_reduced_vars.update(res[2])
 					reduced_vars.update(res[2])

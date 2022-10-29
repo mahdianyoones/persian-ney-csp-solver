@@ -1,7 +1,8 @@
+import copy
 from constants import *
 
-class CONFLICT():
-    '''Implements the conflict set.'''
+class JUMP():
+    '''Implements the backjumping mechanism through conflict sets.'''
 
     def __init__(self, X):
         self.__confsets = {v: [] for v in X}
@@ -86,7 +87,8 @@ class CONFLICT():
     
     def backjump(self, curvar):
         jump_target = self.__confsets[curvar][-1]
-        confvars = self.__confsets[curvar]
+        confvars = copy.deepcopy(self.__confsets[curvar])
+        self.__confsets[curvar] = []
         return (confvars, jump_target)
 
     def get_confset(self, var):

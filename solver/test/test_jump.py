@@ -6,25 +6,16 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 from csp import CSP
-from conflict import CONFLICT
+from jump import JUMP
 from spec import specs
 from constants import *
 
-class test_CONFLICT(unittest.TestCase):
-    '''Test the behavior of conflict set.
-    
-    initially creates empty sets for all variables
-    accummulate sorts the confvars based on the order of assignments and adds
-    them to the conflict set of the given variable
-    absorbs
-    
-
-    accumulate: removes duplicates
-    '''
+class test_JUMP(unittest.TestCase):
+    '''Test the behavior of jump.'''
     
     def setUp(self):
         self.__csp = CSP()
-        self.__sut = CONFLICT(self.__csp.get_variables())
+        self.__sut = JUMP(self.__csp.get_variables())
 
     def test_accumulates(self):
         # arrange
@@ -52,5 +43,5 @@ class test_CONFLICT(unittest.TestCase):
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(test_CONFLICT)
+    suite = loader.loadTestsFromTestCase(test_JUMP)
     runner.run(suite)

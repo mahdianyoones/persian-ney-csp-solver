@@ -127,17 +127,17 @@ class CATALOG():
 		'''Returns values for key, filters include one or two of D,TH,R.'''
 		idx = self.__locate_idx(filters, key=key)
 		node = idx.find(filters)
-		if node != NODE_NOT_FOUND:
-			return node.get_chkeys()
-		return set([])
+		if node == NODE_NOT_FOUND:
+			return NODE_NOT_FOUND
+		return node.get_chkeys()
 	
 	def l(self, filters={}):
 		'''Given the filters, looks in indices for L.'''
 		idx = self.__locate_idx(filters)
 		node = idx.find(filters)
-		if node != NODE_NOT_FOUND:
-			return node.get_meta()
-		return 0.0
+		if node == NODE_NOT_FOUND:
+			return NODE_NOT_FOUND
+		return node.get_meta()
 
 	def add_from_csv(self, csvfile):
 		with open(csvfile) as f:

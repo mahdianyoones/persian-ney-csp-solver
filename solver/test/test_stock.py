@@ -1,8 +1,6 @@
 import unittest
 import sys
 import os
-
-from catalog import CATALOG
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -11,6 +9,7 @@ from csp import CSP
 from stock import STOCK
 from spec import specs
 from constants import *
+from catalog import CATALOG
 
 class test_STOCK(unittest.TestCase):
     '''The goal is to enforce the stock constraints.
@@ -174,3 +173,9 @@ class test_STOCK(unittest.TestCase):
         # assess
         self.assertEqual(out[0], DOMAIN_INTACT)
         self.assertEqual(out[1], set([]))
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_STOCK)
+    runner.run(suite)        

@@ -32,17 +32,19 @@ class SOLVER():
         csp.backup_domains()
         res = self.__mac.establish(curvar, value)
         if res[0] == CONTRADICTION:
-            csp.unassign(curvar)
-            csp.revert_domains() # undo establish and propagation effects
+            self.__unassign(csp, curvar)
             return (INCONSISTENT_ASSIGNMENT, res[2])
         if res[0] == DOMAINS_REDUCED:
             propagate_res = self.__mac.propagate(res[2])
             if propagate_res[0] == CONTRADICTION:
-                csp.unassign(curvar)
-                csp.revert_domains() # undo establish and propagation effects
+                self.__unassign(csp, curvar)
                 return (INCONSISTENT_ASSIGNMENT, set([]))
         return (CONSISTENT_ASSIGNMENT, set([]))
-        
+    
+    def __unassign(self, csp, curvar):
+        csp.unassign(curvar)
+        csp.revert_domains() # undo establish and propagation effects
+
     def __dfs(self):
         '''Recursively assigns values to variables to find a solution.
         
@@ -77,8 +79,7 @@ class SOLVER():
             dfs_res = self.__dfs()
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
-            csp.unassign(curvar)
-            csp.revert_domains() # undo establish and propagation effects
+            self.__unassign(csp, curvar)
             if dfs_res[0] == BACKTRACK:
                 continue
             if dfs_res[0] == BACKJUMP:

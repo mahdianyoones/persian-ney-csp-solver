@@ -78,10 +78,10 @@ class DIAMDEC():
             if Di == CONTRADICTION or Dj == CONTRADICTION:
                 confset = self.__confset(csp)
                 return (CONTRADICTION, examined, confset)
-            if Di != DOMAIN_INTACT and not Dvari in reduced:
+            if Di != DOMAIN_INTACT:
                 reduced.add(Dvari)
                 csp.update_domain(Dvari, Di)
-            if Dj != DOMAIN_INTACT and not Dvarj in reduced:
+            if Dj != DOMAIN_INTACT:
                 reduced.add(Dvarj)
                 csp.update_domain(Dvarj, Dj)
             if len(new_pairs) > 0:

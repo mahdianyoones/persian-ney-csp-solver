@@ -113,10 +113,10 @@ class test_DIAMDEC(unittest.TestCase):
         self.assertEqual(output[2], {"D2", "D3", "D4", "D5", "D6", "D7"})
         D = csp.get_domains()
         self.assertEqual(D["D2"], {9.5, 10})
-        self.assertEqual(D["D3"], {8.5, 9, 9.5})
-        self.assertEqual(D["D4"], {8, 8.5, 9})
-        self.assertEqual(D["D5"], {8, 8.5})
-        self.assertEqual(D["D6"], {7, 8})
+        self.assertEqual(D["D3"], {9, 9.5})
+        self.assertEqual(D["D4"], {8.5, 9})
+        self.assertEqual(D["D5"], {8})
+        self.assertEqual(D["D6"], {7})
         self.assertEqual(D["D7"], {6})
 
     def test_reduction_by_establish_2(self):

@@ -78,10 +78,10 @@ class DIAMDEC():
             if Di == CONTRADICTION or Dj == CONTRADICTION:
                 confset = self.__confset(csp)
                 return (CONTRADICTION, examined, confset)
-            if Di != DOMAIN_INTACT:
+            if Di != DOMAIN_INTACT and not Dvari in reduced:
                 reduced.add(Dvari)
                 csp.update_domain(Dvari, Di)
-            if Dj != DOMAIN_INTACT:
+            if Dj != DOMAIN_INTACT and not Dvarj in reduced:
                 reduced.add(Dvarj)
                 csp.update_domain(Dvarj, Dj)
             if len(new_pairs) > 0:
@@ -91,29 +91,29 @@ class DIAMDEC():
         return (DOMAINS_INTACT, examined)
 
     def __revise(self, Dvari, Dvarj, A, D, ddiff):
-        '''Canculates new consistent bounds for Diam_i and Diam_j.'''
+        '''Canculates new consistent bounds for Dvari and Dvarj.'''
         Di = set([])
         Dj = set([])
         new_pairs = set([])
         i_diams = {A[Dvari]} if Dvari in A else D[Dvari]
         j_diams = {A[Dvarj]} if Dvarj in A else D[Dvarj]
-        for di in i_diams:
+        for di in i_diams:              
             for dj in j_diams:
                 diff = di - dj
                 if diff <= ddiff["max"] and diff >= ddiff["min"]:
-                    Di.add(di)
                     Dj.add(dj)
-        if len(Di) == 0:
-            Di = CONTRADICTION
-        elif Dvari in A or len(Di) == len(D[Dvari]):
+                    Di.add(di)
+        if Dvari in A or len(Di) == len(D[Dvari]):
             Di = DOMAIN_INTACT
+        elif len(Di) == 0:
+            Di = CONTRADICTION
         else: # i reduced
             reduced_idx = int(Dvari[1])
             new_pairs.update(self.__new_pairs(reduced_idx, Dvari, Dvarj))
-        if len(Dj) == 0:
-            Dj = CONTRADICTION
-        elif Dvarj in A or len(Dj) == len(D[Dvarj]):
+        if Dvarj in A or len(Dj) == len(D[Dvarj]):
             Dj = DOMAIN_INTACT
+        elif len(Dj) == 0:
+            Dj = CONTRADICTION
         else: # j reduced
             reduced_idx = int(Dvarj[1])
             new_pairs.update(self.__new_pairs(reduced_idx, Dvari, Dvarj))

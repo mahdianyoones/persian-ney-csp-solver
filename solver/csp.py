@@ -39,7 +39,8 @@ class CSP():
 		self.__domains_backups.append(copy.deepcopy(self.__D))
 	
 	def revert_domains(self):
-		self.__D = copy.deepcopy(self.__domains_backups.pop())
+		last_D = self.__domains_backups.pop()
+		self.__D = copy.deepcopy(last_D)
 	
 	def get_assignment(self):
 		return self.__assignment

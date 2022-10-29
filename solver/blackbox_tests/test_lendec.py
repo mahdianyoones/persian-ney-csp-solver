@@ -1,6 +1,7 @@
 import unittest
 import sys
 import os
+
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -49,6 +50,31 @@ class test_LENDEC(unittest.TestCase):
         self.assertEqual(D["L3"], {"min": 41, "max": 49})
         self.assertEqual(D["L4"], {"min": 40, "max": 48})
         self.assertEqual(D["L6"], {"min": 38, "max": 46})
+
+    def test_propagate_reduces_bounds_2(self):
+        '''A case that all inconsistency conditions exist and are fixed.'''
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("L2", {"min": 50, "max": 100})     # 52, 100
+        csp.update_domain("L3", {"min": 50, "max": 100})     # to 51, 99
+        csp.update_domain("L4", {"min": 50, "max": 100})     # to 50, 98
+        csp.update_domain("L5", {"min": 50, "max": 100})     # to 47, 97
+        csp.update_domain("L6", {"min": 50, "max": 100})     # to 46, 96
+        csp.update_domain("L7", {"min": 50, "max": 100})     # to 45, 95
+        # act
+        out = self.__sut.propagate(csp, {"L2"})
+        # assess
+        D = csp.get_domains()
+        self.assertEqual(out[0], DOMAINS_REDUCED)
+        self.assertEqual(out[1], {"L2", "L3", "L4", "L5", "L6", "L7"})
+        self.assertEqual(out[2], {"L2", "L3", "L4", "L5", "L6", "L7"})
+        self.assertEqual(D["L2"], {"min": 55, "max": 100})
+        self.assertEqual(D["L3"], {"min": 54, "max": 99})
+        self.assertEqual(D["L4"], {"min": 53, "max": 98})
+        self.assertEqual(D["L5"], {"min": 52, "max": 97})
+        self.assertEqual(D["L6"], {"min": 51, "max": 96})
+        self.assertEqual(D["L7"], {"min": 50, "max": 95})
 
     def test_establish_reduces_bounds(self):
         '''Another case in which inconsisten values are removed.'''
@@ -100,3 +126,10 @@ class test_LENDEC(unittest.TestCase):
         self.assertEqual(out[0], CONTRADICTION)
         self.assertEqual(out[1], {"L2", "L3", "L4", "L5", "L6", "L7"})
         self.assertEqual(out[2], set([]))
+
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_LENDEC)
+    runner.run(suite)

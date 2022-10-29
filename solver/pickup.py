@@ -71,17 +71,22 @@ class SELECT():
 	def nextval(self, curvar, domain):
 		'''Returns the next value in the domain of curvar.'''		
 		if curvar[0] == "L":
-			if domain["min"] > domain["max"]:
-				return DOMAIN_EXHAUSTED
 			val = domain["min"]
 			if curvar == "L2":
 				domain["min"] += 2
 			else:
 				domain["min"] += 1
-			return val
+		else:
+			val = domain.pop()		
+		return val
+
+	def domain_exhausted(self, curvar, domain):
+		if curvar[0] == "L":
+			if domain["min"] > domain["max"]:
+				return True
 		elif len(domain) == 0: # D, T, and R variables
-			return DOMAIN_EXHAUSTED
-		return domain.pop()
+			return True
+		return False			
 
 	def __init_degree(self, csp):
 		'''Determines the degree of variables'''

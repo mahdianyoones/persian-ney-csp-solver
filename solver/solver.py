@@ -3,7 +3,7 @@ from csp import CSP
 from mac import MAC
 from catalog import CATALOG
 from pickup import SELECT
-from conflict import CONFLICT
+from jump import JUMP
 from constants import *
 from unary import UNARY
 import copy
@@ -17,7 +17,7 @@ class SOLVER():
         self.__csp = csp
         self.__select = select
         self.__mac = mac
-        self.__confset = CONFLICT(csp.get_variables())
+        self.__jump = JUMP(csp.get_variables())
                             
     def __assign(self, curvar, value):
         '''Tries assigning curvar: value.
@@ -29,12 +29,17 @@ class SOLVER():
         is returned. In fact, only curvar is responsible for this.'''
         csp = self.__csp
         csp.assign(curvar, value)
+        csp.backup_domains()
         res = self.__mac.establish(curvar, value)
         if res[0] == CONTRADICTION:
+            csp.unassign(curvar)
+            csp.revert_domains() # undo establish and propagation effects
             return (INCONSISTENT_ASSIGNMENT, res[2])
         if res[0] == DOMAINS_REDUCED:
             propagate_res = self.__mac.propagate(res[2])
             if propagate_res[0] == CONTRADICTION:
+                csp.unassign(curvar)
+                csp.revert_domains() # undo establish and propagation effects
                 return (INCONSISTENT_ASSIGNMENT, set([]))
         return (CONSISTENT_ASSIGNMENT, set([]))
         
@@ -51,32 +56,29 @@ class SOLVER():
         in the next phase of the project.
         '''
         csp = self.__csp
-        if csp.unassigned_count() == 0: # solution
-            return (SOLUTION, csp.get_assignment())
         curvar = self.__select.nextvar(csp)
         domain = copy.deepcopy(csp.get_domain(curvar))
         while True:
-            val = self.__select.nextval(curvar, domain)				
-            if val == DOMAIN_EXHAUSTED:
+            if self.__select.domain_exhausted(curvar, domain):
                 if csp.assigned_count() == 0:
                     return (SEARCH_SPACE_EXHAUSTED, None)
-                if self.__confset.canbackjump(curvar):
-                    (confvars, jump_target) = self.__confset.backjump(curvar)
+                if self.__jump.canbackjump(curvar):
+                    (confvars, jump_target) = self.__jump.backjump(curvar)
                     return (BACKJUMP, confvars, jump_target)
                 return (BACKTRACK, None)
-            csp.backup_domains()
+            val = self.__select.nextval(curvar, domain)		
             assign_res = self.__assign(curvar, val)
             if assign_res[0] == INCONSISTENT_ASSIGNMENT:
                 confvars = assign_res[1]
-                self.__confset.accumulate(csp, curvar, confvars)
-                csp.unassign(curvar)
-                csp.revert_domains() # undo establish and propagation effects
+                self.__jump.accumulate(csp, curvar, confvars)
                 continue # try the next value
+            if csp.unassigned_count() == 0: # solution
+                return (SOLUTION, csp.get_assignment())
             dfs_res = self.__dfs()
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
             csp.unassign(curvar)
-            csp.revert_domains()
+            csp.revert_domains() # undo establish and propagation effects
             if dfs_res[0] == BACKTRACK:
                 continue
             if dfs_res[0] == BACKJUMP:
@@ -84,7 +86,7 @@ class SOLVER():
                     return dfs_res
                 else:
                     confvars = dfs_res[1]
-                    self.__confset.absorb(csp, curvar, confvars)
+                    self.__jump.absorb(csp, curvar, confvars)
                     continue
     
     def find(self, catalog, spec):
@@ -109,16 +111,24 @@ def human_readable(solution):
     print("R: ", solution["R1"])
 
 def main():
-    catalog = CATALOG(current+"/pieces.csv")
-    csp = CSP()
-    select = SELECT(csp)
-    mac = MAC(csp, catalog, specs["C"])
-    solver = SOLVER(csp, select, mac)
-    res = solver.find(catalog, specs["C"])
-    if res[0] == SOLUTION:
-        human_readable(res[1])
-    else:
-        print("No solution was found!")
-            
+    found = 0
+    not_found = 0
+    for i in range(0, 10):
+        for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
+            catalog = CATALOG(current+"/pieces.csv")
+            csp = CSP()
+            select = SELECT(csp)
+            mac = MAC(csp, catalog, specs[kook])
+            solver = SOLVER(csp, select, mac)
+            res = solver.find(catalog, specs[kook])
+            if res[0] == SOLUTION:
+                #human_readable(res[1])
+                found += 1
+                print("Solution for ", kook)
+                human_readable(res[1])
+            else:
+                not_found += 1
+                #print("No solution was found!")
+            print("Found: ", found, "  not-found: ", not_found)
 if __name__ == "__main__":	
     main()

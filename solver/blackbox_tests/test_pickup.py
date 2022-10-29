@@ -78,3 +78,9 @@ class test_SELECT(unittest.TestCase):
         e = ["L2","L3", "L1", "L4", "L5","L6","L7"]
         for i in range(21, 28):
             self.assertEqual(selected_vars[i], e[i-21])
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_SELECT)
+    runner.run(suite)

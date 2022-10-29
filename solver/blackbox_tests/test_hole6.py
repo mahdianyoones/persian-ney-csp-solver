@@ -11,7 +11,7 @@ from spec import specs
 from constants import *
 import copy
 
-class Test_HOLE6(unittest.TestCase):
+class test_HOLE6(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
 
 		L1 + L2 + L3 + L4 + L5 + S < h6.'''
@@ -170,3 +170,9 @@ class Test_HOLE6(unittest.TestCase):
 		output = self.__sut.propagate(csp, {"L4"})
 		# assess
 		self.assertEqual(output[1], {"L1", "L2", "L3", "L5"})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_HOLE6)
+    runner.run(suite)		

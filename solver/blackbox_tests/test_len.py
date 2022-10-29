@@ -126,3 +126,9 @@ class test_LEN(unittest.TestCase):
         self.assertEqual(output[2], {"L1"})
         L1 = csp.get_domain("L1")
         self.assertEqual(L1, {"min": 4, "max": 4})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_LEN)
+    runner.run(suite)

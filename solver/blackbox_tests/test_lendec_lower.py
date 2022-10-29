@@ -80,3 +80,9 @@ class test_LENDEC_LOWER(unittest.TestCase):
         # assess
         self.assertEqual(out[0], CONTRADICTION)
         self.assertEqual(out[2], {"L2"})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_LENDEC_LOWER)
+    runner.run(suite)

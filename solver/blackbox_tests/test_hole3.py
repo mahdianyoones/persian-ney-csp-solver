@@ -162,3 +162,9 @@ class Test_HOLE3(unittest.TestCase):
 		output = self.__sut.propagate(csp, {"L4"})
 		# assess
 		self.assertEqual(output[1], {"L1", "L2", "L3"})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(Test_HOLE3)
+    runner.run(suite)

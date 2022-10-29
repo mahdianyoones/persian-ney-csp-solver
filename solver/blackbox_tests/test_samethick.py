@@ -91,3 +91,9 @@ class test_SAMETHICK(unittest.TestCase):
         output = self.__sut.establish(csp, "T1", 2.5)
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"T2", "T3", "T4", "T5", "T6", "T7"})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_SAMETHICK)
+    runner.run(suite)                

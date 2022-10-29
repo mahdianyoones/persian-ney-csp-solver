@@ -89,3 +89,9 @@ class test_SAMEROUND(unittest.TestCase):
         output = self.__sut.establish(csp, "R1", 2.5)
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"R2", "R3", "R4", "R5", "R6", "R7"})
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_SAMEROUND)
+    runner.run(suite)        

@@ -125,4 +125,10 @@ class test_HALF(unittest.TestCase):
         # assess
         self.assertEqual(out[0], CONTRADICTION)
         self.assertEqual(out[1], {"L1", "L2"})
-        self.assertEqual(out[2], set([]))     
+        self.assertEqual(out[2], set([]))
+
+if __name__ == "__main__":
+    runner = unittest.TextTestRunner()
+    loader = unittest.defaultTestLoader 
+    suite = loader.loadTestsFromTestCase(test_HALF)
+    runner.run(suite)

@@ -49,6 +49,7 @@ class test_DIAMDEC(unittest.TestCase):
         csp.assign("D1", 14)
         output = self.__sut.propagate(csp, {"D5", "D4", "D1", "D7"})
         # assess
+        D = csp.get_domains()
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"D2","D3","D4","D5","D6","D7"})
 
@@ -143,6 +144,32 @@ class test_DIAMDEC(unittest.TestCase):
         self.assertEqual(D["D4"], {8.5, 9})
         self.assertEqual(D["D5"], {8})
         self.assertEqual(D["D6"], {7})
+
+    def test_reduction_by_propagate(self):
+        # arrange
+        self.__reset_csp()
+        csp = self.__csp
+        csp.update_domain("D1", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        csp.update_domain("D2", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        csp.update_domain("D3", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        csp.update_domain("D4", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        csp.update_domain("D5", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        csp.update_domain("D6", {7, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
+        csp.update_domain("D7", {6})
+        # act
+        output = self.__sut.propagate(csp, {"D7"})
+        # assess
+        self.assertEqual(output[0], DOMAINS_REDUCED)
+        self.assertEqual(output[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.assertEqual(output[2], {"D1", "D2", "D3", "D4", "D5", "D6"})
+        D = csp.get_domains()
+        self.assertEqual(D["D1"], {10, 10.5, 11, 11.5})
+        self.assertEqual(D["D2"], {9.5, 10, 10.5, 11})
+        self.assertEqual(D["D3"], {9, 9.5, 10})
+        self.assertEqual(D["D4"], {8.5, 9})
+        self.assertEqual(D["D5"], {8})
+        self.assertEqual(D["D6"], {7})
+        self.assertEqual(D["D7"], {6})
 
     def test_contradiction_after_establish(self):
         '''Asserts a contradictory case.'''

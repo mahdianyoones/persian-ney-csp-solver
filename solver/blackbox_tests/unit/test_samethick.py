@@ -10,61 +10,61 @@ from samethick import SAMETHICK
 from constants import *
 
 class test_SAMETHICK(unittest.TestCase):
-    '''Asserts the correct behaviors of the same thickness constraint.
-    
-
-    Partitions:
-
-    a. T1 is not being assigned
-    b. At least one of T2, T3, ... to T7 does not contain the value of T1
-    c. All variables T2, T3, ... to T7 do contain the value of T1'''
+    '''Tests the behavior of SAMETHICK constraint.'''
 
     def setUp(self):
         self.__csp = CSP()
         self.__sut = SAMETHICK()
     
-    def test_contradiction_occurs(self):
-        '''Asserts contradiction when the value of T1 is not found in one var
-        
-        T1 = 0
-        0 does not exist in T2'''
+    def test_establishes_and_reduces(self):
+        # arrange
         csp = self.__csp
-        csp.update_domain("T1", {0})
-        csp.update_domain("T2", {2.5})
-        csp.update_domain("T3", {0, 2.5})
-        csp.update_domain("T4", {0, 2.5})
-        csp.update_domain("T5", {0, 2.5})
-        csp.update_domain("T6", {0, 2.5})
-        csp.update_domain("T7", {0, 2.5})
-        csp.assign("T1", 0)
+        domains = {
+            "T1": {2.5, 2},
+            "T2": {2.5, 5, 4},
+            "T3": {0, 2.5},
+            "T4": {0, 2.5},
+            "T5": {0, 2.5},
+            "T6": {0, 2.5},
+            "T7": {0, 2.5}
+        }
+        for var, vals in domains.items():
+            csp.update_domain(var, vals)
+        # act
+        output = self.__sut.establish(csp, "T2", 2.5)
+        # assess
+        self.assertEqual(output[0], DOMAINS_REDUCED)
+        self.assertEqual(output[1], {"T1", "T3", "T4", "T5", "T6", "T7"})
+        self.assertEqual(output[2], {"T1", "T3", "T4", "T5", "T6", "T7"})
+        D = csp.get_domains()
+        self.assertEqual(D["T2"], {2.5, 5, 4})
+        for var in {"T1", "T3", "T4", "T5", "T6", "T7"}:
+            self.assertEqual(D[var], {2.5})
+
+    def test_contradiction_occurs(self):
+        # arrange
+        csp = self.__csp
+        domains = {
+            "T1": {0},
+            "T2": {2.5},
+            "T3": {0, 2.5},
+            "T4": {0, 2.5},
+            "T5": {0, 2.5},
+            "T6": {0, 2.5},
+            "T7": {0, 2.5}
+        }
+        for var, vals in domains.items():
+            csp.update_domain(var, vals)
+        # act
         output = self.__sut.establish(csp, "T1", 0)
+        # assess
         self.assertEqual(output[0], CONTRADICTION)
     
-    def test_domains_reduce(self):
-        '''T1 = some value, some value exists in all domains as well.
-
-        T1 = 2.5
-        2.5 exists in all variables'''
-        csp = self.__csp
-        csp.update_domain("T1", {2.5})
-        csp.update_domain("T2", {2.5})
-        csp.update_domain("T3", {0, 2.5})
-        csp.update_domain("T4", {0, 2.5})
-        csp.update_domain("T5", {0, 2.5})
-        csp.update_domain("T6", {0, 2.5})
-        csp.update_domain("T7", {0, 2.5})
-        output = self.__sut.establish(csp, "T1", 2.5)
-        self.assertEqual(output[0], DOMAINS_REDUCED)
-        self.assertEqual(output[1], {"T2", "T3", "T4", "T5", "T6", "T7"})
-        D = csp.get_domains()
-        for _var in {"T2", "T3", "T4", "T5", "T6", "T7"}:
-            self.assertEqual(D[_var], {2.5})
-
-    def test_no_impact(self):
+    def test_establishes_once_only(self):
         '''Enforces the case that the algorithm simply does nothing!
         
-        The algorithm only checks domains if R1 IS BEING established.
-        Otherwise, we are sure that domains are consistent AND further
+        The algorithm only checks domains if THE FIRST T variable is being
+        established. Otherwise, we are sure that domains are consistent AND further
         reduction is impossible.
         
         The domains remain intact in this case, and they are NOT examined.'''
@@ -73,21 +73,28 @@ class test_SAMETHICK(unittest.TestCase):
         output = self.__sut.establish(csp, "T2", 2.5)
         self.assertEqual(output, (DOMAINS_INTACT, set([])))
 
-    def test_no_reduction(self):
+    def test_all_contain_the_same_value(self):
         '''Enforces a case that domains are checked but no value is removed.
         
         i.e. the domains happend to be just consistent.
         
         The domains remain intact in this case, but they are all examined.'''
+        # arrange
         csp = self.__csp
-        csp.update_domain("T1", {2.5})
-        csp.update_domain("T2", {2.5})
-        csp.update_domain("T3", {2.5})
-        csp.update_domain("T4", {2.5})
-        csp.update_domain("T5", {2.5})
-        csp.update_domain("T6", {2.5})
-        csp.update_domain("T7", {2.5})
+        domains = {
+            "T1": {2.5},
+            "T2": {2.5},
+            "T3": {2.5},
+            "T4": {2.5},
+            "T5": {2.5},
+            "T6": {2.5},
+            "T7": {2.5}
+        }
+        for var, vals in domains.items():
+            csp.update_domain(var, vals)
+        # act
         output = self.__sut.establish(csp, "T1", 2.5)
+        # assess
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"T2", "T3", "T4", "T5", "T6", "T7"})
 
@@ -95,4 +102,4 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     loader = unittest.defaultTestLoader 
     suite = loader.loadTestsFromTestCase(test_SAMETHICK)
-    runner.run(suite)                
+    runner.run(suite)        

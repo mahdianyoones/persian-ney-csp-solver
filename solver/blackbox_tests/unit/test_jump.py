@@ -1,13 +1,12 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from jump import JUMP
-from spec import specs
 from constants import *
 
 class test_JUMP(unittest.TestCase):

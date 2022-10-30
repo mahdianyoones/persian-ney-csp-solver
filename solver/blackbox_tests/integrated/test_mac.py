@@ -1,16 +1,15 @@
-from math import exp
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from catalog import CATALOG
 from mac import MAC
 from unary import UNARY
-from spec import specs
+from testspec import specs
 from constants import *
 
 class test_MAC(unittest.TestCase):
@@ -18,6 +17,7 @@ class test_MAC(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         self.__catalog = CATALOG()
+        current = op.dirname(__file__)
         self.__catalog.setup(current+"/contains_solutions.csv")
         self.__spec = specs["C"]
         self.__sut = MAC(self.__csp, self.__catalog, self.__spec)

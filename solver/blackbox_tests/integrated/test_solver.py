@@ -8,7 +8,7 @@ sys.path.append(parent)
 import unittest
 from solver import SOLVER
 from csp import CSP
-from spec import specs
+from testspec import specs
 from catalog import CATALOG
 from mac import MAC
 from pickup import SELECT

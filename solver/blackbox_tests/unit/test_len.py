@@ -1,9 +1,9 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from len import LEN
@@ -16,22 +16,20 @@ class test_LEN(unittest.TestCase):
     
     def setUp(self):
         self.__csp = CSP()
-        spec = copy.deepcopy(specs["C"])
-        spec["hmarg"] = 10
-        self.__sut = LEN(spec["len"])
+        len = 524
+        self.__sut = LEN(len)
     
-    def __reset_csp(self):
+    def __set_domains(self):
         domain = {"min": 1, "max": 1000}
         for var in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
             self.__csp.update_domain(var, domain)
-        self.__csp.unassign_all()
 
     def test_contradiction_after_propagate(self):
         '''Asserts a contradiction case.
 
         in which sum of the lower bounds are greater than len.'''
         # arrange
-        self.__reset_csp()
+        self.__set_domains()
         csp = self.__csp
         csp.update_domain("L1", {"min": 100, "max": 476})
         csp.update_domain("L2", {"min": 100, "max": 86})
@@ -52,7 +50,7 @@ class test_LEN(unittest.TestCase):
 
         in which sum of the upper bounds are smaller than len.'''
         # arrange
-        self.__reset_csp()
+        self.__set_domains()
         csp = self.__csp
         csp.update_domain("L1", {"min": 1, "max": 100})
         csp.update_domain("L2", {"min": 1, "max": 100})
@@ -71,7 +69,7 @@ class test_LEN(unittest.TestCase):
     def test_contradiction_after_establish(self):
         '''Assers a contradictory case.'''
         # arrange
-        self.__reset_csp()
+        self.__set_domains()
         csp = self.__csp
         csp.assign("L1", 100)
         csp.assign("L2", 100)
@@ -90,7 +88,7 @@ class test_LEN(unittest.TestCase):
     def test_contradiction_after_establish_2(self):
         '''Assers a contradictory case.'''
         # arrange
-        self.__reset_csp()
+        self.__set_domains()
         csp = self.__csp
         csp.assign("L1", 100)
         csp.assign("L2", 100)
@@ -109,7 +107,7 @@ class test_LEN(unittest.TestCase):
     def test_domains_reduce_establish(self):
         '''Asserts the domain occurs.'''
         # arrange
-        self.__reset_csp()
+        self.__set_domains()
         csp = self.__csp
         csp.assign("L7", 100)
         csp.assign("L2", 100)

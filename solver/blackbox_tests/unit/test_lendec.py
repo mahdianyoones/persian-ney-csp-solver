@@ -1,14 +1,12 @@
 import unittest
-import sys
-import os
-
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from lendec import LENDEC
-from spec import specs
 from constants import *
 
 class test_LENDEC(unittest.TestCase):
@@ -24,14 +22,10 @@ class test_LENDEC(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         self.__sut = LENDEC()
-    
-    def __reset_csp(self):
-        self.__csp.unassign_all()
 
     def test_propagate_reduces_bounds(self):
         '''A case that all inconsistency conditions exist and are fixed.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L2", {"min": 41, "max": 50})     # to 42, 50
         csp.update_domain("L3", {"min": 41, "max": 50})     # to 41, 49
@@ -54,7 +48,6 @@ class test_LENDEC(unittest.TestCase):
     def test_propagate_reduces_bounds_2(self):
         '''A case that all inconsistency conditions exist and are fixed.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L2", {"min": 50, "max": 100})     # 52, 100
         csp.update_domain("L3", {"min": 50, "max": 100})     # to 51, 99
@@ -79,7 +72,6 @@ class test_LENDEC(unittest.TestCase):
     def test_establish_reduces_bounds(self):
         '''Another case in which inconsisten values are removed.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.assign("L2", 50)
         csp.update_domain("L3", {"min": 48, "max": 50})     # to 48, 49
@@ -98,7 +90,6 @@ class test_LENDEC(unittest.TestCase):
     def test_contradiction_occurs_after_establish(self):
         '''A case in which contradiction occurs.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L3", {"min": 50, "max": 50}) # min cannot become 49
        # act
@@ -111,7 +102,6 @@ class test_LENDEC(unittest.TestCase):
     def test_contradiction_occurs_after_propagate(self):
         '''A case that all inconsistency conditions exist and are fixed.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L2", {"min": 50, "max": 100})     # examined
         csp.update_domain("L3", {"min": 50, "max": 100})     # examined

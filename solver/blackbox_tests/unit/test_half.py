@@ -1,9 +1,9 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from half import HALF
@@ -16,14 +16,10 @@ class test_HALF(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         self.__sut = HALF()
-    
-    def __reset_csp(self):
-        self.__csp.unassign_all()
 
     def test_reduction_after_propagation(self):
         '''Asserts that reduction occurs in propagate entry.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L1", {"min": 30, "max": 36})
         csp.update_domain("L2", {"min": 59, "max": 70})
@@ -40,7 +36,6 @@ class test_HALF(unittest.TestCase):
     def test_reduction_after_propagation_2(self):
         '''Asserts another case that reduction occurs in propagate entry.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L1", {"min": 19, "max": 30})
         csp.update_domain("L2", {"min": 40, "max": 61})
@@ -57,7 +52,6 @@ class test_HALF(unittest.TestCase):
     def test_domains_intact_after_propagation(self):
         '''Asserts a case that reduction does not occurs in propagate.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L1", {"min": 20, "max": 30})
         csp.update_domain("L2", {"min": 40, "max": 60})
@@ -70,7 +64,6 @@ class test_HALF(unittest.TestCase):
     def test_reduction_after_assignment(self):
         '''Asserts the case that assignment to L1 causes update for L2.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L2", {"min": 59, "max": 61})
         # act
@@ -89,7 +82,6 @@ class test_HALF(unittest.TestCase):
         i.e. L2 is already consistent (has one value which happens to
         be consistent.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L2", {"min": 60, "max": 60})
         # act
@@ -102,7 +94,6 @@ class test_HALF(unittest.TestCase):
     def test_contradiction_after_propagation(self):
         '''Asserts that contradiction occurs after propagation.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L1", {"min": 20, "max": 20})
         csp.update_domain("L2", {"min": 41, "max": 70})
@@ -116,7 +107,6 @@ class test_HALF(unittest.TestCase):
     def test_contradiction_after_propagation_2(self):
         '''Asserts another case that contradiction occurs in propagate.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L1", {"min": 40, "max": 70})
         csp.update_domain("L2", {"min": 22, "max": 22})

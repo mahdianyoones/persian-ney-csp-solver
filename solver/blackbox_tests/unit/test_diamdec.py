@@ -1,13 +1,12 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from diamdec import DIAMDEC
-from spec import specs
 from constants import *
 
 class test_DIAMDEC(unittest.TestCase):
@@ -17,13 +16,9 @@ class test_DIAMDEC(unittest.TestCase):
         self.__csp = CSP()
         self.__sut = DIAMDEC({"min": 0.5, "max": 1.0})
     
-    def __reset_csp(self):
-        self.__csp.unassign_all()
-
     def test_no_reduction_after_establish(self):
         '''Asserts a case that no reduction occurs.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D2", {13})
         # act
@@ -36,7 +31,6 @@ class test_DIAMDEC(unittest.TestCase):
     def test_no_reduction_after_propagation(self):
         '''Asserts a case that no reduction occurs.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D1", {14})
         csp.update_domain("D2", {13})
@@ -56,7 +50,6 @@ class test_DIAMDEC(unittest.TestCase):
     def test_reduction_after_propagation(self):
         '''Asserts a case in which reduction occurs.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D1", {14})
         csp.update_domain("D2", {13, 12})   # 12 is inconsistent
@@ -79,7 +72,6 @@ class test_DIAMDEC(unittest.TestCase):
     def test_reduction_after_establish(self):
         '''Asserts another case in which reduction happens.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D7", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
         # act
@@ -95,7 +87,6 @@ class test_DIAMDEC(unittest.TestCase):
     
     def test_reduction_by_establish(self):
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D1", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
         csp.update_domain("D2", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
@@ -121,7 +112,6 @@ class test_DIAMDEC(unittest.TestCase):
 
     def test_reduction_by_establish_2(self):
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D1", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
         csp.update_domain("D2", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
@@ -147,7 +137,6 @@ class test_DIAMDEC(unittest.TestCase):
 
     def test_reduction_by_propagate(self):
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D1", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
         csp.update_domain("D2", {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13})
@@ -174,7 +163,6 @@ class test_DIAMDEC(unittest.TestCase):
     def test_contradiction_after_establish(self):
         '''Asserts a contradictory case.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D2", {13, 13.5, 13.6, 14})
         # act
@@ -188,7 +176,6 @@ class test_DIAMDEC(unittest.TestCase):
     def test_returns_correct_conflict_set(self):
         '''Asserts a correct conflcit set is returned.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("D5", {13, 13.5, 13.6, 14})
         # act

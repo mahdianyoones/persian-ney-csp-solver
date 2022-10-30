@@ -1,13 +1,12 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from lendec_lower import LENDEC_LOWER
-from spec import specs
 from constants import *
 
 class test_LENDEC_LOWER(unittest.TestCase):
@@ -26,14 +25,10 @@ class test_LENDEC_LOWER(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         self.__sut = LENDEC_LOWER()
-    
-    def __reset_csp(self):
-        self.__csp.unassign_all()
 
     def test_establish_reduces_bounds(self):
         '''A case in which propagate detects and removes inconsistent values.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.assign("L2", 121)
         csp.assign("L3", 90)
@@ -52,7 +47,6 @@ class test_LENDEC_LOWER(unittest.TestCase):
     def test_bug1212(self):
         '''A case in which propagate detects and removes inconsistent values.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.update_domain("L2", {"min": 90, "max": 172}) # examined, intact
         csp.update_domain("L3", {"min": 89, "max": 171}) # examined, intact
@@ -71,7 +65,6 @@ class test_LENDEC_LOWER(unittest.TestCase):
     def test_contradiction_occurs(self):
         '''A case in which contradiction occurs.'''
         # arrange
-        self.__reset_csp()
         csp = self.__csp
         csp.assign("L2", 90)
         csp.update_domain("L3", {"min": 1, "max": 59}) # min cannot become 60

@@ -48,7 +48,10 @@ class STOCK():
 				new_values = catalog.values(var[0], filters)
 				if new_values == NODE_NOT_FOUND:
 					return (CONTRADICTION, examined, confset)
-				if len(new_values) < len(D[var]):
+				new_values = D[var].intersection(new_values)
+				if len(new_values) == 0:
+					return (CONTRADICTION, examined, confset)
+				if new_values != D[var]:
 					reduced_vars.add(var)
 					new_domains[var] = new_values
 		if len(reduced_vars) == 0:

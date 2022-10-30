@@ -1,15 +1,13 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from hole6 import HOLE6
-from spec import specs
 from constants import *
-import copy
 
 class test_HOLE6(unittest.TestCase):
 	'''The goal is to enforce the following constraint relation:
@@ -18,11 +16,11 @@ class test_HOLE6(unittest.TestCase):
 			
 	def setUp(self):
 		self.__csp = CSP()
-		spec = copy.deepcopy(specs["C"])
-		spec["hmarg"] = 10
-		self.__sut = HOLE6(spec["h6"], spec["hmarg"])
+		hmarg = 10
+		h6 = 467
+		self.__sut = HOLE6(h6, hmarg)
 
-	def __reset_csp(self):
+	def __set_domains(self):
 		domain = {"min": 1, "max": 1000}
 		for var in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
 			self.__csp.update_domain(var, domain)	
@@ -39,7 +37,7 @@ class test_HOLE6(unittest.TestCase):
         287 >= 287
 		'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		csp.assign("L2", 24)
 		csp.assign("L3", 61)
@@ -68,7 +66,7 @@ class test_HOLE6(unittest.TestCase):
         286 < 287
 		'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		csp.update_domain("L1", {"min": 286, "max": 286})
 		csp.update_domain("L2", {"min": 24, "max": 24})
@@ -99,7 +97,7 @@ class test_HOLE6(unittest.TestCase):
         L5_min < h6 - L1_min - L2_min - L3_min - L4_min - S
 		'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		csp.update_domain("L1", {"min": 286, "max": 287})
 		csp.update_domain("L2", {"min": 24, "max": 25})
@@ -126,7 +124,7 @@ class test_HOLE6(unittest.TestCase):
 	def test_establish_examines_L3(self):
 		'''Asserts that only L3 is examined by establish.'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		csp.assign("L2", 1)
 		csp.assign("L4", 1)
@@ -139,7 +137,7 @@ class test_HOLE6(unittest.TestCase):
 	def test_propagate_examines_L1(self):
 		'''Asserts that only L1 is examined by propagate.'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		csp.assign("L2", 1)	
 		csp.assign("L4", 1)	
@@ -152,7 +150,7 @@ class test_HOLE6(unittest.TestCase):
 	def test_propagate_examines_L1L3(self):
 		'''Asserts that only L1 and L3 are examined by propagate.'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		csp.assign("L4", 1)
 		csp.assign("L5", 1)
@@ -164,7 +162,7 @@ class test_HOLE6(unittest.TestCase):
 	def test_propagate_examines_L1L2L3L5(self):
 		'''Asserts that only L1, L2 and L3 are examined by propagate.'''
 		# arrange
-		self.__reset_csp()
+		self.__set_domains()
 		csp = self.__csp
 		# act
 		output = self.__sut.propagate(csp, {"L4"})

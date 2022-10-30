@@ -1,15 +1,15 @@
 import unittest
-import sys
-import os
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+grandparent = op.dirname(op.dirname(current))
+sp.append(grandparent)
 
 from csp import CSP
 from stock import STOCK
-from spec import specs
 from constants import *
 from catalog import CATALOG
+from unary import UNARY
 
 class test_STOCK(unittest.TestCase):
     '''The goal is to enforce the stock constraints.

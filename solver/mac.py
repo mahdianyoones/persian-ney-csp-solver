@@ -1,4 +1,3 @@
-from sre_constants import SUCCESS
 from hole1 import HOLE1
 from hole3 import HOLE3
 from hole6 import HOLE6

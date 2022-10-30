@@ -12,6 +12,7 @@ from unary import UNARY
 from testspec import specs
 from constants import *
 
+@unittest.skip("test_mac is skipped temporarily")
 class test_MAC(unittest.TestCase):
 
     def setUp(self):

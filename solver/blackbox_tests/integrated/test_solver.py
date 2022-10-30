@@ -14,6 +14,7 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 
+@unittest.skip("test_solver is skipped temporarily")
 class test_SOLVER(unittest.TestCase):
 
     def __find(self, data_set_path, kook):

@@ -79,15 +79,22 @@ class test_SAMEROUND(unittest.TestCase):
         i.e. the domains happend to be just consistent.
         
         The domains remain intact in this case, but they are all examined.'''
+        # arrange
         csp = self.__csp
-        csp.update_domain("R1", {2.5})
-        csp.update_domain("R2", {2.5})
-        csp.update_domain("R3", {2.5})
-        csp.update_domain("R4", {2.5})
-        csp.update_domain("R5", {2.5})
-        csp.update_domain("R6", {2.5})
-        csp.update_domain("R7", {2.5})
+        domains = {
+            "R1": {2.5},
+            "R2": {2.5},
+            "R3": {2.5},
+            "R4": {2.5},
+            "R5": {2.5},
+            "R6": {2.5},
+            "R7": {2.5}
+        }
+        for var, vals in domains.items():
+            csp.update_domain(var, vals)
+        # act
         output = self.__sut.establish(csp, "R1", 2.5)
+        # assess
         self.assertEqual(output[0], DOMAINS_INTACT)
         self.assertEqual(output[1], {"R2", "R3", "R4", "R5", "R6", "R7"})
 

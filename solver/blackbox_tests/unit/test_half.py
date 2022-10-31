@@ -17,105 +17,195 @@ class test_HALF(unittest.TestCase):
         self.__csp = CSP()
         self.__sut = HALF()
 
-    def test_reduction_after_propagation(self):
-        '''Asserts that reduction occurs in propagate entry.'''
-        # arrange
+    def __run_case(self, mth, given, expect):
         csp = self.__csp
-        csp.update_domain("L1", {"min": 30, "max": 36})
-        csp.update_domain("L2", {"min": 59, "max": 70})
-        # act
-        out = self.__sut.propagate(csp, {"L1"})
-        # assess
-        self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L1", "L2"})
-        self.assertEqual(out[2], {"L1", "L2"})
+        csp.unassign_all()
+        # arrange
         D = csp.get_domains()
-        self.assertEqual(D["L1"], {"min": 30, "max": 35})
-        self.assertEqual(D["L2"], {"min": 60, "max": 70})
-
-    def test_reduction_after_propagation_2(self):
-        '''Asserts another case that reduction occurs in propagate entry.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L1", {"min": 19, "max": 30})
-        csp.update_domain("L2", {"min": 40, "max": 61})
+        if "D" in given:
+            for var, domain in given["D"].items():
+                csp.update_domain(var, domain)
+        if "A" in given:
+            for var, val in given["A"].items():
+                csp.assign(var, val)
         # act
-        out = self.__sut.propagate(csp, {"L1"})
+        if mth == "propagate":
+            out = self.__sut.propagate(csp, given["reduced_vars"])
+        else:
+            out = self.__sut.establish(csp, given["curvar"], given["value"])
         # assess
-        self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L1", "L2"})
-        self.assertEqual(out[2], {"L1", "L2"})
-        D = csp.get_domains()
-        self.assertEqual(D["L1"], {"min": 20, "max": 30})
-        self.assertEqual(D["L2"], {"min": 40, "max": 60})
+        self.assertEqual(out, expect["out"])
+        if "D" in expect:
+            for var, domain in expect["D"].items():
+                self.assertEqual(D[var], expect["D"][var])
 
-    def test_domains_intact_after_propagation(self):
-        '''Asserts a case that reduction does not occurs in propagate.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L1", {"min": 20, "max": 30})
-        csp.update_domain("L2", {"min": 40, "max": 60})
-        # act
-        out = self.__sut.propagate(csp, {"L1"})
-        # assess
-        self.assertEqual(out[0], DOMAINS_INTACT)
-        self.assertEqual(out[1], {"L1", "L2"})
+    def test_propagation_reduces_both(self):
+        given = {
+            "D": {
+                "L1": {"min": 30, "max": 36},
+                "L2": {"min": 59, "max": 70}
+            },
+            "reduced_vars": {"L1"}
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L1", "L2"}),
+            "D": {
+                "L1": {"min": 30, "max": 35},
+                "L2": {"min": 60, "max": 70}
+            }
+        }
+        self.__run_case("propagate", given, expect)
+        given = {
+            "D": {
+                "L1": {"min": 19, "max": 30},
+                "L2": {"min": 40, "max": 61}
+            },
+            "reduced_vars": {"L1"}
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L1", "L2"}),
+            "D": {
+                "L1": {"min": 20, "max": 30},
+                "L2": {"min": 40, "max": 60}
+            }
+        }
+
+    def test_propagation_reduces_L1(self):
+        given = {
+            "D": {
+                "L1": {"min": 29, "max": 36},
+                "L2": {"min": 60, "max": 70}
+            },
+            "reduced_vars": {"L1"}
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L1"}),
+            "D": {
+                "L1": {"min": 30, "max": 35},
+                "L2": {"min": 60, "max": 70}
+            }
+        }
+        self.__run_case("propagate", given, expect)
+
+    def test_propagation_reduces_L2(self):
+        given = {
+            "D": {
+                "L1": {"min": 30, "max": 35},
+                "L2": {"min": 59, "max": 72}
+            },
+            "reduced_vars": {"L1"}
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L2"}),
+            "D": {
+                "L1": {"min": 30, "max": 35},
+                "L2": {"min": 60, "max": 70}
+            }
+        }
+        self.__run_case("propagate", given, expect)
+
+    def test_propagation_leaves_intact(self):
+        given = {
+            "D": {
+                "L1": {"min": 30, "max": 35},
+                "L2": {"min": 60, "max": 70}
+            },
+            "reduced_vars": {"L1"}
+        }
+        expect = {
+            "out": (DOMAINS_INTACT, {"L1", "L2"}),
+        }
+        self.__run_case("propagate", given, expect)
+
+    def test_propagation_detects_contradiction(self):
+        given = {
+            "D": {
+                "L1": {"min": 20, "max": 20},
+                "L2": {"min": 41, "max": 70}
+            },
+            "reduced_vars": {"L1"},
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L1", "L2"}, set([])),
+        }
+        self.__run_case("propagate", given, expect)
+        given = {
+            "D": {
+                "L1": {"min": 40, "max": 70},
+                "L2": {"min": 22, "max": 22}
+            },
+            "reduced_vars": {"L1"},
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L1", "L2"}, set([])),
+        }
+        self.__run_case("propagate", given, expect)
 
     def test_reduction_after_assignment(self):
-        '''Asserts the case that assignment to L1 causes update for L2.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L2", {"min": 59, "max": 61})
-        # act
-        csp.assign("L1", 30)
-        out = self.__sut.establish(csp, "L1", 30)
-        # assess
-        self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L2"})
-        self.assertEqual(out[2], {"L2"})
-        D = csp.get_domains()
-        self.assertEqual(D["L2"], {"min": 60, "max": 60})
+        given = {
+            "D": {
+                "L2": {"min": 59, "max": 61}
+            },
+            "A": {
+                "L1": 30
+            },
+            "curvar": "L1",
+            "value": 30
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L2"}, {"L2"}),
+            "D": {
+                "L2": {"min": 60, "max": 60}
+            }
+        }
+        self.__run_case("establish", given, expect)
+        given = {
+            "D": {
+                "L1": {"min": 29, "max": 31}
+            },
+            "A": {
+                "L2": 60
+            },
+            "curvar": "L2",
+            "value": 60
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1"}, {"L1"}),
+            "D": {
+                "L1": {"min": 30, "max": 30}
+            }
+        }
+        self.__run_case("establish", given, expect)
 
-    def test_domains_intact_after_assignment(self):
-        '''Asserts the case that assignment to L1 causes not update for L2.
-        
-        i.e. L2 is already consistent (has one value which happens to
-        be consistent.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L2", {"min": 60, "max": 60})
-        # act
-        csp.assign("L1", 30)
-        out = self.__sut.establish(csp, "L1", 30)
-        # assess
-        self.assertEqual(out[0], DOMAINS_INTACT)
-        self.assertEqual(out[1], {"L2"})
-
-    def test_contradiction_after_propagation(self):
-        '''Asserts that contradiction occurs after propagation.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L1", {"min": 20, "max": 20})
-        csp.update_domain("L2", {"min": 41, "max": 70})
-        # act
-        out = self.__sut.propagate(csp, {"L1"})
-        # assess
-        self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L1", "L2"})
-        self.assertEqual(out[2], set([]))
-
-    def test_contradiction_after_propagation_2(self):
-        '''Asserts another case that contradiction occurs in propagate.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L1", {"min": 40, "max": 70})
-        csp.update_domain("L2", {"min": 22, "max": 22})
-        # act
-        out = self.__sut.propagate(csp, {"L1"})
-        # assess
-        self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L1", "L2"})
-        self.assertEqual(out[2], set([]))
+    def test_assignment_leaves_intact(self):
+        given = {
+            "D": {
+                "L2": {"min": 60, "max": 60}
+            },
+            "A": {
+                "L1": 30
+            },
+            "curvar": "L1",
+            "value": 30
+        }
+        expect = {
+            "out": (DOMAINS_INTACT, {"L2"}),
+        }
+        self.__run_case("establish", given, expect)
+        given = {
+            "D": {
+                "L1": {"min": 30, "max": 30}
+            },
+            "A": {
+                "L2": 60
+            },
+            "curvar": "L2",
+            "value": 60
+        }
+        expect = {
+            "out": (DOMAINS_INTACT, {"L1"}),
+        }
+        self.__run_case("establish", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

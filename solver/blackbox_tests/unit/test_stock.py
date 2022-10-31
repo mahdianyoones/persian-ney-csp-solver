@@ -109,6 +109,17 @@ class test_STOCK(unittest.TestCase):
                 }
             },
             {
+                "A": {"T1": 2, "D1": 19},
+                "curvar": "t1",
+                "val": 2,
+                "examined": {"L1", "R1"},
+                "reduced": {"L1", "R1"},
+                "D": {
+                    "R1": {1, 0},
+                    "L1": {"min": 1, "max": 20}
+                }
+            },
+            {
                 "A": {"R1": 0},
                 "curvar": "R1",
                 "val": 0,
@@ -119,7 +130,19 @@ class test_STOCK(unittest.TestCase):
                     "D1": {18, 19},
                     "L1": {"min": 1, "max": 40}
                 }
-            }            
+            },
+            {
+                "A": {"R1": 0},
+                "curvar": "R1",
+                "val": 0,
+                "examined": {"L1", "T1", "D1"},
+                "reduced": {"L1", "T1", "D1"},
+                "D": {
+                    "T1": {1, 2},
+                    "D1": {18, 19},
+                    "L1": {"min": 1, "max": 40}
+                }
+            }
         ]
         for case in cases:
             # arrange

@@ -10,6 +10,7 @@ from stock import STOCK
 from constants import *
 from catalog import CATALOG
 from unary import UNARY
+import case_runner
 
 class test_STOCK(unittest.TestCase):
     '''Tests the behavior of stock constraints.'''
@@ -30,150 +31,179 @@ class test_STOCK(unittest.TestCase):
         for piece in pieces:
             self.__catalog.add_piece(piece[0], piece[1], piece[2], piece[3]) 
         self.__sut = STOCK(self.__catalog)
-    
-    def __set_domains(self):
-        csp = self.__csp
+        self.__case_runner = case_runner.test_CASE_RUNNER()
+
+    def test_initial_domains(self):
         T_vals = self.__catalog.values("T")
         R_vals = self.__catalog.values("R")
         D_vals = self.__catalog.values("D")
         l = self.__catalog.l()
-        csp.update_domain("T1", T_vals)
-        csp.update_domain("D1", D_vals)
-        csp.update_domain("R1", R_vals)
-        csp.update_domain("L1", {"min": 1, "max": l})
+        self.assertEqual(T_vals, {1, 2, 3})
+        self.assertEqual(R_vals, {0, 1, 2})
+        self.assertEqual(D_vals, {18, 19, 20})
+        self.assertEqual(l, 60) 
 
-    def test_initial_domains(self):
+    def __get_initial_domains(self):
+        T_vals = self.__catalog.values("T")
+        R_vals = self.__catalog.values("R")
+        D_vals = self.__catalog.values("D")
+        l = self.__catalog.l()
+        return (T_vals, R_vals, D_vals, l)
+
+    def tests_establish_detects_contradiction(self):
+        sut = self.__sut
         csp = self.__csp
-        # act
-        self.__set_domains()
-        # assess
-        D = csp.get_domains()
-        self.assertEqual(D["T1"], {1, 2, 3})
-        self.assertEqual(D["R1"], {0, 1, 2})
-        self.assertEqual(D["D1"], {18, 19, 20})
-        self.assertEqual(D["L1"], {"min": 1, "max": 60}) 
-
-    def tests_finds_no_pieces(self):
-        csp = self.__csp
-        cases = [
-            {
-                "A": {"D1": 18, "R1": 1},
-                "curvar": "R1",
-                "val": 1
+        assert_constraint = self.__case_runner.assert_constraint
+        (T_vals, R_vals, D_vals, l) = self.__get_initial_domains()
+        given = {
+            "A": {"D1": 18, "R1": 1},
+            "D": {
+                "T1": T_vals,
+                "L1": {"min": 1, "max": l}
             },
-            {
-                "A": {"R1": 18, "T1": 1},
-                "curvar": "T1",
-                "val": 1
+            "curvar": "R1",
+            "value": 1
+        }
+        expect = {
+            "out": (CONTRADICTION, set([]), {"D1", "R1"})
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "A": {"D1": 18, "T1": 2},
+            "D": {
+                "R1": R_vals,
+                "L1": {"min": 1, "max": l}
             },
-            {
-                "A": {"R1": 18, "T1": 1},
-                "curvar": "R1",
-                "val": 1
-            }
-        ]
-        for case in cases:
-            # arrange
-            for var, val in case["A"].items():
-                csp.assign(var, val)
-            # act
-            out = self.__sut.establish(csp, case["curvar"], case["val"])
-            # assess
-            self.assertEqual(out[0], CONTRADICTION)
-            csp.unassign_all()
-            self.__set_domains()
-
+            "curvar": "T1",
+            "value": 2
+        }
+        expect = {
+            "out": (CONTRADICTION, set([]), {"D1", "T1"})
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "A": {"T1": 1, "R1": 1},
+            "D": {
+                "D1": D_vals,
+                "L1": {"min": 1, "max": l}
+            },
+            "curvar": "R1",
+            "value": 1
+        }
+        expect = {
+            "out": (CONTRADICTION, set([]), {"T1", "R1"})
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+    
     def tests_finds_pieces(self):
+        sut = self.__sut
         csp = self.__csp
-        D = csp.get_domains()
-        cases = [
-            {
-                "A": {"T1": 1, "R1": 0, "D1": 19},
-                "curvar": "R1",
-                "val": 0,
-                "examined": {"L1"},
-                "reduced": {"L1"},
-                "D": {
-                    "L1": {"min": 1, "max": 20}
-                }
+        assert_constraint = self.__case_runner.assert_constraint
+        (T_vals, R_vals, D_vals, l) = self.__get_initial_domains()
+        given = {
+            "A": {"T1": 1, "R1": 0, "D1": 19},
+            "D": {
+                "L1": {"min": 1, "max": l}
             },
-            {
-                "A": {"R1": 0, "D1": 19},
-                "curvar": "R1",
-                "val": 0,
-                "examined": {"L1", "T1"},
-                "reduced": {"L1", "T1"},
-                "D": {
-                    "T1": {1, 2},
-                    "L1": {"min": 1, "max": 30}
-                }
-            },
-            {
-                "A": {"T1": 2, "D1": 19},
-                "curvar": "t1",
-                "val": 2,
-                "examined": {"L1", "R1"},
-                "reduced": {"L1", "R1"},
-                "D": {
-                    "R1": {1, 0},
-                    "L1": {"min": 1, "max": 20}
-                }
-            },
-            {
-                "A": {"R1": 0},
-                "curvar": "R1",
-                "val": 0,
-                "examined": {"L1", "T1", "D1"},
-                "reduced": {"L1", "T1", "D1"},
-                "D": {
-                    "T1": {1, 2},
-                    "D1": {18, 19},
-                    "L1": {"min": 1, "max": 40}
-                }
-            },
-            {
-                "A": {"R1": 0},
-                "curvar": "R1",
-                "val": 0,
-                "examined": {"L1", "T1", "D1"},
-                "reduced": {"L1", "T1", "D1"},
-                "D": {
-                    "T1": {1, 2},
-                    "D1": {18, 19},
-                    "L1": {"min": 1, "max": 40}
-                }
+            "curvar": "R1",
+            "value": 0
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1"}, {"L1"}),
+            "D": {
+                "L1": {"min": 1, "max": 20}
             }
-        ]
-        for case in cases:
-            # arrange
-            self.__set_domains()
-            for var, val in case["A"].items():
-                csp.assign(var, val)
-            # act
-            out = self.__sut.establish(csp, case["curvar"], case["val"])
-            # assess
-            self.assertEqual(out[0], DOMAINS_REDUCED)
-            self.assertEqual(out[1], case["examined"])
-            self.assertEqual(out[2], case["reduced"])
-            for var, expected_domain in case["D"].items():
-                self.assertEqual(D[var], expected_domain)
-            csp.unassign_all()
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "A": {"R1": 0, "D1": 19},
+            "D": {
+                "T1": T_vals,
+                "L1": {"min": 1, "max": l}
+            },
+            "curvar": "R1",
+            "value": 0
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "T1"}, {"L1", "T1"}),
+            "D": {
+                "L1": {"min": 1, "max": 30},
+                "T1": {1, 2}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "A": {"T1": 2, "D1": 19},
+            "D": {
+                "R1": R_vals,
+                "L1": {"min": 1, "max": l}
+            },
+            "curvar": "T1",
+            "value": 2
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "R1"}, {"L1", "R1"}),
+            "D": {
+                "L1": {"min": 1, "max": 20},
+                "R1": {1, 0}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "A": {"R1": 0},
+            "D": {
+                "T1": T_vals,
+                "D1": D_vals,
+                "L1": {"min": 1, "max": l}
+            },
+            "curvar": "R1",
+            "value": 0
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "T1", "D1"}, {"L1", "T1", "D1"}),
+            "D": {
+                "T1": {1, 2},
+                "D1": {18, 19},
+                "L1": {"min": 1, "max": 40}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "A": {"R1": 0},
+            "D": {
+                "T1": T_vals,
+                "D1": D_vals,
+                "L1": {"min": 1, "max": l}
+            },
+            "curvar": "R1",
+            "value": 0
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "T1", "D1"}, {"L1", "T1", "D1"}),
+            "D": {
+                "T1": {1, 2},
+                "D1": {18, 19},
+                "L1": {"min": 1, "max": 40}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
     def test_does_not_find_enough_pieces(self):
-        # arrange
-        self.__set_domains()
+        sut = self.__sut
         csp = self.__csp
-        csp.assign("D1", 19)
-        csp.assign("R1", 0)
-        csp.assign("T1", 1)
-        csp.update_domain("L1", {"min": 21, "max": 100}) # arbitrary upper
-        # act
-        out = self.__sut.establish(csp, "T1", 1)
-        # assess
-        D = csp.get_domains()
-        self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L1"})
-        self.assertEqual(out[2], {"D1", "R1", "T1"})
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "A": {"D1": 19, "T1": 1, "R1": 0},
+            "D": {
+                "L1": {"min": 21, "max": 100}
+            },
+            "curvar": "T1",
+            "value": 1
+        }
+        expect = {
+            "out": (CONTRADICTION, set([]), {"T1", "R1", "D1"}),
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

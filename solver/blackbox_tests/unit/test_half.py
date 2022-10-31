@@ -1,6 +1,7 @@
 import unittest
 import os.path as op
 from sys import path as sp
+
 current = op.dirname(op.realpath(__file__))
 grandparent = op.dirname(op.dirname(current))
 sp.append(grandparent)
@@ -9,6 +10,7 @@ from csp import CSP
 from half import HALF
 from spec import specs
 from constants import *
+import case_runner
 
 class test_HALF(unittest.TestCase):
     '''The goal is to test the behavior of half constraint.'''
@@ -16,30 +18,12 @@ class test_HALF(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         self.__sut = HALF()
-
-    def __run_case(self, mth, given, expect):
-        csp = self.__csp
-        csp.unassign_all()
-        # arrange
-        D = csp.get_domains()
-        if "D" in given:
-            for var, domain in given["D"].items():
-                csp.update_domain(var, domain)
-        if "A" in given:
-            for var, val in given["A"].items():
-                csp.assign(var, val)
-        # act
-        if mth == "propagate":
-            out = self.__sut.propagate(csp, given["reduced_vars"])
-        else:
-            out = self.__sut.establish(csp, given["curvar"], given["value"])
-        # assess
-        self.assertEqual(out, expect["out"])
-        if "D" in expect:
-            for var, domain in expect["D"].items():
-                self.assertEqual(D[var], expect["D"][var])
+        self.__case_runner = case_runner.test_CASE_RUNNER()
 
     def test_propagation_reduces_both(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L1": {"min": 30, "max": 36},
@@ -54,7 +38,7 @@ class test_HALF(unittest.TestCase):
                 "L2": {"min": 60, "max": 70}
             }
         }
-        self.__run_case("propagate", given, expect)
+        assert_constraint(csp, sut, "propagate", given, expect)
         given = {
             "D": {
                 "L1": {"min": 19, "max": 30},
@@ -69,8 +53,12 @@ class test_HALF(unittest.TestCase):
                 "L2": {"min": 40, "max": 60}
             }
         }
+        assert_constraint(csp, sut, "propagate", given, expect)
 
     def test_propagation_reduces_L1(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L1": {"min": 29, "max": 36},
@@ -85,9 +73,12 @@ class test_HALF(unittest.TestCase):
                 "L2": {"min": 60, "max": 70}
             }
         }
-        self.__run_case("propagate", given, expect)
+        assert_constraint(csp, sut, "propagate", given, expect)
 
     def test_propagation_reduces_L2(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L1": {"min": 30, "max": 35},
@@ -102,9 +93,12 @@ class test_HALF(unittest.TestCase):
                 "L2": {"min": 60, "max": 70}
             }
         }
-        self.__run_case("propagate", given, expect)
+        assert_constraint(csp, sut, "propagate", given, expect)
 
     def test_propagation_leaves_intact(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L1": {"min": 30, "max": 35},
@@ -115,9 +109,12 @@ class test_HALF(unittest.TestCase):
         expect = {
             "out": (DOMAINS_INTACT, {"L1", "L2"}),
         }
-        self.__run_case("propagate", given, expect)
+        assert_constraint(csp, sut, "propagate", given, expect)
 
     def test_propagation_detects_contradiction(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L1": {"min": 20, "max": 20},
@@ -128,7 +125,7 @@ class test_HALF(unittest.TestCase):
         expect = {
             "out": (CONTRADICTION, {"L1", "L2"}, set([])),
         }
-        self.__run_case("propagate", given, expect)
+        assert_constraint(csp, sut, "propagate", given, expect)
         given = {
             "D": {
                 "L1": {"min": 40, "max": 70},
@@ -139,9 +136,12 @@ class test_HALF(unittest.TestCase):
         expect = {
             "out": (CONTRADICTION, {"L1", "L2"}, set([])),
         }
-        self.__run_case("propagate", given, expect)
+        assert_constraint(csp, sut, "propagate", given, expect)
 
     def test_reduction_after_assignment(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L2": {"min": 59, "max": 61}
@@ -158,7 +158,7 @@ class test_HALF(unittest.TestCase):
                 "L2": {"min": 60, "max": 60}
             }
         }
-        self.__run_case("establish", given, expect)
+        assert_constraint(csp, sut, "establish", given, expect)
         given = {
             "D": {
                 "L1": {"min": 29, "max": 31}
@@ -175,9 +175,12 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 30, "max": 30}
             }
         }
-        self.__run_case("establish", given, expect)
+        assert_constraint(csp, sut, "establish", given, expect)
 
     def test_assignment_leaves_intact(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
                 "L2": {"min": 60, "max": 60}
@@ -191,7 +194,7 @@ class test_HALF(unittest.TestCase):
         expect = {
             "out": (DOMAINS_INTACT, {"L2"}),
         }
-        self.__run_case("establish", given, expect)
+        assert_constraint(csp, sut, "establish", given, expect)
         given = {
             "D": {
                 "L1": {"min": 30, "max": 30}
@@ -205,7 +208,7 @@ class test_HALF(unittest.TestCase):
         expect = {
             "out": (DOMAINS_INTACT, {"L1"}),
         }
-        self.__run_case("establish", given, expect)
+        assert_constraint(csp, sut, "establish", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

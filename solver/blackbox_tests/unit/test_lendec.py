@@ -8,115 +8,121 @@ sp.append(grandparent)
 from csp import CSP
 from lendec import LENDEC
 from constants import *
+import case_runner
 
 class test_LENDEC(unittest.TestCase):
-    '''Tests the behavior of len decrement consistency.
-    
-    The following inequalities are established between variables L2 to L7:
-    L2 > L3
-    L3 > L4
-    L4 > L5
-    L5 > L6
-    L6 > L7'''
+    '''Tests the behavior of len decrement constraint.'''
     
     def setUp(self):
         self.__csp = CSP()
         self.__sut = LENDEC()
+        self.__case_runner = case_runner.test_CASE_RUNNER()
 
-    def test_propagate_reduces_bounds(self):
-        '''A case that all inconsistency conditions exist and are fixed.'''
-        # arrange
+    def test_domains_are_reduced(self):
+        sut = self.__sut
         csp = self.__csp
-        csp.update_domain("L2", {"min": 41, "max": 50})     # to 42, 50
-        csp.update_domain("L3", {"min": 41, "max": 50})     # to 41, 49
-        csp.update_domain("L4", {"min": 40, "max": 49})     # to 40, 48
-        csp.update_domain("L5", {"min": 39, "max": 47})     # examined, intact
-        csp.update_domain("L6", {"min": 38, "max": 48})     # to 38, 46
-        csp.update_domain("L7", {"min": 37, "max": 45})     # examined, intact
-        # act
-        out = self.__sut.propagate(csp, {"L2", "L6"})
-        # assess
-        D = csp.get_domains()
-        self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L2", "L3", "L4", "L5", "L6", "L7"})
-        self.assertEqual(out[2], {"L2", "L3", "L4", "L6"})
-        self.assertEqual(D["L2"], {"min": 42, "max": 50})
-        self.assertEqual(D["L3"], {"min": 41, "max": 49})
-        self.assertEqual(D["L4"], {"min": 40, "max": 48})
-        self.assertEqual(D["L6"], {"min": 38, "max": 46})
+        assert_constraint = self.__case_runner.assert_constraint
+        # case 1
+        given = {
+            "D": {
+                "L2": {"min": 41, "max": 50},
+                "L3": {"min": 41, "max": 50},
+                "L4": {"min": 40, "max": 49},
+                "L5": {"min": 39, "max": 47},
+                "L6": {"min": 38, "max": 48},
+                "L7": {"min": 37, "max": 45}
+            },
+            "reduced_vars": {"L2", "L6"},
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L2", "L3", "L4", "L5", "L6", "L7"},
+                {"L2", "L3", "L4", "L6"}),
+            "D": {
+                "L2": {"min": 42, "max": 50},
+                "L3": {"min": 41, "max": 49},
+                "L4": {"min": 40, "max": 48},
+                "L6": {"min": 38, "max": 46},
+            }
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        # case 2
+        given = {
+            "D": {
+                "L2": {"min": 50, "max": 100},
+                "L3": {"min": 50, "max": 100},
+                "L4": {"min": 50, "max": 100},
+                "L5": {"min": 50, "max": 100},
+                "L6": {"min": 50, "max": 100},
+                "L7": {"min": 50, "max": 100}
+            },
+            "reduced_vars": {"L2"},
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L2", "L3", "L4", "L5", "L6", "L7"},
+                {"L2", "L3", "L4", "L5", "L6", "L7"}),
+            "D": {
+                "L2": {"min": 55, "max": 100},
+                "L3": {"min": 54, "max": 99},
+                "L4": {"min": 53, "max": 98},
+                "L5": {"min": 52, "max": 97},
+                "L6": {"min": 51, "max": 96},
+                "L7": {"min": 50, "max": 95},
+            }
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        # case 3
+        given = {
+            "A": {"L2": 50, "L5": 46},
+            "D": {
+                "L3": {"min": 48, "max": 50},
+                "L4": {"min": 47, "max": 49},
+            },
+            "curvar": "L2",
+            "value": 50
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L3", "L4"}, {"L3", "L4"}),
+            "D": {
+                "L3": {"min": 48, "max": 49},
+                "L4": {"min": 47, "max": 48},
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
-    def test_propagate_reduces_bounds_2(self):
-        '''A case that all inconsistency conditions exist and are fixed.'''
-        # arrange
+    def test_contradiction_is_detected(self):
+        sut = self.__sut
         csp = self.__csp
-        csp.update_domain("L2", {"min": 50, "max": 100})     # 52, 100
-        csp.update_domain("L3", {"min": 50, "max": 100})     # to 51, 99
-        csp.update_domain("L4", {"min": 50, "max": 100})     # to 50, 98
-        csp.update_domain("L5", {"min": 50, "max": 100})     # to 47, 97
-        csp.update_domain("L6", {"min": 50, "max": 100})     # to 46, 96
-        csp.update_domain("L7", {"min": 50, "max": 100})     # to 45, 95
-        # act
-        out = self.__sut.propagate(csp, {"L2"})
-        # assess
-        D = csp.get_domains()
-        self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L2", "L3", "L4", "L5", "L6", "L7"})
-        self.assertEqual(out[2], {"L2", "L3", "L4", "L5", "L6", "L7"})
-        self.assertEqual(D["L2"], {"min": 55, "max": 100})
-        self.assertEqual(D["L3"], {"min": 54, "max": 99})
-        self.assertEqual(D["L4"], {"min": 53, "max": 98})
-        self.assertEqual(D["L5"], {"min": 52, "max": 97})
-        self.assertEqual(D["L6"], {"min": 51, "max": 96})
-        self.assertEqual(D["L7"], {"min": 50, "max": 95})
-
-    def test_establish_reduces_bounds(self):
-        '''Another case in which inconsisten values are removed.'''
-        # arrange
-        csp = self.__csp
-        csp.assign("L2", 50)
-        csp.update_domain("L3", {"min": 48, "max": 50})     # to 48, 49
-        csp.update_domain("L4", {"min": 47, "max": 49})     # to 47, 48
-        csp.assign("L5", 46)
-        # act
-        out = self.__sut.establish(csp, "L2", 50)
-        # assess
-        D = csp.get_domains()
-        self.assertEqual(out[0], DOMAINS_REDUCED)
-        self.assertEqual(out[1], {"L3", "L4"})
-        self.assertEqual(out[2], {"L3", "L4"})
-        self.assertEqual(D["L3"], {"min": 48, "max": 49})
-        self.assertEqual(D["L4"], {"min": 47, "max": 48})
-
-    def test_contradiction_occurs_after_establish(self):
-        '''A case in which contradiction occurs.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L3", {"min": 50, "max": 50}) # min cannot become 49
-       # act
-        csp.assign("L2", 50)
-        out = self.__sut.establish(csp, "L2", 50)
-        # assess
-        self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[2], {"L2"})
-
-    def test_contradiction_occurs_after_propagate(self):
-        '''A case that all inconsistency conditions exist and are fixed.'''
-        # arrange
-        csp = self.__csp
-        csp.update_domain("L2", {"min": 50, "max": 100})     # examined
-        csp.update_domain("L3", {"min": 50, "max": 100})     # examined
-        csp.update_domain("L4", {"min": 50, "max": 100})     # examined
-        csp.update_domain("L5", {"min": 50, "max": 100})     # examined
-        csp.update_domain("L6", {"min": 50, "max": 100})     # examined
-        csp.update_domain("L7", {"min": 100, "max": 100})     # contradiction
-        # act
-        out = self.__sut.propagate(csp, {"L2"})
-        # assess
-        D = csp.get_domains()
-        self.assertEqual(out[0], CONTRADICTION)
-        self.assertEqual(out[1], {"L2", "L3", "L4", "L5", "L6", "L7"})
-        self.assertEqual(out[2], set([]))
-
+        assert_constraint = self.__case_runner.assert_constraint
+        # case 1
+        given = {
+            "A": {"L2": 50},
+            "D": {
+                "L3": {"min": 50, "max": 50},
+            },
+            "curvar": "L2",
+            "value": 50
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L3"}, {"L2"}),
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        # case 2
+        given = {
+            "D": {
+                "L2": {"min": 50, "max": 100},
+                "L3": {"min": 50, "max": 100},
+                "L4": {"min": 50, "max": 100},
+                "L5": {"min": 50, "max": 100},
+                "L6": {"min": 50, "max": 100},
+                "L7": {"min": 100, "max": 100},
+            },
+            "reduced_vars": {"L2"}
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L2", "L3", "L4", "L5", "L6", "L7"},
+            set([])),
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

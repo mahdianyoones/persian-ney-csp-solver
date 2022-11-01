@@ -19,14 +19,14 @@ def run_unit_tests():
 	runner.run(suite)
 	
 def run_integration_tests():
-	print(f"{bcolors.OKBLUE}\nRunning integration tests\n{bcolors.ENDC}")
+	print(f"{bcolors.OKGREEN}\nRunning integration tests\n{bcolors.ENDC}")
 	loader = unittest.TestLoader()
 	suite = loader.discover("solver/blackbox_tests/integrated")
 	runner = unittest.TextTestRunner()
 	runner.run(suite)
 
 def run_system_tests():
-	print(f"{bcolors.OKBLUE}\nRunning system tests\n{bcolors.ENDC}")
+	print(f"{bcolors.OKCYAN}\nRunning system tests\n{bcolors.ENDC}")
 	loader = unittest.TestLoader()
 	suite = loader.discover("solver/blackbox_tests/system")
 	runner = unittest.TextTestRunner()

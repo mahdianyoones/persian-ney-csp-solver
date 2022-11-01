@@ -19,11 +19,6 @@ class Test_HOLE3(unittest.TestCase):
         h3 = 371
         self.__sut = HOLE3(h3, hmarg)
         self.__case_runner = case_runner.test_CASE_RUNNER()
-
-    def __set_domains(self):
-        domain = {"min": 1, "max": 1000}
-        for var in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
-            self.__csp.update_domain(var, domain)	
     
     def test_contradiction_is_detected(self):
         sut = self.__sut
@@ -43,7 +38,7 @@ class Test_HOLE3(unittest.TestCase):
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
-    def test_domains_remain_intact(self):
+    def test_domains_are_already_consistent(self):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint

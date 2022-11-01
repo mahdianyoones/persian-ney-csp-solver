@@ -8,116 +8,87 @@ sp.append(grandparent)
 from csp import CSP
 from hole1 import HOLE1
 from constants import *
+import case_runner
 
 class Test_HOLE1(unittest.TestCase):
-	'''Tests the behavior of hole1 constraint.'''
-			
-	def setUp(self):
-		self.__csp = CSP()
-		hmarg = 10
-		h1 = 312
-		self.__sut = HOLE1(h1, hmarg)
+    '''Tests the behavior of hole1 constraint.'''
+            
+    def setUp(self):
+        self.__csp = CSP()
+        hmarg = 10
+        h1 = 312
+        self.__sut = HOLE1(h1, hmarg)
+        self.__case_runner = case_runner.test_CASE_RUNNER()
+    
+    def test_contradiction_is_detected(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
+        # case 1
+        given = {
+            "D": {
+                "L1": {"min": 132, "max": 132},
+                "L2": {"min": 48, "max": 48},
+                "L3": {"min": 122, "max": 122}
+            },
+            "reduced_vars": {"L1"},
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L2", "L3"}, set([]))
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        # case 2
+        given = {
+            "A": {"L1": 132, "L2": 48},
+            "D": {
+                "L3": {"min": 122, "max": 122}
+            },
+            "curvar": "L2",
+            "value": 48
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L3"}, {"L1", "L2"})
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
-	def __set_domains(self):
-		domain = {"min": 1, "max": 1000}
-		for var in {"L1", "L2", "L3"}:
-			self.__csp.update_domain(var, domain)	
-	
-	def test_contradiction_after_propagation(self):
-		'''Asserts the occurence of a contradictory case.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		csp.update_domain("L1", {"min": 132, "max": 132})
-		csp.update_domain("L2", {"min": 48, "max": 48})
-		csp.update_domain("L3", {"min": 122, "max": 122})
-		# act
-		output = self.__sut.propagate(csp, {"L1"})
-		# assess
-		self.assertEqual(output[0], CONTRADICTION)
-		self.assertEqual(output[1], {"L2", "L3"})
-		self.assertEqual(output[2], set([]))
-
-	def test_contradiction_after_establish(self):
-		'''Asserts the occurence of a contradictory case.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		csp.update_domain("L3", {"min": 122, "max": 122})
-		csp.assign("L1", 132)
-		csp.assign("L2", 48)
-		# act
-		output = self.__sut.establish(csp, "L2", 48)
-		# assess
-		self.assertEqual(output[0], CONTRADICTION)
-		self.assertEqual(output[1], {"L3"})
-		self.assertEqual(output[2], {"L1", "L2"})
-
-	def test_domains_intact_after_propagation(self):
-		'''Asserts that L1, L2, and L3 are examined and remain intact.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		csp.update_domain("L1", {"min": 131, "max": 131})
-		csp.update_domain("L2", {"min": 48, "max": 48})
-		csp.update_domain("L3", {"min": 122, "max": 122})
-		# act
-		output = self.__sut.propagate(csp, {"L1", "L2"})
-		# assess
-		expected = (DOMAINS_INTACT, {"L1", "L2", "L3"})
-		self.assertEqual(output, expected)
-		
-	def test_reduction_after_propagation(self):
-		'''Asserts a case that domains reduce due to propagation.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		csp.update_domain("L1", {"min": 131, "max": 132})
-		csp.update_domain("L2", {"min": 48, "max": 49})
-		csp.update_domain("L3", {"min": 122, "max": 123})
-		# act
-		output = self.__sut.propagate(csp, {"L1", "L2"})
-		# assess
-		expected = (DOMAINS_REDUCED, {"L1", "L2", "L3"}, {"L1", "L2", "L3"})
-		self.assertEqual(output, expected)
-		L1 = self.__csp.get_domain("L1")
-		L2 = self.__csp.get_domain("L2")
-		L3 = self.__csp.get_domain("L3")
-		self.assertEqual(L1, {"min": 131, "max": 131})
-		self.assertEqual(L2, {"min": 48, "max": 48})
-		self.assertEqual(L3, {"min": 122, "max": 122})
-		
-	def test_establish_examines_L2(self):
-		'''Asserts that only L2 is examined by establish.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		csp.assign("L1", 1)		
-		# act
-		output = self.__sut.establish(csp, "L3", 1)
-		# assess
-		self.assertEqual(output[1], {"L2"})
-	
-	def test_propagate_examines_L1(self):
-		'''Asserts that only L1 is examined by propagate.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		csp.assign("L2", 1)		
-		# act
-		output = self.__sut.propagate(csp, {"L3"})
-		# assess
-		self.assertEqual(output[1], {"L1"})
-		
-	def test_propagate_examines_L1L3(self):
-		'''Asserts that only L1 and L3 are examined by propagate.'''
-		# arrange
-		self.__set_domains()
-		csp = self.__csp
-		# act
-		output = self.__sut.propagate(csp, {"L2"})
-		# assess
-		self.assertEqual(output[1], {"L1", "L3"})
+    def test_domains_remain_intact(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "D": {
+                "L1": {"min": 131, "max": 131},
+                "L2": {"min": 48, "max": 48},
+                "L3": {"min": 122, "max": 122}
+            },
+            "reduced_vars": {"L1", "L2"},
+        }
+        expect = {
+            "out": (DOMAINS_INTACT, {"L1", "L2", "L3"})
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        
+    def test_domains_are_reduced(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "D": {
+                "L1": {"min": 131, "max": 132},
+                "L2": {"min": 48, "max": 49},
+                "L3": {"min": 122, "max": 123}
+            },
+            "reduced_vars": {"L1", "L2"},
+        }
+        expect = {
+            "out": (DOMAINS_REDUCED, {"L1", "L2", "L3"}, {"L1", "L2", "L3"}),
+            "D": {
+                "L1": {"min": 131, "max": 131},
+                "L2": {"min": 48, "max": 48},
+                "L3": {"min": 122, "max": 122}
+            }
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

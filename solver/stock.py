@@ -40,17 +40,17 @@ class STOCK():
 			if var[0] == "L":
 				new_L = catalog.l(filters)
 				if new_L == NODE_NOT_FOUND or new_L < D[var]["min"]:
-					return (CONTRADICTION, examined, confset)
+					return (CONTRADICTION, set([]), confset)
 				if new_L >= D[var]["min"] and new_L < D[var]["max"]:
 					reduced_vars.add(var)
 					new_domains[var] = {"min": D[var]["min"], "max": new_L}
 			else:
 				new_values = catalog.values(var[0], filters)
 				if new_values == NODE_NOT_FOUND:
-					return (CONTRADICTION, examined, confset)
+					return (CONTRADICTION, set([]), confset)
 				new_values = D[var].intersection(new_values)
 				if len(new_values) == 0:
-					return (CONTRADICTION, examined, confset)
+					return (CONTRADICTION, set([]), confset)
 				if new_values != D[var]:
 					reduced_vars.add(var)
 					new_domains[var] = new_values

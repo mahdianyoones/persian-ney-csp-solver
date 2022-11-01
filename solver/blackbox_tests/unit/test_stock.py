@@ -33,16 +33,6 @@ class test_STOCK(unittest.TestCase):
         self.__sut = STOCK(self.__catalog)
         self.__case_runner = case_runner.test_CASE_RUNNER()
 
-    def test_initial_domains(self):
-        T_vals = self.__catalog.values("T")
-        R_vals = self.__catalog.values("R")
-        D_vals = self.__catalog.values("D")
-        l = self.__catalog.l()
-        self.assertEqual(T_vals, {1, 2, 3})
-        self.assertEqual(R_vals, {0, 1, 2})
-        self.assertEqual(D_vals, {18, 19, 20})
-        self.assertEqual(l, 60) 
-
     def __get_initial_domains(self):
         T_vals = self.__catalog.values("T")
         R_vals = self.__catalog.values("R")

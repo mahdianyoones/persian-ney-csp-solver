@@ -8,57 +8,74 @@ sp.append(grandparent)
 from csp import CSP
 from samethick import SAMETHICK
 from constants import *
+import case_runner
 
 class test_SAMETHICK(unittest.TestCase):
-    '''Tests the behavior of SAMETHICK constraint.'''
+    '''Tests the behavior of samethick constraint.'''
 
     def setUp(self):
         self.__csp = CSP()
         self.__sut = SAMETHICK()
+        self.__case_runner = case_runner.test_CASE_RUNNER()
     
-    def test_establishes_and_reduces(self):
-        # arrange
+    def test_establish_reduces_all(self):
+        sut = self.__sut
         csp = self.__csp
-        domains = {
-            "T1": {2.5, 2},
-            "T2": {2.5, 5, 4},
-            "T3": {0, 2.5},
-            "T4": {0, 2.5},
-            "T5": {0, 2.5},
-            "T6": {0, 2.5},
-            "T7": {0, 2.5}
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "A": {"T2": 2.5},
+            "D": {
+                "T1": {2.5, 2},
+                "T2": {2.5, 5, 4},
+                "T3": {0, 2.5},
+                "T4": {0, 2.5},
+                "T5": {0, 2.5},
+                "T6": {0, 2.5},
+                "T7": {0, 2.5}
+            },
+            "curvar": "T2",
+            "value": 2.5
         }
-        for var, vals in domains.items():
-            csp.update_domain(var, vals)
-        # act
-        output = self.__sut.establish(csp, "T2", 2.5)
-        # assess
-        self.assertEqual(output[0], DOMAINS_REDUCED)
-        self.assertEqual(output[1], {"T1", "T3", "T4", "T5", "T6", "T7"})
-        self.assertEqual(output[2], {"T1", "T3", "T4", "T5", "T6", "T7"})
-        D = csp.get_domains()
-        self.assertEqual(D["T2"], {2.5, 5, 4})
-        for var in {"T1", "T3", "T4", "T5", "T6", "T7"}:
-            self.assertEqual(D[var], {2.5})
+        expect = {
+            "out": (
+                DOMAINS_REDUCED,
+                {"T1", "T3", "T4", "T5", "T6", "T7"},
+                {"T1", "T3", "T4", "T5", "T6", "T7"}),
+            "D": {
+                "T1": {2.5},
+                "T2": {2.5, 5, 4},
+                "T3": {2.5},
+                "T4": {2.5},
+                "T5": {2.5},
+                "T6": {2.5},
+                "T7": {2.5}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
     def test_contradiction_occurs(self):
-        # arrange
+        sut = self.__sut
         csp = self.__csp
-        domains = {
-            "T1": {0},
-            "T2": {2.5},
-            "T3": {0, 2.5},
-            "T4": {0, 2.5},
-            "T5": {0, 2.5},
-            "T6": {0, 2.5},
-            "T7": {0, 2.5}
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "A": {"T2": 2.5},
+            "D": {
+                "T1": {0},
+                "T2": {2.5},
+                "T3": {0, 2.5},
+                "T4": {0, 2.5},
+                "T5": {0, 2.5},
+                "T6": {0, 2.5},
+                "T7": {0, 2.5}
+            },
+            "curvar": "T2",
+            "value": 2.5
         }
-        for var, vals in domains.items():
-            csp.update_domain(var, vals)
-        # act
-        output = self.__sut.establish(csp, "T1", 0)
-        # assess
-        self.assertEqual(output[0], CONTRADICTION)
+        expect = {
+            "out": (CONTRADICTION, 
+            {"T1", "T3", "T4", "T5", "T6", "T7"}, set([])),
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
     
     def test_establishes_once_only(self):
         '''Enforces the case that the algorithm simply does nothing!
@@ -68,35 +85,49 @@ class test_SAMETHICK(unittest.TestCase):
         reduction is impossible.
         
         The domains remain intact in this case, and they are NOT examined.'''
+        sut = self.__sut
         csp = self.__csp
-        csp.assign("T1", 2.5)
-        output = self.__sut.establish(csp, "T2", 2.5)
-        self.assertEqual(output, (DOMAINS_INTACT, set([])))
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "A": {"T1": 2.5},
+            "D": {
+                "T1": {2.5},
+                "T2": {2.5},
+                "T3": {2.5},
+                "T4": {2.5},
+                "T5": {2.5},
+                "T6": {2.5},
+                "T7": {2.5}
+            },
+            "curvar": "T2",
+            "value": 2.5
+        }
+        expect = {
+            "out": (DOMAINS_INTACT, set([])),
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
     def test_all_contain_the_same_value(self):
-        '''Enforces a case that domains are checked but no value is removed.
-        
-        i.e. the domains happend to be just consistent.
-        
-        The domains remain intact in this case, but they are all examined.'''
-        # arrange
+        sut = self.__sut
         csp = self.__csp
-        domains = {
-            "T1": {2.5},
-            "T2": {2.5},
-            "T3": {2.5},
-            "T4": {2.5},
-            "T5": {2.5},
-            "T6": {2.5},
-            "T7": {2.5}
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "D": {
+                "T1": {2.5},
+                "T2": {2.5},
+                "T3": {2.5},
+                "T4": {2.5},
+                "T5": {2.5},
+                "T6": {2.5},
+                "T7": {2.5}
+            },
+            "curvar": "T1",
+            "value": 2.5
         }
-        for var, vals in domains.items():
-            csp.update_domain(var, vals)
-        # act
-        output = self.__sut.establish(csp, "T1", 2.5)
-        # assess
-        self.assertEqual(output[0], DOMAINS_INTACT)
-        self.assertEqual(output[1], {"T2", "T3", "T4", "T5", "T6", "T7"})
+        expect = {
+            "out": (DOMAINS_INTACT, {"T2", "T3", "T4", "T5", "T6", "T7"}),
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

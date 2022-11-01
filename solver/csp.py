@@ -63,9 +63,9 @@ class CSP():
 		self.__assigned.append(var) # order matters
 	
 	def unassign_all(self):
-		self.assignment = {}
-		self.unassigned = copy.deepcopy(self.__X)
-		self.assigned = [] # order matters
+		self.__assignment = {}
+		self.__unassigned = copy.deepcopy(self.__X)
+		self.__assigned = [] # order matters
 	
 	def get_variables(self):
 		return self.__X

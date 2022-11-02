@@ -68,7 +68,7 @@ class MAC():
 				return (CONTRADICTION, examined, res[2], evaled_consts)
 		if len(reduced_vars) > 0:
 			return (DOMAINS_REDUCED, examined, reduced_vars, evaled_consts)
-		return (DOMAINS_INTACT, set([]), evaled_consts)
+		return (DOMAINS_INTACT, examined, evaled_consts)
 
 	def propagate(self, reduced_vars):
 		'''Recursively propagates domain reductions.'''
@@ -91,7 +91,9 @@ class MAC():
 				if res[0] == DOMAINS_REDUCED:
 					new_reduced_vars.update(res[2])
 					reduced_vars.update(res[2])
-		return (PROPAGATION_PROCEEDED, new_reduced_vars, evaled_consts)
+		if len(reduced_vars) > 0:
+			return (DOMAINS_REDUCED, examined, reduced_vars)
+		return (DOMAINS_INTACT, examined, evaled_consts)
 	
 	def __init_c_order(self, csp):
 		'''Determines the order of constraints.

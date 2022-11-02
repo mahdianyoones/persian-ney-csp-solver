@@ -5,9 +5,9 @@ class JUMP():
     '''Implements the backjumping mechanism through conflict sets.'''
 
     def __init__(self, X):
-        self.__confsets = {v: [] for v in X}
+        self.__confsets = {}
 
-    def accumulate(self, csp, curvar, confvars):
+    def accumulate(self, curvar, value, reduced_vars):
         '''Accumulates the conflict set for curvar.
         
         Conflict set must be sorted based on the time of assignment.
@@ -29,18 +29,14 @@ class JUMP():
         If we jumped to the last year instead, we would have to repeat a
         full year again to see if that solves the issue of today!
         '''
-        if len(confvars) == 0:
+        if len(reduced_vars) == 0:
             return
-        A = csp.get_assignment() # time sorted
-        existing_confvars = set(self.__confsets[curvar])
-        new_confvars = []
-        for var in A:
-            if var in existing_confvars or var in confvars:
-                if var != curvar:
-                    new_confvars.append(var)
-        self.__confsets[curvar] = new_confvars
+        for v in reduced_vars:
+            if not v in self.__confsets:
+                self.__confsets[v] = {}
+            self.__confsets[v][curvar] = value
 
-    def absorb(self, csp, curvar, confvars):
+    def absorb(self, jump_target, jump_origin):
         '''Absorbs conflict set from jump origin.
         
         Current variable incorporates in itself the conflict set of the
@@ -71,25 +67,30 @@ class JUMP():
         the problem, people at this date know what to do; if future people
         have provided them with a set of suspicious dates, further jumping
         happens according to that set.'''
-        if len(confvars) == 0:
-            return
-        A = csp.get_assignment() # time sorted
-        existing_confvars = set(self.__confsets[curvar])
-        new_confvars = []
-        for var in A:
-            if var in existing_confvars or var in confvars:
-                if var != curvar:
-                    new_confvars.append(var)
-        self.__confsets[curvar] = new_confvars
-
+        if not jump_origin in self.__confsets:
+            raise Exception("Jump origin doesn't exist.")
+        if not jump_target in self.__confsets:
+            self.__confsets[jump_target] = {}
+        for v, val in self.__confsets[jump_origin].items():
+            self.__confsets[jump_target][v] = val
+        
     def canbackjump(self, curvar):
-        return curvar in self.__confsets and len(self.__confsets[curvar]) > 0
+        if curvar in self.__confsets:
+            if len(self.__confsets[curvar].keys()) > 0:
+                return True
+        return False
     
-    def backjump(self, curvar):
-        jump_target = self.__confsets[curvar][-1]
-        confvars = copy.deepcopy(self.__confsets[curvar])
-        self.__confsets[curvar] = []
-        return (confvars, jump_target)
+    def jump_target(self, csp, curvar):
+        '''Returns the most recent assignment in conflict with curvar.'''
+        A = csp.get_assigned_vars()
+        for i in range(len(A) - 1, -1, -1):
+            jump_target = A[i]
+            if jump_target in self.__confsets[curvar]:
+                for v, confset in self.__confsets.items():
+                    if jump_target in confset:
+                        del confset[jump_target]
+                return jump_target
+        raise Exception("Jump target does not exists!")
 
     def get_confset(self, var):
         return self.__confsets[var]

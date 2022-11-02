@@ -30,16 +30,20 @@ class SOLVER():
         csp = self.__csp
         csp.assign(curvar, value)
         csp.backup_domains()
-        res = self.__mac.establish(curvar, value)
-        if res[0] == CONTRADICTION:
+        establish_res = self.__mac.establish(curvar, value)
+        reduced_vars = set([])
+        if establish_res[0] == CONTRADICTION:
             self.__unassign(csp, curvar)
-            return (INCONSISTENT_ASSIGNMENT, res[2])
-        if res[0] == DOMAINS_REDUCED:
-            propagate_res = self.__mac.propagate(res[2])
+            return (INCONSISTENT_ASSIGNMENT, establish_res[2])
+        if establish_res[0] == DOMAINS_REDUCED:
+            reduced_vars.update(establish_res[2])
+            propagate_res = self.__mac.propagate(establish_res[2])
             if propagate_res[0] == CONTRADICTION:
                 self.__unassign(csp, curvar)
                 return (INCONSISTENT_ASSIGNMENT, set([]))
-        return (CONSISTENT_ASSIGNMENT, set([]))
+            if propagate_res[0] == DOMAINS_REDUCED:
+                reduced_vars.update(propagate_res[2])
+        return (CONSISTENT_ASSIGNMENT, reduced_vars)
     
     def __unassign(self, csp, curvar):
         csp.unassign(curvar)
@@ -65,29 +69,30 @@ class SOLVER():
                 if csp.assigned_count() == 0:
                     return (SEARCH_SPACE_EXHAUSTED, None)
                 if self.__jump.canbackjump(curvar):
-                    (confvars, jump_target) = self.__jump.backjump(curvar)
-                    return (BACKJUMP, confvars, jump_target)
+                    jump_origin = curvar
+                    jump_target = self.__jump.jump_target(csp, curvar)
+                    return (BACKJUMP, jump_origin, jump_target)
                 return (BACKTRACK, None)
             val = self.__select.nextval(curvar, domain)		
             assign_res = self.__assign(curvar, val)
             if assign_res[0] == INCONSISTENT_ASSIGNMENT:
-                confvars = assign_res[1]
-                self.__jump.accumulate(csp, curvar, confvars)
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
                 return (SOLUTION, csp.get_assignment())
+            self.__jump.accumulate(curvar, val, assign_res[1])
             dfs_res = self.__dfs()
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
             self.__unassign(csp, curvar)
             if dfs_res[0] == BACKTRACK:
-                continue
+                continue # May not happen at all!
             if dfs_res[0] == BACKJUMP:
                 if dfs_res[2] != curvar:
                     return dfs_res
                 else:
-                    confvars = dfs_res[1]
-                    self.__jump.absorb(csp, curvar, confvars)
+                    jump_origin = dfs_res[1]
+                    jump_target = dfs_res[2]
+                    self.__jump.absorb(jump_target, jump_origin)
                     continue
     
     def find(self, catalog, spec):
@@ -114,24 +119,17 @@ def human_readable(solution):
     print("R: ", solution["R1"])
 
 def main():
-    found = 0
-    not_found = 0
-    for i in range(0, 10):
-        for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
-            catalog = CATALOG(current+"/pieces.csv")
-            csp = CSP()
-            select = SELECT(csp)
-            mac = MAC(csp, catalog, specs[kook])
-            solver = SOLVER(csp, select, mac)
-            res = solver.find(catalog, specs[kook])
-            if res[0] == SOLUTION:
-                #human_readable(res[1])
-                found += 1
-                print("Solution for ", kook)
-                human_readable(res[1])
-            else:
-                not_found += 1
-                #print("No solution was found!")
-            print("Found: ", found, "  not-found: ", not_found)
+    for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
+        catalog = CATALOG(current+"/pieces.csv")
+        csp = CSP()
+        select = SELECT(csp)
+        mac = MAC(csp, catalog, specs[kook])
+        solver = SOLVER(csp, select, mac)
+        res = solver.find(catalog, specs[kook])
+        if res[0] == SOLUTION:
+            print("\nSolution for ", kook, "\n")
+            human_readable(res[1])
+        else:
+            print("\nNo solution for ", kook, "\n")
 if __name__ == "__main__":	
     main()

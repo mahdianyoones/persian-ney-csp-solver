@@ -2,18 +2,19 @@ import unittest
 import os.path as op
 from sys import path as sp
 current = op.dirname(op.realpath(__file__))
+parent = op.dirname(current)
 grandparent = op.dirname(op.dirname(current))
+sp.append(parent)
 sp.append(grandparent)
 
 from csp import CSP
 from stock import STOCK
 from constants import *
 from catalog import CATALOG
-from unary import UNARY
 import case_runner
 
 class test_STOCK(unittest.TestCase):
-    '''Tests the behavior of stock constraints.'''
+    '''Tests the behavior of stock constraints along with catalog.'''
     
     def setUp(self):
         self.__csp = CSP()

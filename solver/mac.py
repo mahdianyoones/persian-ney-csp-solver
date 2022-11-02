@@ -92,7 +92,7 @@ class MAC():
 					new_reduced_vars.update(res[2])
 					reduced_vars.update(res[2])
 		return (PROPAGATION_PROCEEDED, new_reduced_vars, evaled_consts)
-		
+	
 	def __init_c_order(self, csp):
 		'''Determines the order of constraints.
 		
@@ -102,6 +102,9 @@ class MAC():
 			self.__constraints_order[constraint] = 8 - len(participants)
 
 	def __init_X2C(self, csp):
+		'''Buils a map from each variable to the constraints they participate.
+		
+		Constraints of each variable are sorted based on their order.'''
 		C = csp.get_constraints()
 		X = csp.get_variables()
 		X2C = {}

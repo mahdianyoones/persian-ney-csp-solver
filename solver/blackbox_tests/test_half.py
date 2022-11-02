@@ -3,8 +3,9 @@ import os.path as op
 from sys import path as sp
 
 current = op.dirname(op.realpath(__file__))
-grandparent = op.dirname(op.dirname(current))
-sp.append(grandparent)
+parent = op.dirname(current)
+sp.append(parent)
+
 
 from csp import CSP
 from half import HALF

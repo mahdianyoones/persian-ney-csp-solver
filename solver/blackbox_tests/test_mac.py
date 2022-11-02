@@ -2,8 +2,8 @@ import unittest
 import os.path as op
 from sys import path as sp
 current = op.dirname(op.realpath(__file__))
-grandparent = op.dirname(op.dirname(current))
-sp.append(grandparent)
+parent = op.dirname(current)
+sp.append(parent)
 
 from csp import CSP
 from catalog import CATALOG
@@ -12,8 +12,8 @@ from unary import UNARY
 from testspec import specs
 from constants import *
 
-@unittest.skip("test_mac is skipped temporarily")
 class test_MAC(unittest.TestCase):
+    '''Tests the behavior of MAC.'''
 
     def setUp(self):
         self.__csp = CSP()

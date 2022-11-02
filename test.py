@@ -14,25 +14,9 @@ class bcolors:
 def run_unit_tests():
 	print(f"{bcolors.OKBLUE}\nRunning unit tests\n{bcolors.ENDC}")
 	loader = unittest.TestLoader()
-	suite = loader.discover("solver/blackbox_tests/unit")
-	runner = unittest.TextTestRunner()
-	runner.run(suite)
-	
-def run_integration_tests():
-	print(f"{bcolors.OKGREEN}\nRunning integration tests\n{bcolors.ENDC}")
-	loader = unittest.TestLoader()
-	suite = loader.discover("solver/blackbox_tests/integrated")
-	runner = unittest.TextTestRunner()
-	runner.run(suite)
-
-def run_system_tests():
-	print(f"{bcolors.OKCYAN}\nRunning system tests\n{bcolors.ENDC}")
-	loader = unittest.TestLoader()
-	suite = loader.discover("solver/blackbox_tests/system")
+	suite = loader.discover("solver/blackbox_tests")
 	runner = unittest.TextTestRunner()
 	runner.run(suite)
 
 if __name__ == "__main__":
 	run_unit_tests()
-	run_integration_tests()
-	run_system_tests()

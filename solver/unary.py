@@ -1,6 +1,5 @@
 import copy
-
-from solver.constants import CONTRADICTION
+from constants import *
 
 class UNARY():
 	'''Implements unary constraints.

@@ -1,9 +1,9 @@
-import sys
-import os
-
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
+import unittest
+import os.path as op
+from sys import path as sp
+current = op.dirname(op.realpath(__file__))
+parent = op.dirname(current)
+sp.append(parent)
 
 import unittest
 from solver import SOLVER
@@ -14,7 +14,6 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 
-@unittest.skip("test_solver is skipped temporarily")
 class test_SOLVER(unittest.TestCase):
 
     def __find(self, data_set_path, kook):

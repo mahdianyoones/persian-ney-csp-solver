@@ -26,6 +26,12 @@ class test_SOLVER(unittest.TestCase):
         res = sut.find(catalog, specs[kook])
         return res
 
+    def test_finds_solutions_4_all_kooks_real_pieces(self):
+        data_set_path = current+"/real_pieces.csv"
+        for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
+            res = self.__find(data_set_path, kook)
+            self.assertEqual(res[0], SOLUTION)
+
     def test_finds_solutions_4_all_kooks(self):
         data_set_path = current+"/contains_solutions.csv"
         for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:

@@ -1,16 +1,33 @@
 import copy
 
+from solver.constants import CONTRADICTION
+
 class UNARY():
-	'''Implements unary constraints.'''
+	'''Implements unary constraints.
+	
+	The algorithms in this class are fairly simple and testing them
+	is deemed unnecessary.'''
 
 	def unarify(csp, catalog, spec):
 		'''Executes all unary consistency methods.'''
-		UNARY.__initial_domains(csp, catalog)
-		UNARY.__nodes_min_len(csp, spec)
-		UNARY.__sixth_node_min_len(csp, spec)
-		UNARY.__first_node_diameter(csp, spec)
-		UNARY.__fourth_node_two_holes(csp, spec)
-		UNARY.__fifth_node_three_holes(csp, spec)
+		res = UNARY.__initial_domains(csp, catalog)
+		if res == CONTRADICTION:
+			return CONTRADICTION
+		res = UNARY.__nodes_min_len(csp, spec)
+		if res == CONTRADICTION:
+			return CONTRADICTION
+		res = UNARY.__sixth_node_min_len(csp, spec)
+		if res == CONTRADICTION:
+			return CONTRADICTION
+		res = UNARY.__first_node_diameter(csp, spec)
+		if res == CONTRADICTION:
+			return CONTRADICTION
+		res = UNARY.__fourth_node_two_holes(csp, spec)
+		if res == CONTRADICTION:
+			return CONTRADICTION
+		res = UNARY.__fifth_node_three_holes(csp, spec)
+		if res == CONTRADICTION:
+			return CONTRADICTION
 
 	def __nodes_min_len(csp, spec):
 		'''Defines a minimum length for nodes.'''
@@ -27,15 +44,28 @@ class UNARY():
 		L6 = csp.get_domain("L6")
 		new_d = copy.deepcopy(L6)
 		new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
+		if new_d["min"] > L6["max"]:
+			return CONTRADICTION
 		csp.update_domain("L6", new_d)
 				
 	def __initial_domains(csp, catalog):
-		'''Defines initial values for domains of all vars except Ls.'''
+		'''Defines initial values for domains of all vars except Ls.
+		
+		Contradiction cannot occur at this stage unless the dataset contains
+		no pieces.'''
 		X = csp.get_variables()
 		diams = catalog.values("D")
+		if len(diams) == 0:
+			return CONTRADICTION
 		thicks = catalog.values("T")
+		if len(thicks) == 0:
+			return CONTRADICTION
 		rounds = catalog.values("R")
+		if len(rounds) == 0:
+			return CONTRADICTION
 		l = catalog.l()
+		if l == 0:
+			return CONTRADICTION
 		for var in X:
 			if var[0] == "D":
 				csp.update_domain(var, copy.deepcopy(diams))
@@ -53,6 +83,8 @@ class UNARY():
 		for diam in D1:
 			if diam >= spec["topd"]["min"] and diam <= spec["topd"]["max"]:
 				legal_values.add(diam)
+		if len(legal_values) == 0:
+			return CONTRADICTION
 		csp.update_domain("D1", legal_values)
 
 	def __fourth_node_two_holes(csp, spec):
@@ -67,8 +99,9 @@ class UNARY():
 			which defines a minimum length for L4.'''
 		h2_h1_dist = spec["h2"] - spec["h1"]
 		new_min = 2*spec["hmarg"] + spec["holed"] + h2_h1_dist
-		# TODO: Should we check for contradiction here or not?
 		L4 = csp.get_domain("L4")
+		if new_min > L4["max"]:
+			return CONTRADICTION
 		csp.update_domain("L4", {"min": new_min, "max": L4["max"]})
 
 	def __fifth_node_three_holes(csp, spec):
@@ -84,6 +117,7 @@ class UNARY():
 			which defines a minimum length for L5.'''
 		h3_h5_dist = spec["h5"] - spec["h3"]
 		new_min = 2*spec["hmarg"] + spec["holed"] + h3_h5_dist
-		# TODO: Should we check for contradiction here or not?
 		L5 = csp.get_domain("L5")
+		if new_min > L5["max"]:
+			return CONTRADICTION
 		csp.update_domain("L5", {"min": new_min, "max": L5["max"]})

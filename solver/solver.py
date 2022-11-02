@@ -95,7 +95,9 @@ class SOLVER():
         
         If MAC figures out any contradiction before search begins, no
         solution could ever be found.'''
-        UNARY.unarify(self.__csp, catalog, spec)
+        res = UNARY.unarify(self.__csp, catalog, spec)
+        if res == CONTRADICTION:
+            return CONTRADICTION
         X = copy.deepcopy(self.__csp.get_variables())
         res = self.__mac.propagate(X)
         if res[0] == CONTRADICTION:

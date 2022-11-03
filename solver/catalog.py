@@ -37,9 +37,6 @@ class TREE():
 	
 	def get_key(self):
 		return self.__key
-	
-	def get_children(self):
-		return self.get_children
 
 	def get_child(self, key):
 		if not self.has_child(key):

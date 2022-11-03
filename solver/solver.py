@@ -119,8 +119,8 @@ def human_readable(solution):
     print("R: ", solution["R1"])
 
 def main():
+    catalog = CATALOG(current+"/pieces.csv")
     for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
-        catalog = CATALOG(current+"/pieces.csv")
         csp = CSP()
         select = SELECT(csp)
         mac = MAC(csp, catalog, specs[kook])

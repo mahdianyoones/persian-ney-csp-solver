@@ -3,21 +3,29 @@ from constants import *
 
 class TREE():
 
-	def __init__(self, key=None, meta=0):
+	def __init__(self, key=None, meta=set([])):
 		self.__children = []
 		self.__children_keys = set([])
 		self.__key = key
 		self.__meta = meta
 
-	def add_child(self, key, meta=0):
+	def add_child(self, key, meta=set([])):
 		child = TREE(key, meta)
 		self.__children.append(child)
 		self.__children_keys.add(key)
 		return child
 
-	def update_meta(self, meta):
-		self.__meta = meta	
+	def remove_children(self):
+		self.__children = []
+		self.__children_keys = set([])
+
+	def add_to_meta(self, item):
+		self.__meta.add(item)
 	
+	def remove_from_meta(self, item):
+		self.__meta.remove(item)
+		return self.__meta
+
 	def has_child(self, key):
 		return key in self.__children_keys
 		
@@ -29,7 +37,10 @@ class TREE():
 	
 	def get_key(self):
 		return self.__key
-		
+	
+	def get_children(self):
+		return self.get_children
+
 	def get_child(self, key):
 		if not self.has_child(key):
 			return NODE_NOT_FOUND
@@ -40,31 +51,44 @@ class TREE():
 class INDEX():
 
 	def __init__(self, idx_name):
-		self.__keys = idx_name.split("-")		
+		self.__keys = idx_name.split("-") # list	
 		self.__head = TREE()
 
-	def index(self, T, D, R, L):
+	def index(self, P, T, D, R):
 		'''Adds the given chunk data to the index.'''
 		self.__build_route(T, D, R)
 		vals = {"D": D, "R": R, "T": T}
 		cursor = self.__head
-		for key in self.__keys:
-			cursor.update_meta(cursor.get_meta() + L)
+		for key in self.__keys: # list
+			cursor.add_to_meta(P)
 			cursor = cursor.get_child(vals[key])
-		cursor.update_meta(cursor.get_meta() + L)
+		cursor.add_to_meta(P)
 	
+	def remove_piece(self, P, T, D, R):
+		vals = {"D": D, "R": R, "T": T}
+		cursor = self.__head
+		for key in self.__keys: # list
+			meta = cursor.remove_from_meta(P)
+			if len(meta) == 0:
+				cursor.remove_children()
+				break
+			cursor = cursor.get_child(vals[key])			
+
 	def find(self, filters):
 		'''Finds the node in the index tree given the filters.
 		
 		This is a mathematical function.'''
+		if self.__head.get_chkeys() == set([]):
+			return NODE_NOT_FOUND
 		cursor = self.__head
-		if filters == {}:
-			return cursor
-		for key in self.__keys:			
-			if key in filters:
-				cursor = cursor.get_child(filters[key])
-				if cursor == NODE_NOT_FOUND:
-					return NODE_NOT_FOUND
+		if filters != {}:
+			for key in self.__keys:			
+				if key in filters:
+					cursor = cursor.get_child(filters[key])
+					if cursor == NODE_NOT_FOUND:
+						return NODE_NOT_FOUND
+					if cursor.get_chkeys() == set([]):
+						return NODE_NOT_FOUND
 		return cursor
 
 	def __build_route(self, T, D, R):
@@ -120,19 +144,19 @@ class CATALOG():
 		from the CATALOG class.'''
 		self.__build_idx_objects()
 		if csvfile != "":
-				self.add_from_csv(csvfile)
+			self.add_from_csv(csvfile)
 		self.__setup_query()
 
 	def values(self, key, filters={}):
-		'''Returns values for key, filters include one or two of D,TH,R.'''
+		'''Returns values for key, filters include one or two of D,T,R.'''
 		idx = self.__locate_idx(filters, key=key)
 		node = idx.find(filters)
 		if node == NODE_NOT_FOUND:
 			return NODE_NOT_FOUND
 		return node.get_chkeys()
 	
-	def l(self, filters={}):
-		'''Given the filters, looks in indices for L.'''
+	def pieces(self, filters={}):
+		'''Given the filters, looks in indices for pieces.'''
 		idx = self.__locate_idx(filters)
 		node = idx.find(filters)
 		if node == NODE_NOT_FOUND:
@@ -143,16 +167,20 @@ class CATALOG():
 		with open(csvfile) as f:
 			reader = csv.reader(f)
 			for p in reader:
-				NO = p[0]
 				L = float(p[1]) * 10 # cm -> mm
 				T = float(p[2])
 				R = float(p[3])
 				D = float(p[4])
-				self.add_piece(T, D, R, L)
+				P = (p[0], L)
+				self.add_piece(P, T, D, R)
 
-	def add_piece(self, T, D, R, L):
+	def add_piece(self, P, T, D, R):
 		for idx in self.__idxs.values():
-			idx.index(T, D, R, L)
+			idx.index(P, T, D, R)
+
+	def remove_piece(self, P, T, D, R):
+		for idx in self.__idxs.values():
+			idx.remove_piece(P, T, D, R)
 
 	def __setup_query(self):
 		'''Helps find the appropriate index given the filters.'''

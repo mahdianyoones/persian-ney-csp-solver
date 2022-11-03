@@ -20,20 +20,27 @@ class STOCK():
 
 	def __init__(self, catalog):
 		self.__catalog = catalog
+		self.__node_vars = {
+			1: {"T1", "R1", "D1", "L1"},
+			2: {"T2", "R2", "D2", "L2"},
+			3: {"T3", "R3", "D3", "L3"},
+			4: {"T4", "R4", "D4", "L4"},
+			5: {"T5", "R5", "D5", "L5"},
+			6: {"T6", "R6", "D6", "L6"},
+			7: {"T7", "R7", "D7", "L7"},
+		}
 	
 	def establish(self, csp, curvar, value):
 		'''Establishes consistency after curvar: value assignment.'''
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		catalog = self.__catalog
-		node_index = int(curvar[1])
-		node_vars = {v+str(node_index) for v in {"T", "R", "D", "L"}}
-		filters = self.__filters(A, node_vars)
+		i = int(curvar[1])
+		filters = self.__filters(A, self.__node_vars[i])
 		examined = set([])
 		reduced_vars = set([])
-		new_domains = {}
-		confset = {v+str(node_index) for v in filters.keys()}
-		for var in {v+str(node_index) for v in {"T", "R", "D", "L"}}:
+		confset = {v+str(i) for v in filters.keys()}
+		for var in self.__node_vars[i]:
 			if var in A:
 				continue
 			examined.add(var)
@@ -43,7 +50,7 @@ class STOCK():
 					return (CONTRADICTION, set([]), confset)
 				if new_L >= D[var]["min"] and new_L < D[var]["max"]:
 					reduced_vars.add(var)
-					new_domains[var] = {"min": D[var]["min"], "max": new_L}
+					csp.update_domain(var, {"min": D[var]["min"], "max": new_L})
 			else:
 				new_values = catalog.values(var[0], filters)
 				if new_values == NODE_NOT_FOUND:
@@ -53,11 +60,9 @@ class STOCK():
 					return (CONTRADICTION, set([]), confset)
 				if new_values != D[var]:
 					reduced_vars.add(var)
-					new_domains[var] = new_values
+					csp.update_domain(var, new_values)
 		if len(reduced_vars) == 0:
 			return (DOMAINS_INTACT, examined)
-		for v in reduced_vars:
-			csp.update_domain(v, new_domains[v])
 		return (DOMAINS_REDUCED, examined, reduced_vars)
 
 	def propagate(self, csp, reduced_vars):

@@ -1,12 +1,13 @@
 import csv
 from constants import *
 
-class TREE():
+class BTREE_NODE():
 
-	def __init__(self, key=None, meta=None):
+	def __init__(self, key=None, meta=None, parent=None):
 		self.__children = []
 		self.__children_keys = set([])
 		self.__key = key
+		self.__parent = parent
 		if meta == None:
 			meta = set([])
 		self.__meta = meta
@@ -14,14 +15,14 @@ class TREE():
 	def add_child(self, key, meta=None):
 		if meta == None:
 			meta = set([])
-		child = TREE(key, meta)
+		child = BTREE_NODE(key, meta, self)
 		self.__children.append(child)
 		self.__children_keys.add(key)
 		return child
 
-	def remove_children(self):
-		self.__children = []
-		self.__children_keys = set([])
+	def remove_child(self, child):
+		self.__children_keys.remove(child.get_key())
+		self.__children.remove(child)
 
 	def add_to_meta(self, item):
 		self.__meta.add(item)
@@ -42,6 +43,9 @@ class TREE():
 	def get_key(self):
 		return self.__key
 
+	def get_parent(self):
+		return self.__parent
+		
 	def get_child(self, key):
 		if not self.has_child(key):
 			return NODE_NOT_FOUND
@@ -53,7 +57,7 @@ class INDEX():
 
 	def __init__(self, idx_name):
 		self.__keys = idx_name.split("-") # list	
-		self.__head = TREE()
+		self.__head = BTREE_NODE()
 
 	def index(self, P, T, D, R):
 		'''Adds the given chunk data to the index.'''
@@ -65,13 +69,13 @@ class INDEX():
 			cursor = cursor.get_child(vals[key])
 		cursor.add_to_meta(P)
 	
-	def remove_piece(self, P, T, D, R):
+	def unindex(self, P, T, D, R):
 		vals = {"D": D, "R": R, "T": T}
 		cursor = self.__head
 		for key in self.__keys: # list
 			meta = cursor.remove_from_meta(P)
 			if len(meta) == 0:
-				cursor.remove_children()
+				self.__delete_node(cursor)
 				break
 			cursor = cursor.get_child(vals[key])			
 
@@ -88,9 +92,15 @@ class INDEX():
 					cursor = cursor.get_child(filters[key])
 					if cursor == NODE_NOT_FOUND:
 						return NODE_NOT_FOUND
-					if cursor.get_chkeys() == set([]):
-						return NODE_NOT_FOUND
 		return cursor
+
+	def __delete_node(self, node):
+		while (True):
+			parent = node.get_parent()
+			if parent == None:
+				break
+			parent.remove_child(node)
+			node = parent
 
 	def __build_route(self, T, D, R):
 		'''Creates nodes for the absent steps in the route.
@@ -178,11 +188,10 @@ class CATALOG():
 	def add_piece(self, P, T, D, R):
 		for idx in self.__idxs.values():
 			idx.index(P, T, D, R)
-		pass
 
 	def remove_piece(self, P, T, D, R):
 		for idx in self.__idxs.values():
-			idx.remove_piece(P, T, D, R)
+			idx.unindex(P, T, D, R)
 
 	def __setup_query(self):
 		'''Helps find the appropriate index given the filters.'''

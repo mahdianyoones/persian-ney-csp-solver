@@ -7,11 +7,8 @@ class UNARY():
 	The algorithms in this class are fairly simple and testing them
 	is deemed unnecessary.'''
 
-	def unarify(csp, catalog, spec):
+	def unarify(csp, spec):
 		'''Executes all unary consistency methods.'''
-		res = UNARY.__initial_domains(csp, catalog)
-		if res == CONTRADICTION:
-			return CONTRADICTION
 		res = UNARY.__nodes_min_len(csp, spec)
 		if res == CONTRADICTION:
 			return CONTRADICTION
@@ -27,6 +24,37 @@ class UNARY():
 		res = UNARY.__fifth_node_three_holes(csp, spec)
 		if res == CONTRADICTION:
 			return CONTRADICTION
+
+	def init_domains(csp, catalog):
+		'''Defines initial values for domains of all vars except Ls.
+		
+		Contradiction cannot occur at this stage unless the dataset contains
+		no pieces.'''	
+		X = csp.get_variables()
+		diams = catalog.values("D")
+		if len(diams) == 0:
+			return CONTRADICTION
+		thicks = catalog.values("T")
+		if len(thicks) == 0:
+			return CONTRADICTION
+		rounds = catalog.values("R")
+		if len(rounds) == 0:
+			return CONTRADICTION
+		pieces = catalog.pieces()
+		if len(pieces) == 0:
+			return CONTRADICTION
+		for var in X:
+			if var[0] == "D":
+				csp.update_domain(var, copy.deepcopy(diams))
+			elif var[0] == "R":
+				csp.update_domain(var, copy.deepcopy(rounds))
+			elif var[0] == "T":
+				csp.update_domain(var, copy.deepcopy(thicks))
+			elif var[0] == "P":
+				csp.update_domain(var, copy.deepcopy(pieces))
+			else:
+				arbitrary = 100000
+				csp.update_domain(var, {"min": 1, "max": arbitrary})
 
 	def __nodes_min_len(csp, spec):
 		'''Defines a minimum length for nodes.'''
@@ -47,34 +75,6 @@ class UNARY():
 			return CONTRADICTION
 		csp.update_domain("L6", new_d)
 				
-	def __initial_domains(csp, catalog):
-		'''Defines initial values for domains of all vars except Ls.
-		
-		Contradiction cannot occur at this stage unless the dataset contains
-		no pieces.'''
-		X = csp.get_variables()
-		diams = catalog.values("D")
-		if len(diams) == 0:
-			return CONTRADICTION
-		thicks = catalog.values("T")
-		if len(thicks) == 0:
-			return CONTRADICTION
-		rounds = catalog.values("R")
-		if len(rounds) == 0:
-			return CONTRADICTION
-		l = catalog.l()
-		if l == 0:
-			return CONTRADICTION
-		for var in X:
-			if var[0] == "D":
-				csp.update_domain(var, copy.deepcopy(diams))
-			elif var[0] == "R":
-				csp.update_domain(var, copy.deepcopy(rounds))
-			elif var[0] == "T":
-				csp.update_domain(var, copy.deepcopy(thicks))
-			else:
-				csp.update_domain(var, {"min": 1, "max": l})
-
 	def __first_node_diameter(csp, spec):
 		'''Node 1 cannot have a diameter below a certain value (e.g. 18mm).'''
 		D1 = csp.get_domain("D1")

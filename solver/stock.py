@@ -2,76 +2,84 @@ from distutils.command.config import config
 from constants import *
 
 class STOCK():
-	'''Implements stock consistency.
+	'''Implements consistency for stock contrains.
+
+	This constraint is defined on groups of variables Di, Ti, Ri, and Pi; therefore, 
+	creating 7 distinct constraints
+	{stock(T1, R1, D1, P1), ..., stock(T7, R7, D7, P7)}.
+
+	Theses constraints limit the choises for their participants with regard to
+	the pieces in the data set. For example, if R4 is assigned 1, D4 gets
+	reduced to diameters of the pieces with roundness = 1, T4 gets reduced to
+	thickness of the pieces with roundness = 1, and P4 gets reduced to the
+	piece number/length of the pieces with roundness = 1.
+		
+	Note: Depending on various assigned variables, stock(Ti, Ri, Di, Pi) can
+	be viewed as one or several of the following constraints.
 	
-	This constraint ensures that reeds with selected properties exist in the
-	stock of reeds. 
+	Ti = filter by Ri			(when Ri is assigned only)
+	Ti = filter by Di
+	Ti = filter by Ri & Di		(when Ri and Di are assigned only)
 
-	Each reed piece has these properties: Length, thickness, roundness, and 
-	diameter.
+	Ri = filter by Ti
+	Ri = filter by Di
+	Ri = filter by Ti & Di
 
-	Variables with the same postfix index together must represent a real piece
-	in the database. For example, a reed piece with T1=1mm, D1=18mm, R1=0 might
-	exist in the database, while a reed piece with T1=2mm, D1=18mm, R1=0,
-	L1 = 200mm may not. 
+	Di = filter by T1
+	Di = filter by R1
+	Di = filter by T1 & R1
 
-	This constraint checks if assigned values to Ti, Di, and Ri represent
-	pieces in the database or not.'''
+	Pi = filter by Ti
+	Pi = filter by Ri
+	Pi = filter by Ri
+	Pi = filter by Ti & Ri
+	Pi = filter by Ti & Di
+	Pi = filter by Ri & Di
+	Pi = filter by Ri & Di & Ti
+
+	where 1 <= i <= 7
+	
+	However, this algorithm establoshes consistency for all of the above 
+	constraints.'''
 
 	def __init__(self, catalog):
 		self.__catalog = catalog
-		self.__node_vars = {
-			1: {"T1", "R1", "D1", "L1"},
-			2: {"T2", "R2", "D2", "L2"},
-			3: {"T3", "R3", "D3", "L3"},
-			4: {"T4", "R4", "D4", "L4"},
-			5: {"T5", "R5", "D5", "L5"},
-			6: {"T6", "R6", "D6", "L6"},
-			7: {"T7", "R7", "D7", "L7"},
-		}
 	
 	def establish(self, csp, curvar, value):
 		'''Establishes consistency after curvar: value assignment.'''
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		catalog = self.__catalog
-		i = int(curvar[1])
-		filters = self.__filters(A, self.__node_vars[i])
-		examined = set([])
+		Pi = "P"+curvar[1]
+		if curvar == Pi:
+			return REVISED_NONE
+		Di = "D"+curvar[1]
+		Ri = "R"+curvar[1]
+		Ti = "T"+curvar[1]
+		found_values = self.__find_values(A, catalog, Di, Ri, Ti, Pi)
 		reduced_vars = set([])
-		confset = {v+str(i) for v in filters.keys()}
-		for var in self.__node_vars[i]:
-			if var in A:
-				continue
-			examined.add(var)
-			if var[0] == "L":
-				new_L = catalog.l(filters)
-				if new_L == NODE_NOT_FOUND or new_L < D[var]["min"]:
-					return (CONTRADICTION, set([]), confset)
-				if new_L >= D[var]["min"] and new_L < D[var]["max"]:
-					reduced_vars.add(var)
-					csp.update_domain(var, {"min": D[var]["min"], "max": new_L})
-			else:
-				new_values = catalog.values(var[0], filters)
-				if new_values == NODE_NOT_FOUND:
-					return (CONTRADICTION, set([]), confset)
-				new_values = D[var].intersection(new_values)
-				if len(new_values) == 0:
-					return (CONTRADICTION, set([]), confset)
-				if new_values != D[var]:
-					reduced_vars.add(var)
-					csp.update_domain(var, new_values)
+		for v, found_values in found_values.items():
+			if found_values == NODE_NOT_FOUND:
+				return CONTRADICTION
+			new_domain = D[v].intersection(found_values)
+			if len(new_domain) < len(D[v]):
+				reduced_vars.add(v)
+				csp.update_domain(v, new_domain)
 		if len(reduced_vars) == 0:
-			return (DOMAINS_INTACT, examined)
-		return (DOMAINS_REDUCED, examined, reduced_vars)
+			return ALREADY_CONSISTENT
+		return (MADE_CONSISTENT, reduced_vars)
 
 	def propagate(self, csp, reduced_vars):
-		return (DOMAIN_INTACT, set([]))		
+		return REVISED_NONE
 
-	def __filters(self, A, node_vars):
-		'''Builds filters using the assigned var/value pairs.'''
-		filters = {}
-		for node_var in node_vars:
-			if node_var in A:
-				filters[node_var[0]] = A[node_var]
-		return filters
+	def __find_values(self, A, catalog, Di, Ri, Ti, Pi):
+		filters = {key[0]: A[key] for key in {Di, Ri, Ti}.intersection(A.keys())}
+		found_values = {}
+		found_values[Pi] = catalog.pieces(filters)
+		if not Di in A:
+			found_values[Di] = catalog.values("D", filters)
+		if not Ri in A:
+			found_values[Ri] = catalog.values("R", filters)
+		if not Ti in A:
+			found_values[Ti] = catalog.values("T", filters)
+		return found_values

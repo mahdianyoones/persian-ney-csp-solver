@@ -36,7 +36,7 @@ class test_STOCK(unittest.TestCase):
             "value": 1
         }
         expect = {
-            "out": (DOMAINS_REDUCED, set([]), {"D1", "P1", "T1"}),
+            "out": (MADE_CONSISTENT, {"D1", "P1", "T1"}),
             "D": {
                 "D1": {13},
                 "T1": {2},
@@ -55,7 +55,7 @@ class test_STOCK(unittest.TestCase):
             "value": 0
         }
         expect = {
-            "out": (DOMAINS_REDUCED, set([]), {"P1"}),
+            "out": (MADE_CONSISTENT, {"P1"}),
             "D": {
                 "P1": {("6", 130), ("7", 60)}
             }
@@ -72,7 +72,7 @@ class test_STOCK(unittest.TestCase):
             "value": 1
         }
         expect = {
-            "out": (CONTRADICTION, set([]), {"D1", "R1", "P1"})
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "establish", given, expect)
     
@@ -84,7 +84,7 @@ class test_STOCK(unittest.TestCase):
             "reduced_vars": {"R1"},
         }
         expect = {
-            "out": (DOMAINS_INTACT, set([]))
+            "out": REVISED_NONE
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 

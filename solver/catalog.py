@@ -3,13 +3,17 @@ from constants import *
 
 class TREE():
 
-	def __init__(self, key=None, meta=set([])):
+	def __init__(self, key=None, meta=None):
 		self.__children = []
 		self.__children_keys = set([])
 		self.__key = key
+		if meta == None:
+			meta = set([])
 		self.__meta = meta
 
-	def add_child(self, key, meta=set([])):
+	def add_child(self, key, meta=None):
+		if meta == None:
+			meta = set([])
 		child = TREE(key, meta)
 		self.__children.append(child)
 		self.__children_keys.add(key)
@@ -174,6 +178,7 @@ class CATALOG():
 	def add_piece(self, P, T, D, R):
 		for idx in self.__idxs.values():
 			idx.index(P, T, D, R)
+		pass
 
 	def remove_piece(self, P, T, D, R):
 		for idx in self.__idxs.values():

@@ -78,20 +78,56 @@ class test_CATALOG(unittest.TestCase):
 
     def test_returns_correct_pieces_with_filters(self):
         # act
-        pieces = self.__sut.pieces({"T": 2, "R": 0})
+        pieces = self.__sut.pieces({"T": 2, "R": 0, "D": 14})
         # assess
         expected_pieces = {
-            ("1", 100), 
-            ("2", 200), 
-            ("3", 80),
-            ("4", 70), 
-            ("5", 150), 
             ("6", 130), 
-            ("7", 60), 
-            ("10", 300), 
-            ("11", 120)
+            ("7", 60)
         }
         self.assertEqual(pieces, expected_pieces)
+
+    def test_returns_correct_pieces_after_removal(self):
+        # act
+        self.__sut.remove_piece(P=("6", 130), T=2, D=14, R=0)
+        pieces = self.__sut.pieces({"T": 2, "R": 0, "D": 14})
+        # assess
+        expected_pieces = {
+            ("7", 60)
+        }
+        self.assertEqual(pieces, expected_pieces)
+
+    def test_returns_correct_diameters_after_removal(self):
+        # act
+        self.__sut.remove_piece(P=("6", 130), T=2, D=14, R=0)
+        self.__sut.remove_piece(P=("7", 60), T=2, D=14, R=0)
+        diams = self.__sut.values("D", {"T": 2, "R": 0})
+        # assess
+        expected_diams = {19, 18, 17, 16, 15, 13, 12.4}
+        self.assertEqual(diams, expected_diams)
+
+    def test_returns_correct_diameters_after_removal_2(self):
+        # act
+        self.__sut.remove_piece(P=("6", 130), T=2, D=14, R=0)
+        diams = self.__sut.values("D", {"T": 2, "R": 0})
+        # assess
+        expected_diams = {19, 18, 17, 16, 15, 14, 12.4}
+        self.assertEqual(diams, expected_diams)
+
+    def test_returns_correct_pieces_after_addition(self):
+        # act
+        self.__sut.add_piece(P=("100", 200), T=2, D=20, R=0)
+        pieces = self.__sut.pieces({"D": 20})
+        # assess
+        expected_pieces = {("100", 200)}
+        self.assertEqual(pieces, expected_pieces)
+
+    def test_returns_correct_diameters_after_addition(self):
+        # act
+        self.__sut.add_piece(P=("100", 200), T=2, D=20, R=0)
+        diams = self.__sut.values("D", {"T": 2, "R": 0})
+        # assess
+        expected_diams = {20, 19, 18, 17, 16, 15, 14, 13, 12.4}
+        self.assertEqual(diams, expected_diams)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

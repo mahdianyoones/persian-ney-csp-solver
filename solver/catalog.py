@@ -76,8 +76,13 @@ class INDEX():
 			meta = cursor.remove_from_meta(P)
 			if len(meta) == 0:
 				self.__delete_node(cursor)
+				cursor = None
 				break
-			cursor = cursor.get_child(vals[key])			
+			cursor = cursor.get_child(vals[key])
+		if cursor != None:			
+			meta = cursor.remove_from_meta(P)
+			if len(meta) == 0:
+				self.__delete_node(cursor)
 
 	def find(self, filters):
 		'''Finds the node in the index tree given the filters.
@@ -99,9 +104,11 @@ class INDEX():
 			parent = node.get_parent()
 			if parent == None:
 				break
-			parent.remove_child(node)
-			node = parent
-
+			if len(node.get_chkeys()) == 0 or len(node.get_meta()) == 0:
+				parent.remove_child(node)
+				node = parent
+			else:
+				break
 	def __build_route(self, T, D, R):
 		'''Creates nodes for the absent steps in the route.
 		

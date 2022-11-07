@@ -110,7 +110,7 @@ class test_CATALOG(unittest.TestCase):
         self.__sut.remove_piece(P=("6", 130), T=2, D=14, R=0)
         diams = self.__sut.values("D", {"T": 2, "R": 0})
         # assess
-        expected_diams = {19, 18, 17, 16, 15, 14, 12.4}
+        expected_diams = {19, 18, 17, 16, 15, 14, 13, 12.4}
         self.assertEqual(diams, expected_diams)
 
     def test_returns_correct_pieces_after_addition(self):

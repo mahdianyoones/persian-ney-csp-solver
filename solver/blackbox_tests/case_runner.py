@@ -13,7 +13,10 @@ class test_CASE_RUNNER(unittest.TestCase):
             for var, val in given["A"].items():
                 csp.assign(var, val)
         # act
-        participants = given["participants"]
+        if "participants" in given:
+            participants = given["participants"]
+        else:
+            participants = set([])
         if mth == "propagate":
             out = sut.propagate(csp, given["reduced_vars"], participants)
         else:

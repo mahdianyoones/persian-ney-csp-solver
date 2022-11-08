@@ -2,7 +2,9 @@ import unittest
 import os.path as op
 from sys import path as sp
 current = op.dirname(op.realpath(__file__))
+parent = op.dirname(current)
 grandparent = op.dirname(op.dirname(current))
+sp.append(parent)
 sp.append(grandparent)
 
 from csp import CSP
@@ -33,7 +35,7 @@ class test_HOLE6(unittest.TestCase):
             "value": 61
         }
         expect = {
-            "out": (CONTRADICTION, {"L1"}, {"L2", "L3", "L4", "L5"})
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -53,7 +55,7 @@ class test_HOLE6(unittest.TestCase):
             "reduced_vars": {"L1", "L2", "L3", "L4"},
         }
         expect = {
-            "out": (DOMAINS_INTACT, {"L1", "L2", "L3", "L4", "L5"})
+            "out": ALREADY_CONSISTENT
         }
         assert_constraint(csp, sut, "propagate", given, expect)
         
@@ -72,8 +74,7 @@ class test_HOLE6(unittest.TestCase):
             "reduced_vars": {"L1", "L2", "L3", "L4"},
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1", "L2", "L3", "L4", "L5"},
-                {"L1", "L2", "L3", "L4", "L5"}),
+            "out": (MADE_CONSISTENT, {"L1", "L2", "L3", "L4", "L5"}),
             "D": {
                 "L1": {"min": 286, "max": 286},
                 "L2": {"min": 24, "max": 24},

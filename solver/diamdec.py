@@ -1,4 +1,3 @@
-from functools import reduce
 from constants import *
 import copy
 
@@ -28,73 +27,35 @@ class DIAMDEC():
 
     def __init__(self, ddiff):
         self.__ddiff = ddiff
-        self.__neighbors = {("D1", "D2"), ("D2", "D3"), ("D3", "D4"),
-                ("D4", "D5"), ("D5", "D6"), ("D6", "D7")}
 
-    def establish(self, csp, curvar, value):
-        '''Establishes consistency after curvar: value assignment.'''
+    def establish(self, csp, curvar, value, participants):
+        '''Establishes consistency after curvar: value assignment.
+        
+        The assumption is that curvar is in the assigned variables.'''
+        unassigned_vars = csp.get_unassigned_vars()
+        participants = participants.intersection(unassigned_vars)
+        if len(participants) == 0:
+            return REVISED_NONE
+        Dvari, Dvarj = sorted({curvar, participants.pop()})
         A = csp.get_assignment()
-        queue = set([])
-        i = int(curvar[1])
-        c1 = ("D"+str(i), "D"+str(i+1))
-        c2 = ("D"+str(i-1), "D"+str(i))
-        if c1 in self.__neighbors:
-            queue.add(c1)
-        if c2 in self.__neighbors:
-            queue.add(c2)
         D = csp.get_domains()
-        ddiff = self.__ddiff
-        return self.__ac3(csp, A, D, queue, ddiff)
+        return self.__revise(csp, Dvari, Dvarj, A, D, self.__ddiff)
 
-    def propagate(self, csp, reduced_vars):
+    def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
+        unassigned_vars = csp.get_unassigned_vars()
+        participants = participants.intersection(unassigned_vars)
+        if len(participants) == 0:
+            raise Exception("Members are all assigned; no call is needed.")
+        Dvari, Dvarj = sorted(participants)
         A = csp.get_assignment()
-        queue = set([])
-        for rvar in reduced_vars:
-            i = int(rvar[1])
-            c1 = ("D"+str(i), "D"+str(i+1))
-            c2 = ("D"+str(i-1), "D"+str(i))
-            if c1 in self.__neighbors:
-                queue.add(c1)
-            if c2 in self.__neighbors:
-                queue.add(c2)        
         D = csp.get_domains()
-        ddiff = self.__ddiff
-        return self.__ac3(csp, A, D, queue, ddiff)
+        return self.__revise(csp, Dvari, Dvarj, A, D, self.__ddiff)
 
-    def __ac3(self, csp, A, D, queue, ddiff):
-        examined = set([])
-        confset = set([])
-        reduced = set([])
-        while len(queue) > 0:
-            (Dvari, Dvarj) = queue.pop()
-            if Dvari in A and Dvarj in A:
-                continue
-            if not Dvari in A:
-                examined.add(Dvari)
-            if not Dvarj in A:
-                examined.add(Dvarj)
-            (Di, Dj, new_pairs) = self.__revise(Dvari, Dvarj, A, D, ddiff)
-            if Di == CONTRADICTION or Dj == CONTRADICTION:
-                confset = self.__confset(csp)
-                return (CONTRADICTION, examined, confset)
-            if Di != DOMAIN_INTACT:
-                reduced.add(Dvari)
-                csp.update_domain(Dvari, Di)
-            if Dj != DOMAIN_INTACT:
-                reduced.add(Dvarj)
-                csp.update_domain(Dvarj, Dj)
-            if len(new_pairs) > 0:
-                queue.update(new_pairs)
-        if len(reduced) > 0:
-            return (DOMAINS_REDUCED, examined, reduced)
-        return (DOMAINS_INTACT, examined)
-
-    def __revise(self, Dvari, Dvarj, A, D, ddiff):
-        '''Canculates new consistent bounds for Dvari and Dvarj.'''
+    def __revise(self, csp, Dvari, Dvarj, A, D, ddiff):
+        '''Removes illegal values from Dvari and Dvarj'''
         Di = set([])
         Dj = set([])
-        new_pairs = set([])
         i_diams = {A[Dvari]} if Dvari in A else D[Dvari]
         j_diams = {A[Dvarj]} if Dvarj in A else D[Dvarj]
         for di in i_diams:              
@@ -103,33 +64,21 @@ class DIAMDEC():
                 if diff <= ddiff["max"] and diff >= ddiff["min"]:
                     Dj.add(dj)
                     Di.add(di)
+        reduced_vars = set([])
         if Dvari in A or len(Di) == len(D[Dvari]):
             Di = DOMAIN_INTACT
         elif len(Di) == 0:
-            Di = CONTRADICTION
-        else: # i reduced
-            reduced_idx = int(Dvari[1])
-            new_pairs.update(self.__new_pairs(reduced_idx, Dvari, Dvarj))
+            return CONTRADICTION
+        else:
+            reduced_vars.add(Dvari)
+            csp.update_domain(Dvari, Di)
         if Dvarj in A or len(Dj) == len(D[Dvarj]):
             Dj = DOMAIN_INTACT
         elif len(Dj) == 0:
-            Dj = CONTRADICTION
-        else: # j reduced
-            reduced_idx = int(Dvarj[1])
-            new_pairs.update(self.__new_pairs(reduced_idx, Dvari, Dvarj))
-        return (Di, Dj, new_pairs)
-
-    def __new_pairs(self, reduced_idx, Dvari, Dvarj):
-        pair1 = ("D"+str(reduced_idx), "D"+str(reduced_idx+1))
-        pair2 = ("D"+str(reduced_idx-1), "D"+str(reduced_idx))
-        new_pairs = set([])
-        if pair1 in self.__neighbors and pair1 != (Dvari, Dvarj):
-            new_pairs.add(pair1)
-        if pair2 in self.__neighbors and pair2 != (Dvari, Dvarj):
-            new_pairs.add(pair2)
-        return new_pairs
-
-    def __confset(self, csp):
-        members = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
-        assigned = csp.get_assigned_vars()
-        return members.intersection(assigned)
+            return CONTRADICTION
+        else:
+            reduced_vars.add(Dvarj)
+            csp.update_domain(Dvarj, Dj)
+        if Di == DOMAIN_INTACT and Dj == DOMAIN_INTACT:
+            return ALREADY_CONSISTENT
+        return (MADE_CONSISTENT, reduced_vars)

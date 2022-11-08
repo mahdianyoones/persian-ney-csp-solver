@@ -14,68 +14,27 @@ class CSP():
 			"len":	 		{"L1", "L2", "L3", "L4", "L5", "L6", "L7"},
 			"hole6":		{"L1", "L2", "L3", "L4", "L5"},
 			"hole3":		{"L1", "L2", "L3", "L4"},
-			"piece_stock1":	{"T1", "R1", "D1", "P1"},
-			"piece_stock2":	{"T2", "R2", "D2", "P2"},
-			"piece_stock3":	{"T3", "R3", "D3", "P3"},
-			"piece_stock4":	{"T4", "R4", "D4", "P4"},
-			"piece_stock5":	{"T5", "R5", "D5", "P5"},
-			"piece_stock6":	{"T6", "R6", "D6", "P6"},
-			"piece_stock7":	{"T7", "R7", "D7", "P7"},
 			"hole1":		{"L1", "L2", "L3",},
-			"thick_stock1":	{"T1", "R1", "D1"},
-			"thick_stock2":	{"T2", "R2", "D2"},
-			"thick_stock3":	{"T3", "R3", "D3"},
-			"thick_stock4":	{"T4", "R4", "D4"},
-			"thick_stock5":	{"T5", "R5", "D5"},
-			"thick_stock6":	{"T6", "R6", "D6"},
-			"thick_stock7":	{"T7", "R7", "D7"},
-			"diam_stock1":	{"T1", "R1", "D1"},
-			"diam_stock2":	{"T2", "R2", "D2"},
-			"diam_stock3":	{"T3", "R3", "D3"},
-			"diam_stock4":	{"T4", "R4", "D4"},
-			"diam_stock5":	{"T5", "R5", "D5"},
-			"diam_stock6":	{"T6", "R6", "D6"},
-			"diam_stock7":	{"T7", "R7", "D7"},
-			"round_stock1":	{"T1", "R1", "D1"},
-			"round_stock2":	{"T2", "R2", "D2"},
-			"round_stock3":	{"T3", "R3", "D3"},
-			"round_stock4":	{"T4", "R4", "D4"},
-			"round_stock5":	{"T5", "R5", "D5"},
-			"round_stock6":	{"T6", "R6", "D6"},
-			"round_stock7":	{"T7", "R7", "D7"},
-			"piece_min1":	{"P1", "L1"},
-			"piece_min2":	{"P2", "L2"},
-			"piece_min3":	{"P3", "L3"},
-			"piece_min4":	{"P4", "L4"},
-			"piece_min5":	{"P5", "L5"},
-			"piece_min6":	{"P6", "L6"},
-			"piece_min7":	{"P7", "L7"},
-			"node_max1":	{"P1", "L1"},
-			"node_max2":	{"P2", "L2"},
-			"node_max3":	{"P3", "L3"},
-			"node_max4":	{"P4", "L4"},
-			"node_max5":	{"P5", "L5"},
-			"node_max6":	{"P6", "L6"},
-			"node_max7":	{"P7", "L7"},
-			"diamdec1":		{"D1", "D2"},
-			"diamdec2":		{"D2", "D3"},
-			"diamdec3":		{"D3", "D4"},
-			"diamdec4":		{"D4", "D5"},
-			"diamdec5":		{"D5", "D6"},
-			"diamdec6":		{"D6", "D7"},
-			"lendec1":		{"L2", "L3"},
-			"lendec2":		{"L3", "L4"},
-			"lendec3":		{"L4", "L5"},
-			"lendec4":		{"L5", "L6"},
-			"lendec5":		{"L6", "L7"},
-			"lendeclower1":	{"L2", "L3"},
-			"lendeclower2":	{"L3", "L4"},
-			"lendeclower3":	{"L4", "L5"},
-			"lendeclower4":	{"L5", "L6"},
-			"lendeclower5":	{"L6", "L7"},
-			"half":			{"L1", "L2"},
-			"double":		{"L1", "L2"},
+			"half":			{"L1", "L2"}
 		}
+		for i in range(1, 8):
+			participants = {"T"+str(i), "R"+str(i), "D"+str(i), "P"+str(i)}
+			self.__C["pstock"+str(i)] = participants
+			participants = {"T"+str(i), "R"+str(i), "D"+str(i)}
+			self.__C["rstock"+str(i)] = participants
+			self.__C["dstock"+str(i)] = participants
+			self.__C["tstock"+str(i)] = participants
+			participants = {"P"+str(i), "L"+str(i)}
+			self.__C["piecemin"+str(i)] = participants
+			self.__C["nodemax"+str(i)] = participants
+			if i < 7:
+				participants = {"D"+str(i), "D"+str(i+1)}
+				self.__C["diamdec"+str(i)] = participants
+			if i >= 2 and i < 7:
+				participants = {"L"+str(i), "L"+str(i+1)}
+				self.__C["lendec"+str(i)] = participants
+				participants = {"L"+str(i), "L"+str(i+1)}
+				self.__C["lendeclower"+str(i)] = participants
 		self.__D = {}
 		self.__domains_backups = [] # order matters
 		self.__assignment = {}

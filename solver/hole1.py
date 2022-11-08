@@ -32,12 +32,12 @@ class HOLE1():
             "L3": {"L1", "L2"}
         }
     
-    def establish(self, csp, curvar, value):
+    def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
         ims = self.__impactables(A, curvar, self.__impact_map)
         if len(ims) == 0:
-            return (DOMAINS_INTACT, set([]))
+            return REVISED_NONE
         D = csp.get_domains()
         lowers = self.__lowers(A, D, curvar, value)
         h = self.__h
@@ -45,7 +45,7 @@ class HOLE1():
         new_domains = self.__new_domains(D, lowers, ims, h, s)		
         return self.__update(csp, new_domains, ims)
     
-    def propagate(self, csp, reduced_vars):
+    def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after propagation.'''
         A = csp.get_assignment()
         ims = set([])
@@ -53,14 +53,13 @@ class HOLE1():
             _ims = self.__impactables(A, reduced_var, self.__impact_map)
             ims.update(_ims)
         if len(ims) == 0:
-            return (DOMAINS_INTACT, set([]))
+            return REVISED_NONE
         D = csp.get_domains()
         lowers = self.__lowers(A, D)
         h = self.__h
         s = self.__space
         if self.__contradiction(lowers, h, s):
-            confset = self.__confset(csp)
-            return (CONTRADICTION, ims, confset)
+            return CONTRADICTION
         new_domains = self.__new_domains(D, lowers, ims, h, s)
         return self.__update(csp, new_domains, ims)
     
@@ -120,10 +119,10 @@ class HOLE1():
         '''Carries out the final domain updates.'''
         if new_domains == CONTRADICTION:
             confset = self.__confset(csp)
-            return (CONTRADICTION, ims, confset)
+            return CONTRADICTION
         elif len(new_domains) > 0:
             for var, new_domain in new_domains.items():
                 csp.update_domain(var, new_domain)
-            return (DOMAINS_REDUCED, ims, set(new_domains.keys()))
+            return (MADE_CONSISTENT, set(new_domains.keys()))
         else:
-            return (DOMAINS_INTACT, ims)
+            return ALREADY_CONSISTENT

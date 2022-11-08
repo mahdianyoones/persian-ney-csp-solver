@@ -37,10 +37,7 @@ class test_SAMEROUND(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (
-                DOMAINS_REDUCED,
-                {"R1", "R3", "R4", "R5", "R6", "R7"},
-                {"R1", "R3", "R4", "R5", "R6", "R7"}),
+            "out": (MADE_CONSISTENT, {"R1", "R3", "R4", "R5", "R6", "R7"}),
             "D": {
                 "R1": {2.5},
                 "R2": {2.5, 5, 4},
@@ -72,8 +69,7 @@ class test_SAMEROUND(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (CONTRADICTION, 
-            {"R1", "R3", "R4", "R5", "R6", "R7"}, set([])),
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "establish", given, expect)
     
@@ -103,7 +99,7 @@ class test_SAMEROUND(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (DOMAINS_INTACT, set([])),
+            "out": REVISED_NONE
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -125,7 +121,7 @@ class test_SAMEROUND(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (DOMAINS_INTACT, {"R2", "R3", "R4", "R5", "R6", "R7"}),
+            "out": ALREADY_CONSISTENT
         }
         assert_constraint(csp, sut, "establish", given, expect)
 

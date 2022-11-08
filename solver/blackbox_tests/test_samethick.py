@@ -2,7 +2,9 @@ import unittest
 import os.path as op
 from sys import path as sp
 current = op.dirname(op.realpath(__file__))
+parent = op.dirname(current)
 grandparent = op.dirname(op.dirname(current))
+sp.append(parent)
 sp.append(grandparent)
 
 from csp import CSP
@@ -37,10 +39,7 @@ class test_SAMETHICK(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (
-                DOMAINS_REDUCED,
-                {"T1", "T3", "T4", "T5", "T6", "T7"},
-                {"T1", "T3", "T4", "T5", "T6", "T7"}),
+            "out": (MADE_CONSISTENT,{"T1", "T3", "T4", "T5", "T6", "T7"}),
             "D": {
                 "T1": {2.5},
                 "T2": {2.5, 5, 4},
@@ -72,8 +71,7 @@ class test_SAMETHICK(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (CONTRADICTION, 
-            {"T1", "T3", "T4", "T5", "T6", "T7"}, set([])),
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "establish", given, expect)
     
@@ -103,7 +101,7 @@ class test_SAMETHICK(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (DOMAINS_INTACT, set([])),
+            "out": REVISED_NONE
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -125,7 +123,7 @@ class test_SAMETHICK(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": (DOMAINS_INTACT, {"T2", "T3", "T4", "T5", "T6", "T7"}),
+            "out": ALREADY_CONSISTENT
         }
         assert_constraint(csp, sut, "establish", given, expect)
 

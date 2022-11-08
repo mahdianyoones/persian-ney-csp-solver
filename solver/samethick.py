@@ -6,9 +6,9 @@ class SAMETHICK():
     The variables T1 Trought T7 must have the same value in the
     final solution.'''
     
-    def propagate(self, csp, reduced_vars):
+    def propagate(self, csp, reduced_vars, participants):
         '''Establishes indirect consistency W.R.T. same_th.'''
-        return (DOMAINS_INTACT, set([]))
+        return REVISED_NONE
     
     def __new_domains(self, value, D, examined):
         '''Returns new domains for participating variables.'''
@@ -21,23 +21,23 @@ class SAMETHICK():
             newdomains[_var] = {value}
         return newdomains
              
-    def establish(self, csp, curvar, value):
+    def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
         examined = set([])
         for v in {"T1", "T2", "T3", "T4", "T5", "T6", "T7"}:
             if v in A and v != curvar:
-                return (DOMAINS_INTACT, set([]))
+                return REVISED_NONE
             if not v in A and v != curvar:
                 examined.add(v)
         D = csp.get_domains()
         newdomains = self.__new_domains(value, D, examined)
         reduced = set([])
         if newdomains == CONTRADICTION:
-            return (CONTRADICTION, examined, set([]))
+            return CONTRADICTION
         if len(newdomains.keys()) == 0:
-            return (DOMAINS_INTACT, examined)
+            return ALREADY_CONSISTENT
         for vi, new_domain in newdomains.items():
             csp.update_domain(vi, new_domain)
             reduced.add(vi)
-        return (DOMAINS_REDUCED, examined, reduced)
+        return (MADE_CONSISTENT, reduced)

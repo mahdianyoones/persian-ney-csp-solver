@@ -40,9 +40,9 @@ class SAMEROUND():
     occur since the domains contain only one value. If any other algorithm
     removes this single value, it issues contradiction itself.'''
     
-    def propagate(self, csp, reduced_vars):
+    def propagate(self, csp, reduced_vars, participants):
         '''Establishes indirect consistency W.R.T. same_r.'''
-        return (DOMAINS_INTACT, set([]))
+        return REVISED_NONE
     
     def __new_domains(self, value, D, examined):
         '''Returns new domains for participating variables.'''
@@ -55,23 +55,23 @@ class SAMEROUND():
             newdomains[_var] = {value}
         return newdomains
              
-    def establish(self, csp, curvar, value):
+    def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
         examined = set([])
         for v in {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}:
             if v in A and v != curvar:
-                return (DOMAINS_INTACT, set([]))
+                return REVISED_NONE
             if not v in A and v != curvar:
                 examined.add(v)
         D = csp.get_domains()
         newdomains = self.__new_domains(value, D, examined)
         reduced = set([])
         if newdomains == CONTRADICTION:
-            return (CONTRADICTION, examined, set([]))
+            return CONTRADICTION
         if len(newdomains.keys()) == 0:
-            return (DOMAINS_INTACT, examined)
+            return ALREADY_CONSISTENT
         for vi, new_domain in newdomains.items():
             csp.update_domain(vi, new_domain)
             reduced.add(vi)
-        return (DOMAINS_REDUCED, examined, reduced)
+        return (MADE_CONSISTENT, reduced)

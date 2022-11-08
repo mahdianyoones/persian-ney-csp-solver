@@ -13,10 +13,11 @@ class test_CASE_RUNNER(unittest.TestCase):
             for var, val in given["A"].items():
                 csp.assign(var, val)
         # act
+        participants = given["participants"]
         if mth == "propagate":
-            out = sut.propagate(csp, given["reduced_vars"])
+            out = sut.propagate(csp, given["reduced_vars"], participants)
         else:
-            out = sut.establish(csp, given["curvar"], given["value"])
+            out = sut.establish(csp, given["curvar"], given["value"], participants)
         # assess
         self.assertEqual(out, expect["out"])
         if "D" in expect:

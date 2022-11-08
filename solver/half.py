@@ -15,7 +15,7 @@ class HALF():
 		consistent. If this reduction makes consistency impossible,
 		contradiction is reported.'''
 	
-	def establish(self, csp, curvar, value):
+	def establish(self, csp, curvar, value, participants):
 		'''Establishes consistency after assignment curvar: value.
 		
 		The domain of L2 reduces to L1 * 2. Or, the domain of L1 reduces to
@@ -26,39 +26,39 @@ class HALF():
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		if "L1" in A and "L2" in A:
-			return (DOMAINS_INTACT, set([]))
+			return REVISED_NONE
 		if curvar == "L1": # L2 is not assigned
 			new_value = value * 2
 			if new_value < D["L2"]["min"] or new_value > D["L2"]["max"]:
-				return (CONTRADICTION, {"L2"}, {"L1"})
+				return CONTRADICTION
 			if D["L2"]["min"] == D["L2"]["max"]:
-				return (DOMAINS_INTACT, {"L2"})
+				return ALREADY_CONSISTENT
 			else:
 				csp.update_domain("L2", {"min": new_value, "max": new_value})
-				return (DOMAINS_REDUCED, {"L2"}, {"L2"})
+				return (MADE_CONSISTENT, {"L2"})
 		else: # L1 is not assigned
 			new_value = math.ceil(value / 2)
 			if new_value < D["L1"]["min"] or new_value > D["L1"]["max"]:
-				return (CONTRADICTION, {"L1"}, {"L2"})
+				return CONTRADICTION
 			if D["L1"]["min"] == D["L1"]["max"]:
-				return (DOMAINS_INTACT, {"L1"})
+				return ALREADY_CONSISTENT
 			else:
 				csp.update_domain("L1", {"min": new_value, "max": new_value})
-				return (DOMAINS_REDUCED, {"L1"}, {"L1"})
+				return (MADE_CONSISTENT, {"L1"})
 
-	def propagate(self, csp, reduced_vars):
+	def propagate(self, csp, reduced_vars, participants):
 		'''Establishes consistency when L1 andor L2 are reduced elsewhere.'''
 		A = csp.get_assignment()
 		if "L1" in A or "L2" in A:	# Already made consistent by establish
-			return (DOMAINS_INTACT, set([]))
+			return REVISED_NONE
 		D = csp.get_domains()
 		reduced = set([])
 		(low1, up1) = self.__revise_L1(D)
 		(low2, up2) = self.__revise_L2(D)
 		if self.___consistent(low1, up1, low2, up2):
-			return (DOMAINS_INTACT, {"L1", "L2"})
+			return ALREADY_CONSISTENT
 		if self.__contradiction(low1, up1, low2, up2):
-			return (CONTRADICTION, {"L1", "L2"}, set([]))
+			return CONTRADICTION
 		(low1, up1, low2, up2) = self.__mix(D, low1, up1, low2, up2)
 		if up1 - low1 < D["L1"]["max"] - D["L1"]["min"]:
 			reduced.add("L1")
@@ -67,8 +67,8 @@ class HALF():
 			reduced.add("L2")
 			csp.update_domain("L2", {"min": low2, "max": up2})
 		if len(reduced) == 0:
-			return (DOMAINS_INTACT, {"L1", "L2"})
-		return (DOMAINS_REDUCED, {"L1", "L2"}, reduced)
+			return ALREADY_CONSISTENT
+		return (MADE_CONSISTENT, reduced)
 	
 	def __mix(self, D, low1, up1, low2, up2):
 		if low1 in (DOMAIN_INTACT, CONTRADICTION):

@@ -1,11 +1,11 @@
 import unittest
 import os.path as op
 from sys import path as sp
-
 current = op.dirname(op.realpath(__file__))
 parent = op.dirname(current)
+grandparent = op.dirname(op.dirname(current))
 sp.append(parent)
-
+sp.append(grandparent)
 
 from csp import CSP
 from half import HALF
@@ -33,7 +33,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"}
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L1", "L2"}),
+            "out": (MADE_CONSISTENT, {"L1", "L2"}),
             "D": {
                 "L1": {"min": 30, "max": 35},
                 "L2": {"min": 60, "max": 70}
@@ -48,7 +48,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"}
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L1", "L2"}),
+            "out": (MADE_CONSISTENT, {"L1", "L2"}),
             "D": {
                 "L1": {"min": 20, "max": 30},
                 "L2": {"min": 40, "max": 60}
@@ -68,7 +68,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"}
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L1"}),
+            "out": (MADE_CONSISTENT, {"L1"}),
             "D": {
                 "L1": {"min": 30, "max": 35},
                 "L2": {"min": 60, "max": 70}
@@ -88,7 +88,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"}
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1", "L2"}, {"L2"}),
+            "out": (MADE_CONSISTENT, {"L2"}),
             "D": {
                 "L1": {"min": 30, "max": 35},
                 "L2": {"min": 60, "max": 70}
@@ -108,7 +108,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"}
         }
         expect = {
-            "out": (DOMAINS_INTACT, {"L1", "L2"}),
+            "out": ALREADY_CONSISTENT
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
@@ -124,7 +124,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"},
         }
         expect = {
-            "out": (CONTRADICTION, {"L1", "L2"}, set([])),
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "propagate", given, expect)
         given = {
@@ -135,7 +135,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"},
         }
         expect = {
-            "out": (CONTRADICTION, {"L1", "L2"}, set([])),
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
@@ -154,7 +154,7 @@ class test_HALF(unittest.TestCase):
             "value": 30
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L2"}, {"L2"}),
+            "out": (MADE_CONSISTENT, {"L2"}),
             "D": {
                 "L2": {"min": 60, "max": 60}
             }
@@ -171,7 +171,7 @@ class test_HALF(unittest.TestCase):
             "value": 60
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1"}, {"L1"}),
+            "out": (MADE_CONSISTENT, {"L1"}),
             "D": {
                 "L1": {"min": 30, "max": 30}
             }
@@ -193,7 +193,7 @@ class test_HALF(unittest.TestCase):
             "value": 30
         }
         expect = {
-            "out": (DOMAINS_INTACT, {"L2"}),
+            "out": ALREADY_CONSISTENT
         }
         assert_constraint(csp, sut, "establish", given, expect)
         given = {
@@ -207,7 +207,7 @@ class test_HALF(unittest.TestCase):
             "value": 60
         }
         expect = {
-            "out": (DOMAINS_INTACT, {"L1"}),
+            "out": ALREADY_CONSISTENT
         }
         assert_constraint(csp, sut, "establish", given, expect)
 

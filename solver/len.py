@@ -1,6 +1,4 @@
-from os import confstr
 from constants import *
-import copy
 
 class LEN():
     '''Implements len consistency.
@@ -13,7 +11,7 @@ class LEN():
     def __init__(self, len):
         self.__len = len
     
-    def establish(self, csp, curvar, value):
+    def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after curvar: value.
         
         Consistency is possible only when at exactly 6 variables are assigned.
@@ -23,29 +21,27 @@ class LEN():
         D = csp.get_domains()
         unassigned = None
         assigned_members = set([])
-        confset = set([])
         assigned_sum = 0
         _len = self.__len
         for v in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
             if v in A:
                 assigned_members.add(v)
                 assigned_sum += A[v]
-                confset.add(v)
             else:
                 unassigned = v
         if len(assigned_members) == 7:
-            return (DOMAIN_INTACT, set([]))
+            return REVISED_NONE
         if len(assigned_members) < 6:
             return self.__examine_bounds(D, A, _len)                
         new_val = _len - assigned_sum
         if new_val > D[unassigned]["max"] or new_val < D[unassigned]["min"]:
-            return (CONTRADICTION, {unassigned}, confset)
+            return CONTRADICTION
         if new_val < D[unassigned]["max"] or new_val > D[unassigned]["min"]:
             csp.update_domain(unassigned, {"min": new_val, "max": new_val})
-            return (DOMAINS_REDUCED, {unassigned}, {unassigned})
-        return (DOMAIN_INTACT, set([]))
+            return (MADE_CONSISTENT, {unassigned})
+        return ALREADY_CONSISTENT
         
-    def propagate(self, csp, reduced_vars):
+    def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of reduced_vars.
         
         In practice, it only checks if contradiction has occured or not.'''
@@ -84,5 +80,5 @@ class LEN():
                 lows_sum += D[v]["min"]
                 examined.add(v)
         if ups_sum < _len or lows_sum > _len:
-            return (CONTRADICTION, examined, confset)
-        return (DOMAINS_INTACT, examined)
+            return CONTRADICTION
+        return ALREADY_CONSISTENT

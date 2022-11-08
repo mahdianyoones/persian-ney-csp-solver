@@ -2,7 +2,9 @@ import unittest
 import os.path as op
 from sys import path as sp
 current = op.dirname(op.realpath(__file__))
+parent = op.dirname(current)
 grandparent = op.dirname(op.dirname(current))
+sp.append(parent)
 sp.append(grandparent)
 
 from csp import CSP
@@ -42,8 +44,7 @@ class test_LEN(unittest.TestCase):
             "reduced_vars": {"L7"},
         }
         expect = {
-            "out": (CONTRADICTION, {"L1", "L2", "L3", "L4", "L5", "L6", "L7"},
-                set([]))
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "propagate", given, expect)
         # case 2
@@ -60,8 +61,7 @@ class test_LEN(unittest.TestCase):
             "reduced_vars": {"L7"},
         }
         expect = {
-            "out": (CONTRADICTION, {"L1", "L2", "L3", "L4", "L5", "L6", "L7"},
-                set([]))
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
@@ -79,7 +79,7 @@ class test_LEN(unittest.TestCase):
             "value": 20
         }
         expect = {
-            "out": (CONTRADICTION, {"L7"},{"L1","L2","L3","L4","L5","L6"})
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "establish", given, expect)
         # case 2
@@ -92,7 +92,7 @@ class test_LEN(unittest.TestCase):
             "value": 19
         }
         expect = {
-            "out": (CONTRADICTION, {"L7"},{"L1","L2","L3","L4","L5","L6"})
+            "out": CONTRADICTION
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -109,7 +109,7 @@ class test_LEN(unittest.TestCase):
             "value": 20
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L1"}, {"L1"}),
+            "out": (MADE_CONSISTENT, {"L1"}),
             "D": {
                 "L1": {"min": 4, "max": 4}
             }

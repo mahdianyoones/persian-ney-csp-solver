@@ -19,65 +19,81 @@ class test_LENDEC_LOWER(unittest.TestCase):
         self.__sut = LENDEC_LOWER()
         self.__case_runner = case_runner.test_CASE_RUNNER()
 
-    def test_domains_are_reduced(self):
+    def test_consistency_is_eatablished_after_assignment(self):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
-        # case 1
         given = {
-            "A": {"L2": 121, "L3": 90},
+            "A": {"L3": 90},
             "D": {
-                "L4": {"min": 59, "max": 89},
-                "L5": {"min": 39, "max": 88},
-                "L6": {"min": 35, "max": 87}
+                "L4": {"min": 59, "max": 91},
             },
             "curvar": "L3",
-            "value": 90
+            "value": 90,
+            "participants": {"L3", "L4"}
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L4", "L5", "L6"}, {"L4", "L5"}),
+            "out": (MADE_CONSISTENT, {"L4"}),
             "D": {
-                "L4": {"min": 60, "max": 89},
-                "L5": {"min": 40, "max": 88}
+                "L4": {"min": 60, "max": 91},
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)
-        # case 2
+
+    def test_consistency_is_established_after_propagation(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "L2": {"min": 90, "max": 172},
-                "L3": {"min": 89, "max": 171},
-                "L4": {"min": 88, "max": 170},
-                "L5": {"min": 87, "max": 169},
-                "L6": {"min": 30, "max": 248}
+                "L3": {"min": 90, "max": 95},
+                "L4": {"min": 59, "max": 96},
             },
-            "reduced_vars": {"L2","L3","L4","L5","L6"},
-            "value": 90
+            "reduced_vars": {"L3"},
+            "participants": {"L3", "L4"}
         }
         expect = {
-            "out": (DOMAINS_REDUCED, {"L2","L3","L4","L5","L6"}, {"L6"}),
+            "out": (MADE_CONSISTENT, {"L4"}),
             "D": {
-                "L6": {"min": 58, "max": 248}
+                "L4": {"min": 60, "max": 96},
             }
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
-    def test_contradiction_is_detected(self):
+    def test_domains_are_found_consistent_after_assignment(self):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"L2": 90},
+            "A": {"L3": 93},
             "D": {
-                "L3": {"min": 1, "max": 59},
+                "L4": {"min": 62, "max": 96},
             },
-            "curvar": "L2",
-            "value": 90
+            "curvar": "L3",
+            "value": 93,
+            "participants": {"L3", "L4"}
         }
         expect = {
-            "out": (CONTRADICTION, {"L3"}, {"L2"}),
+            "out": ALREADY_CONSISTENT,
         }
         assert_constraint(csp, sut, "establish", given, expect)
+
+    def test_domains_are_found_consistent_after_propagation(self):
+        sut = self.__sut
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "D": {
+                "L3": {"min": 90, "max": 95},
+                "L4": {"min": 60, "max": 96},
+            },
+            "reduced_vars": {"L3"},
+            "participants": {"L3", "L4"}
+        }
+        expect = {
+            "out": ALREADY_CONSISTENT,
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

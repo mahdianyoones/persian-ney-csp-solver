@@ -2,7 +2,7 @@ from constants import *
 import copy
 
 class LENDEC():
-    '''Implements length decrement consistency.
+    '''Implements length decrement boundary consistency.
     
     Consecutive nodes must decrease in length. The following relations must
     hold between L2 through L7:
@@ -15,114 +15,52 @@ class LENDEC():
 
     L5 > L6
 
-    L6 > L7'''
-    def __init__(self):
-        self.__neighbors = {("L2", "L3"), ("L3", "L4"),
-                ("L4", "L5"), ("L5", "L6"), ("L6", "L7")}
+    L6 > L7
+    
+    For each relation, a binary constraint is defined. This class establishes
+    binary consistency for them all.'''
 
-    def establish(self, csp, curvar, value):
-        '''Establishes consistency after curvar: value assignment.'''
+    def establish(self, csp, curvar, value, participants):
+        '''Establishes consistency after curvar: value assignment.
+        
+        The assumption is that curvar is in the assigned variables.'''
+        unassigned_vars = csp.get_unassigned_vars()
+        participants = participants.intersection(unassigned_vars)
+        if len(participants) == 0:
+            return REVISED_NONE
+        Li, Lj = sorted({curvar, participants.pop()})
         A = csp.get_assignment()
-        queue = set([])
-        i = int(curvar[1])
-        c1 = ("L"+str(i), "L"+str(i+1))
-        c2 = ("L"+str(i-1), "L"+str(i))
-        if c1 in self.__neighbors:
-            queue.add(c1)
-        if c2 in self.__neighbors:
-            queue.add(c2)
         D = csp.get_domains()
-        return self.__ac3(csp, A, D, queue)
+        return self.__revise(Li, Lj, A, D)
 
-    def propagate(self, csp, reduced_vars):
+    def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
+        unassigned_vars = csp.get_unassigned_vars()
+        participants = participants.intersection(unassigned_vars)
+        if len(participants) == 0:
+            raise Exception("Members are all assigned; no call is needed.")
+        Li, Lj = sorted(participants)
         A = csp.get_assignment()
-        queue = set([])
-        for rvar in reduced_vars:
-            i = int(rvar[1])
-            c1 = ("L"+str(i), "L"+str(i+1))
-            c2 = ("L"+str(i-1), "L"+str(i))
-            if c1 in self.__neighbors:
-                queue.add(c1)
-            if c2 in self.__neighbors:
-                queue.add(c2)        
         D = csp.get_domains()
-        return self.__ac3(csp, A, D, queue)
-
-    def __ac3(self, csp, A, D, queue):
-        examined = set([])
-        reduced = set([])
-        while len(queue) > 0:
-            (Li, Lj) = queue.pop()
-            if Li in A and Lj in A:
-                continue
-            if not Li in A:
-                examined.add(Li)
-            if not Lj in A:
-                examined.add(Lj)
-            (Di, Dj, new_pairs) = self.__revise(Li, Lj, A, D)
-            if Di == CONTRADICTION or Dj == CONTRADICTION:
-                confset = self.__confset(csp)
-                return (CONTRADICTION, examined, confset)
-            if Di != DOMAIN_INTACT:
-                reduced.add(Li)
-                csp.update_domain(Li, Di)
-            if Dj != DOMAIN_INTACT:
-                reduced.add(Lj)
-                csp.update_domain(Lj, Dj)
-            if len(new_pairs) > 0:
-                queue.update(new_pairs)
-        if len(reduced) > 0:
-            return (DOMAINS_REDUCED, examined, reduced)
-        return (DOMAINS_INTACT, examined)
+        return self.__revise(Li, Lj, A, D)
 
     def __revise(self, Li, Lj, A, D):
         '''Canculates new consistent bounds for Li and Lj where Lj < Li.'''
-        new_pairs = set([])
-        Di = DOMAIN_INTACT
-        Dj = DOMAIN_INTACT
-        i_idx = int(Li[1])
-        j_idx =  int(Lj[1])
-        if not Li in A:
-            if Lj in A:
-                new_min = A[Lj] + 1
-            else:
-                new_min = D[Lj]["min"] + 1
-            Di = {"min": new_min, "max": D[Li]["max"]}
-        if not Lj in A:
-            if Li in A:
-                new_max = A[Li] - 1
-            else:
-                new_max = D[Li]["max"] - 1
-            Dj = {"min": D[Lj]["min"], "max": new_max}
-        if Di != DOMAIN_INTACT:
-            if Di["min"] > Di["max"]:
-                Di = CONTRADICTION
-            elif Di["min"] <= D[Li]["min"]:
-                Di = DOMAIN_INTACT
-            else: # reduced
-                new_pairs.update(self.__new_pairs(i_idx, Li, Lj))
-        if Dj != DOMAIN_INTACT:
-            if Dj["max"] < Dj["min"]:
-                Dj = CONTRADICTION
-            elif Dj["max"] >= D[Lj]["max"]:
-                Dj = DOMAIN_INTACT
-            else: # reduced
-                new_pairs.update(self.__new_pairs(j_idx, Li, Lj))
-        return (Di, Dj, new_pairs)
-
-    def __new_pairs(self, reduced_idx, Li, Lj):
-        pair1 = ("L"+str(reduced_idx), "L"+str(reduced_idx+1))
-        pair2 = ("L"+str(reduced_idx-1), "L"+str(reduced_idx))
-        new_pairs = set([])
-        if pair1 in self.__neighbors and pair1 != (Li, Lj):
-            new_pairs.add(pair1)
-        if pair2 in self.__neighbors and pair2 != (Li, Lj):
-            new_pairs.add(pair2)
-        return new_pairs
-
-    def __confset(self, csp):
-        '''Returns the conflict set.'''
-        members = {"L2", "L3", "L4", "L5", "L6", "L7"}
-        assigned = csp.get_assigned_vars()
-        return members.intersection(assigned)
+        Dj = D[Lj]
+        Di = D[Li]
+        if Li in A:
+            Di = {"min": A[Li], "max": A[Li]}
+        elif Lj in A:
+            Dj = {"min": A[Lj], "max": A[Lj]}
+        reduced_vars = set([])
+        if Dj["min"] >= Di["max"]:
+            return CONTRADICTION
+        if Dj["min"] >= Di["min"]:
+            Di["min"] = Dj["min"] + 1
+            reduced_vars.add(Li)
+        if Dj["max"] >= Di["max"]:
+            Dj["max"] = Di["max"] - 1
+            reduced_vars.add(Lj)
+        if len(reduced_vars) == 0:
+            return ALREADY_CONSISTENT
+        return MADE_CONSISTENT, reduced_vars

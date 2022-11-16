@@ -10,12 +10,14 @@ sp.append(grandparent)
 from csp import CSP
 from constants import *
 from piecemin import PIECEMIN
+import case_runner
 
 class test_PIECEMIN(unittest.TestCase):
 
     def setUp(self):
         self.__csp = CSP()
         self.__sut = PIECEMIN()
+        self.__case_runner = case_runner.test_CASE_RUNNER()
 
     def test_establish_finds_P_consistent(self):
         sut = self.__sut
@@ -40,6 +42,7 @@ class test_PIECEMIN(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
+            "A": {"P1": ("3", 42)},
             "D": {
                 "L1": {"min": 41, "max": 100},
             },
@@ -157,4 +160,7 @@ class test_PIECEMIN(unittest.TestCase):
         expect = {
             "out": REVISED_NONE
         }
-        assert_constraint(csp, sut, "propagate", given, expect)
+        assert_constraint(csp, sut, "establish", given, expect)
+
+if __name__ == "__main__":
+    unittest.main()

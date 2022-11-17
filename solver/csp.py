@@ -2,7 +2,19 @@ import copy
 
 class CSP():
 
-	def __init__(self):
+	def __init__(self, X=None, C=None):
+		if X == None and C == None:
+			self.__init_main_csp()
+		else:
+			self.__X = X
+			self.__C = C
+		self.__D = {}
+		self.__domains_backups = [] # order matters
+		self.__assignment = {}
+		self.__unassigned = copy.deepcopy(self.__X)
+		self.__assigned = [] # order matters
+
+	def __init_main_csp(self):
 		self.__X = {"L1", "L2", "L3", "L4", "L5", "L6", "L7",
 					"P1", "P2", "P3", "P4", "P5", "P6", "P7",
 					"D1", "D2", "D3", "D4", "D5", "D6", "D7",
@@ -35,12 +47,7 @@ class CSP():
 				self.__C["lendec"+str(i)] = participants
 				participants = {"L"+str(i), "L"+str(i+1)}
 				self.__C["lendeclower"+str(i)] = participants
-		self.__D = {}
-		self.__domains_backups = [] # order matters
-		self.__assignment = {}
-		self.__unassigned = copy.deepcopy(self.__X)
-		self.__assigned = [] # order matters		
-	
+
 	def update_domain(self, var, new_domain):
 		self.__D[var] = new_domain
 	

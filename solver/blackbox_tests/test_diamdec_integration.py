@@ -92,31 +92,8 @@ class test_CONSTRAINTS(unittest.TestCase):
     nodemax7:       (L7, P7)
     '''
 
-    def test_diamdec_constraints(self):
-        '''Tests the behavior of diamdec for all its related constraints.'''
-        # arrange
-        X = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
-        C = {
-            "diamdec1": {"D1", "D2"},
-            "diamdec2": {"D2", "D3"},
-            "diamdec3": {"D3", "D4"},
-            "diamdec4": {"D4", "D5"},
-            "diamdec5": {"D5", "D6"},
-            "diamdec6": {"D6", "D7"}
-        }
-        csp = CSP(X, C)
-        current = op.dirname(__file__)
-        catalog = CATALOG()
-        catalog.setup(current+"/real_pieces.csv")
-        mac = MAC(csp, catalog, specs["C"])
-        UNARY.init_domains(csp, catalog)
-        UNARY.unarify(csp, specs["C"])
-        D = csp.get_domains()
-        # act
-        res = mac.propagate({"D1"})
-        # assess
-        self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+    def __assert_domains_are_consistent(self):
+        D = self.__csp.get_domains()
         ddiff = specs["C"]["ddiff"]
         for i in range(2, 7):
             valid_range = {
@@ -127,30 +104,41 @@ class test_CONSTRAINTS(unittest.TestCase):
                 self.assertTrue(d >= valid_range["min"])
                 self.assertTrue(d <= valid_range["max"])
 
-    def test_lendec_and_lendec_constraints(self):
-        '''Tests the behavior of lendec and lendeclower together.'''
-        # act
-        X = {"L2", "L3", "L4", "L5", "L6", "L7"}
-        C = {
-            "lendec2":        {"L2", "L3"},
-            "lendec3":        {"L3", "L4"},
-            "lendec4":        {"L4", "L5"},
-            "lendec5":        {"L5", "L6"},
-            "lendec6":        {"L6", "L7"},
-            "lendeclower2":   {"L2", "L3"},
-            "lendeclower3":   {"L3", "L4"},
-            "lendeclower4":   {"L4", "L5"},
-            "lendeclower5":   {"L5", "L6"}
+    def setUp(self):
+        self.__X = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+        self.__C = {
+            "diamdec1": {"D1", "D2"},
+            "diamdec2": {"D2", "D3"},
+            "diamdec3": {"D3", "D4"},
+            "diamdec4": {"D4", "D5"},
+            "diamdec5": {"D5", "D6"},
+            "diamdec6": {"D6", "D7"}
         }
-        csp = CSP(X, C)
+        self.__csp = CSP(self.__X, self.__C)
         current = op.dirname(__file__)
         catalog = CATALOG()
         catalog.setup(current+"/real_pieces.csv")
-        mac = MAC(csp, catalog, specs["C"])
-        UNARY.init_domains(csp, catalog)
-        UNARY.unarify(csp, specs["C"])
-        D = csp.get_domains()
+        self.__mac = MAC(self.__csp, catalog, specs["C"])
+        UNARY.init_domains(self.__csp, catalog)
+        UNARY.unarify(self.__csp, specs["C"])
 
-                
+    def test_D1_propagates_to_all(self):
+        '''Tests the behavior of diamdec for all its related constraints.'''
+        # act
+        res = self.__mac.propagate({"D1"})
+        # assess
+        self.assertEqual(res[0], MADE_CONSISTENT)
+        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.__assert_domains_are_consistent()
+    
+    def test_D7_propagates_to_all(self):
+        '''Tests the behavior of diamdec for all its related constraints.'''
+        # act
+        res = self.__mac.propagate({"D7"})
+        # assess
+        self.assertEqual(res[0], MADE_CONSISTENT)
+        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.__assert_domains_are_consistent()
+
 if __name__ == "__main__":
     unittest.main()

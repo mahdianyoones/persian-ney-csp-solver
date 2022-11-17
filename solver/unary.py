@@ -68,6 +68,8 @@ class UNARY():
 	def __sixth_node_min_len(csp, spec):
 		'''Node 6 must be long enough to contain at least one hole.'''		
 		X = csp.get_variables()
+		if not "L6" in X:
+			return
 		L6 = csp.get_domain("L6")
 		new_d = copy.deepcopy(L6)
 		new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
@@ -77,6 +79,9 @@ class UNARY():
 				
 	def __first_node_diameter(csp, spec):
 		'''Node 1 cannot have a diameter below a certain value (e.g. 18mm).'''
+		X = csp.get_variables()
+		if not "D1" in X:
+			return
 		D1 = csp.get_domain("D1")
 		legal_values = set([])
 		for diam in D1:
@@ -96,6 +101,9 @@ class UNARY():
 			L4 >= 2*hole_margin + 2*hole_diameter + h2 - h1 - hole_diameter
 			
 			which defines a minimum length for L4.'''
+		X = csp.get_variables()
+		if not "L4" in X:
+			return
 		h2_h1_dist = spec["h2"] - spec["h1"]
 		new_min = 2*spec["hmarg"] + spec["holed"] + h2_h1_dist
 		L4 = csp.get_domain("L4")
@@ -114,6 +122,9 @@ class UNARY():
 			3 & 5 + 3 hole diameters
 			
 			which defines a minimum length for L5.'''
+		X = csp.get_variables()
+		if not "L5" in X:
+			return
 		h3_h5_dist = spec["h5"] - spec["h3"]
 		new_min = 2*spec["hmarg"] + spec["holed"] + h3_h5_dist
 		L5 = csp.get_domain("L5")

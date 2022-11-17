@@ -140,5 +140,14 @@ class test_CONSTRAINTS(unittest.TestCase):
         self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
         self.__assert_domains_are_consistent()
 
+    def test_D5_propagates_to_all(self):
+        '''Tests the behavior of diamdec for all its related constraints.'''
+        # act
+        res = self.__mac.propagate({"D5"})
+        # assess
+        self.assertEqual(res[0], MADE_CONSISTENT)
+        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.__assert_domains_are_consistent()
+
 if __name__ == "__main__":
     unittest.main()

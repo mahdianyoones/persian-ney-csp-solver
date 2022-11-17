@@ -94,15 +94,24 @@ class test_CONSTRAINTS(unittest.TestCase):
 
     def __assert_domains_are_consistent(self):
         D = self.__csp.get_domains()
+        A = self.__csp.get_assignment()
         ddiff = specs["C"]["ddiff"]
         for i in range(2, 7):
+            Dprev = "D"+str(i-1)
+            _min = A[Dprev] if Dprev in A else min(D[Dprev])
+            _max = A[Dprev] if Dprev in A else max(D[Dprev])
             valid_range = {
-                "min": min(D["D"+str(i-1)]) - ddiff["max"], 
-                "max": max(D["D"+str(i-1)]) - ddiff["min"], 
+                "min": _min - ddiff["max"], 
+                "max": _max - ddiff["min"], 
             }
-            for d in D["D"+str(i)]:
-                self.assertTrue(d >= valid_range["min"])
-                self.assertTrue(d <= valid_range["max"])
+            Dcur = "D"+str(i)
+            if Dcur in A:
+                self.assertTrue(A[Dcur] >= valid_range["min"])
+                self.assertTrue(A[Dcur] <= valid_range["max"])
+            else:
+                for d in D[Dcur]:
+                    self.assertTrue(d >= valid_range["min"])
+                    self.assertTrue(d <= valid_range["max"])
 
     def setUp(self):
         self.__X = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
@@ -122,7 +131,7 @@ class test_CONSTRAINTS(unittest.TestCase):
         UNARY.init_domains(self.__csp, catalog)
         UNARY.unarify(self.__csp, specs["C"])
 
-    def test_D1_propagates_to_all(self):
+    def test_D1_reduction_propagates_to_all(self):
         '''Tests the behavior of diamdec for all its related constraints.'''
         # act
         res = self.__mac.propagate({"D1"})
@@ -131,7 +140,7 @@ class test_CONSTRAINTS(unittest.TestCase):
         self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
         self.__assert_domains_are_consistent()
     
-    def test_D7_propagates_to_all(self):
+    def test_D7_reduction_propagates_to_all(self):
         '''Tests the behavior of diamdec for all its related constraints.'''
         # act
         res = self.__mac.propagate({"D7"})
@@ -140,7 +149,7 @@ class test_CONSTRAINTS(unittest.TestCase):
         self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
         self.__assert_domains_are_consistent()
 
-    def test_D5_propagates_to_all(self):
+    def test_D5_reduction_propagates_to_all(self):
         '''Tests the behavior of diamdec for all its related constraints.'''
         # act
         res = self.__mac.propagate({"D5"})
@@ -148,6 +157,41 @@ class test_CONSTRAINTS(unittest.TestCase):
         self.assertEqual(res[0], MADE_CONSISTENT)
         self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
         self.__assert_domains_are_consistent()
+
+    def test_D1_assignment_gets_established(self):
+        # arrange
+        self.__csp.assign("D1", 18)
+        # act
+        res = self.__mac.establish("D1", 18)
+        self.assertEqual(res[0], MADE_CONSISTENT)
+        self.assertEqual(res[1], {"D2", "D3", "D4", "D5", "D6", "D7"})
+        self.__assert_domains_are_consistent()
+
+    def test_D7_assignment_gets_established(self):
+        # arrange
+        self.__csp.assign("D7", 13.5)
+        # act
+        res = self.__mac.establish("D7", 13.5)
+        self.assertEqual(res[0], MADE_CONSISTENT)
+        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6"})
+        self.__assert_domains_are_consistent()
+
+    def test_D4_assignment_gets_established(self):
+        # arrange
+        self.__csp.assign("D4", 16)
+        # act
+        res = self.__mac.establish("D4", 16)
+        self.assertEqual(res[0], MADE_CONSISTENT)
+        self.assertEqual(res[1], {"D1", "D2", "D3", "D5", "D6", "D7"})
+        self.__assert_domains_are_consistent()
+
+    def test_D1_reduction_propagates_to_contradiction(self):
+        # arrange
+        self.__csp.update_domain("D7", {20})
+        # act
+        res = self.__mac.propagate({"D1"})
+        # assess
+        self.assertEqual(res, CONTRADICTION)
 
 if __name__ == "__main__":
     unittest.main()

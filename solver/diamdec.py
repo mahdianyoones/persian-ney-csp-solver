@@ -33,10 +33,9 @@ class DIAMDEC():
         
         The assumption is that curvar is in the assigned variables.'''
         unassigned_vars = csp.get_unassigned_vars()
-        participants = participants.intersection(unassigned_vars)
         if len(participants) == 0:
             return REVISED_NONE
-        Dvari, Dvarj = sorted({curvar, participants.pop()})
+        Dvari, Dvarj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(csp, Dvari, Dvarj, A, D, self.__ddiff)

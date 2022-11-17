@@ -25,10 +25,9 @@ class LENDEC():
         
         The assumption is that curvar is in the assigned variables.'''
         unassigned_vars = csp.get_unassigned_vars()
-        participants = participants.intersection(unassigned_vars)
-        if len(participants) == 0:
+        if len(participants.intersection(unassigned_vars)) == 0:
             return REVISED_NONE
-        Li, Lj = sorted({curvar, participants.pop()})
+        Li, Lj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(Li, Lj, A, D)
@@ -36,8 +35,7 @@ class LENDEC():
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
         unassigned_vars = csp.get_unassigned_vars()
-        participants = participants.intersection(unassigned_vars)
-        if len(participants) == 0:
+        if len(participants.intersection(unassigned_vars)) == 0:
             raise Exception("Members are all assigned; no call is needed.")
         Li, Lj = sorted(participants)
         A = csp.get_assignment()

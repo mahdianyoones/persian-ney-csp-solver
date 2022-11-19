@@ -152,6 +152,7 @@ class CATALOG():
 	def __init__(self, csvfile=""):
 		self.__idxs = {}
 		self.__routes = {}
+		self.__pieces = {}
 		if csvfile != "":
 			self.setup(csvfile)
 
@@ -181,6 +182,13 @@ class CATALOG():
 			return NODE_NOT_FOUND
 		return node.get_meta()
 
+	def get_pieces(self, numbers):
+		pieces = []
+		for no in numbers:
+			if no in self.__pieces:
+				pieces.append(self.__pieces[no])
+		return pieces
+
 	def add_from_csv(self, csvfile):
 		with open(csvfile) as f:
 			reader = csv.reader(f)
@@ -189,12 +197,19 @@ class CATALOG():
 				T = float(p[2])
 				R = float(p[3])
 				D = float(p[4])
-				P = (p[0], L)
-				self.add_piece(P, T, D, R)
+				no = p[0]
+				self.add_piece(no, L, T, D, R)
 
-	def add_piece(self, P, T, D, R):
+	def add_piece(self, no, L, T, D, R):
 		for idx in self.__idxs.values():
+			P = (no, L)
 			idx.index(P, T, D, R)
+			self.__pieces[no] = {
+				"T": T,
+				"R": R,
+				"D": D,
+				"L": L
+			}
 
 	def remove_piece(self, P, T, D, R):
 		for idx in self.__idxs.values():

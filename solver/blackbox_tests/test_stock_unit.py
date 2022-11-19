@@ -74,18 +74,43 @@ class test_STOCK(unittest.TestCase):
         }
         assert_constraint(csp, self.__sut_pstock, "establish", given, expect)
 
-    def tests_pstock_does_no_revision(self):
+    def tests_pstock_establishes_after_P_assigned(self):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "curvar": "P1",
-            "value": 0,
+            "value": ("11", 120),
             "participants": {"R1", "T1", "D1", "P1"}
         }
         expect = {
-            "out": REVISED_NONE
+            "out": (MADE_CONSISTENT, {"D1", "T1", "R1"}),
+            "D": {
+                "D1": {12.4},
+                "T1": {2},
+                "R1": {0}
+            }
         }
         assert_constraint(csp, self.__sut_pstock, "establish", given, expect)
+
+    def tests_pstock_propagates_after_P_reduced(self):
+        csp = self.__csp
+        assert_constraint = self.__case_runner.assert_constraint
+        given = {
+            "D": {
+                "P1": {("11", 120), ("3", 80)}
+            },
+            "reduced_vars": {"P1"},
+            "participants": {"R1", "T1", "D1", "P1"}
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"D1", "T1", "R1"}),
+            "D": {
+                "D1": {12.4, 17},
+                "T1": {2},
+                "R1": {0}
+            }
+        }
+        assert_constraint(csp, self.__sut_pstock, "propagate", given, expect)
 
     def test_pstock_detect_contradiction(self):
         csp = self.__csp

@@ -20,25 +20,6 @@ class test_PIECES_INTEGRATION(unittest.TestCase):
     These constraints are pstock, dstock, rstock, tstock, piecemin, 
     and nodemax.'''
 
-    def __assert_domains_are_consistent(self):
-        D = self.__csp.get_domains()
-        A = self.__csp.get_assignment()
-        for i in range(3, 7):
-            Dprev = "L"+str(i-1)
-            _min = A[Dprev] if Dprev in A else D[Dprev]["min"]
-            _max = A[Dprev] if Dprev in A else D[Dprev]["max"]
-            valid_range = {
-                "min": 2/3 * _min, 
-                "max": _max - 1, 
-            }
-            Dcur = "L"+str(i)
-            if Dcur in A:
-                self.assertTrue(A[Dcur] >= valid_range["min"])
-                self.assertTrue(A[Dcur] <= valid_range["max"])
-            else:
-                self.assertTrue(D[Dcur]["min"] >= valid_range["min"])
-                self.assertTrue(D[Dcur]["max"] <= valid_range["max"])
-
     def setUp(self):
         self.__X = {"T1", "R1", "D1", "P1", "L1"}
         self.__C = {

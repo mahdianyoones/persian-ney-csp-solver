@@ -17,32 +17,20 @@ class SOLVER():
         self.__csp = csp
         self.__select = select
         self.__mac = mac
-        self.__jump = JUMP(csp.get_variables())
+        self.__jump = JUMP()
                             
     def __assign(self, curvar, value):
-        '''Tries assigning curvar: value.
-        
-        If the assignment would cause coontradiction, a conflict set is
-        returned.
-        
-        Note: If the contradiction occurs due to propagation, no conflict set
-        is returned. In fact, only curvar is responsible for this.'''
+        '''Tries assigning curvar: value.'''
         csp = self.__csp
         csp.assign(curvar, value)
         csp.backup_domains()
-        establish_res = self.__mac.establish(curvar, value)
+        result = self.__mac.establish(curvar, value)
         reduced_vars = set([])
-        if establish_res[0] == CONTRADICTION:
+        if result == CONTRADICTION:
             self.__unassign(csp, curvar)
-            return (INCONSISTENT_ASSIGNMENT, establish_res[2])
-        if establish_res[0] == DOMAINS_REDUCED:
-            reduced_vars.update(establish_res[2])
-            propagate_res = self.__mac.propagate(establish_res[2])
-            if propagate_res[0] == CONTRADICTION:
-                self.__unassign(csp, curvar)
-                return (INCONSISTENT_ASSIGNMENT, set([]))
-            if propagate_res[0] == DOMAINS_REDUCED:
-                reduced_vars.update(propagate_res[2])
+            return INCONSISTENT_ASSIGNMENT
+        if isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
+            reduced_vars.update(result[1])
         return (CONSISTENT_ASSIGNMENT, reduced_vars)
     
     def __unassign(self, csp, curvar):
@@ -75,7 +63,7 @@ class SOLVER():
                 return (BACKTRACK, None)
             val = self.__select.nextval(curvar, domain)		
             assign_res = self.__assign(curvar, val)
-            if assign_res[0] == INCONSISTENT_ASSIGNMENT:
+            if assign_res == INCONSISTENT_ASSIGNMENT:
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
                 return (SOLUTION, csp.get_assignment())
@@ -100,12 +88,15 @@ class SOLVER():
         
         If MAC figures out any contradiction before search begins, no
         solution could ever be found.'''
-        res = UNARY.unarify(self.__csp, catalog, spec)
+        res = UNARY.init_domains(self.__csp, catalog)
+        if res == CONTRADICTION:
+            return CONTRADICTION
+        res = UNARY.unarify(self.__csp, spec)
         if res == CONTRADICTION:
             return CONTRADICTION
         X = copy.deepcopy(self.__csp.get_variables())
         res = self.__mac.propagate(X)
-        if res[0] == CONTRADICTION:
+        if res == CONTRADICTION:
             return CONTRADICTION
         return self.__dfs()
 

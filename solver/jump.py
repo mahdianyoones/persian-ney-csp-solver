@@ -2,25 +2,40 @@ import copy
 from constants import *
 
 class JUMP():
-    '''Implements the backjumping mechanism through conflict sets.'''
-
-    def __init__(self, X):
-        self.__confsets = {}
-
-    def accumulate(self, curvar, value, reduced_vars):
-        '''Accumulates the conflict set for curvar.
-        
-        Conflict set must be sorted based on the time of assignment.
+    '''Implements the backjumping mechanism through conflict sets.
+    
         The core notion of a conflict set is to create a time machine where
-        order of variables in the set must follow the order of variables in 
-        the assignment.
+        jumping happens to the nearest conflicting past, if any.
         
         Example:
         
-        D1 -> R1 -> T1 -> L1 (if failes due to T1 and D1)
+        D1 is assigned 18
         
-        confset[L1] = [D1, T1] so that jump happens first to T1 not D1
+        If by establishing this assignment, L7 sheds some values,
+        L7's has now a conflict set:
+
+        {
+            D1: 18
+        }
+
+        Later, T7 is assigned 2 which impacts L7 too. L7's conflict set
+        accumulates this assignment as well:
+
+        {
+            D1: 18,
+            T7: 2
+        }
         
+        Some time later, when L7 is selected for assignment, its domain gets
+        drained hence prompting a jump back. 
+
+        Assume the assignments are as follows:
+
+        D1, D2, D3, T7, T1, T2, T3, L7
+
+        T7 is selected as a jump target since it's the latest assigned
+        variable in the conflict set of L7.
+
         Jumping must happen to the near past not distant past.
         
         Why would we repeat a long history? Why not jump to yesterday and
@@ -28,16 +43,13 @@ class JUMP():
         
         If we jumped to the last year instead, we would have to repeat a
         full year again to see if that solves the issue of today!
-        '''
-        if len(reduced_vars) == 0:
-            return
-        for v in reduced_vars:
-            if not v in self.__confsets:
-                self.__confsets[v] = {}
-            self.__confsets[v][curvar] = value
 
-    def absorb(self, jump_target, jump_origin):
-        '''Absorbs conflict set from jump origin.
+        Also, when jump happens to a variable, since it's value is changed,
+        it must be removed from the conflict set of variables that it
+        conflicted with before.
+
+        i.e. assigning different values to the same variable may cause
+        different variables shed values.
         
         Current variable incorporates in itself the conflict set of the
         variable that has failed in the future.
@@ -60,13 +72,28 @@ class JUMP():
         change of which fixes the problem.
 
         That's why the destination of jump (one of the suspicious dates
-        when a bad decision was made) receives the confvars. Confvars is 
-        the set of dates, one of which may fix the issue.
+        when a bad decision was made) abrobs the conflict set of the jump
+        origin.
 
         If making different decisions at the jumped-to date does not fix
         the problem, people at this date know what to do; if future people
         have provided them with a set of suspicious dates, further jumping
         happens according to that set.'''
+
+    def __init__(self):
+        self.__confsets = {}
+
+    def accumulate(self, curvar, value, reduced_vars):
+        '''Accumulates the conflict set for curvar.'''
+        if len(reduced_vars) == 0:
+            return
+        for v in reduced_vars:
+            if not v in self.__confsets:
+                self.__confsets[v] = {}
+            self.__confsets[v][curvar] = value
+
+    def absorb(self, jump_target, jump_origin):
+        '''Absorbs conflict set from jump origin.'''
         if not jump_origin in self.__confsets:
             raise Exception("Jump origin doesn't exist.")
         if not jump_target in self.__confsets:
@@ -75,6 +102,9 @@ class JUMP():
             self.__confsets[jump_target][v] = val
         
     def canbackjump(self, curvar):
+        '''Is there any variable in conflict with curvar?
+        
+        i.e. did any assignment in the past make curvar shed values?'''
         if curvar in self.__confsets:
             if len(self.__confsets[curvar].keys()) > 0:
                 return True
@@ -86,11 +116,16 @@ class JUMP():
         for i in range(len(A) - 1, -1, -1):
             jump_target = A[i]
             if jump_target in self.__confsets[curvar]:
-                for v, confset in self.__confsets.items():
-                    if jump_target in confset:
-                        del confset[jump_target]
+                self.__disinfect(jump_target)
                 return jump_target
         raise Exception("Jump target does not exists!")
+
+    def __disinfect(self, jump_target):
+        '''Removes jump target from all conflict sets, so that jump to
+        this target happens only once.'''
+        for v, confset in self.__confsets.items():
+            if jump_target in confset:
+                del confset[jump_target]
 
     def get_confset(self, var):
         return self.__confsets[var]

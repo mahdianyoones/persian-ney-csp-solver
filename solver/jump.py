@@ -99,8 +99,17 @@ class JUMP():
         if not jump_target in self.__confsets:
             self.__confsets[jump_target] = {}
         for v, val in self.__confsets[jump_origin].items():
+            if v == jump_target:
+                continue
             self.__confsets[jump_target][v] = val
         
+    def unaccumulate(self, A, curvar):
+        '''Removes curvar: value from all confsets.'''
+        confsets = copy.deepcopy(self.__confsets)
+        for _var, confset in confsets.items():
+            if curvar in confset:
+                del self.__confsets[_var][curvar]
+
     def canbackjump(self, curvar):
         '''Is there any variable in conflict with curvar?
         
@@ -116,16 +125,8 @@ class JUMP():
         for i in range(len(A) - 1, -1, -1):
             jump_target = A[i]
             if jump_target in self.__confsets[curvar]:
-                self.__disinfect(jump_target)
                 return jump_target
         raise Exception("Jump target does not exists!")
-
-    def __disinfect(self, jump_target):
-        '''Removes jump target from all conflict sets, so that jump to
-        this target happens only once.'''
-        for v, confset in self.__confsets.items():
-            if jump_target in confset:
-                del confset[jump_target]
 
     def get_confset(self, var):
         return self.__confsets[var]

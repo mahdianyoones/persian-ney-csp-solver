@@ -28,17 +28,12 @@ class ROUND_STOCK():
 	def establish(self, csp, curvar, value, participants):
 		'''Establishes consistency after curvar: value assignment.'''
 		i = curvar[1]
-		Ri = "R"+i
+		Ri, Di, Ti = "R"+i, "D"+i, "T"+i
 		if curvar == Ri:
 			return REVISED_NONE
-		assigned_vars = csp.get_assigned_vars()
-		participants = participants.intersection(assigned_vars)
-		if len(participants) == 0:
-			raise Exception("curvar looks wrong", curvar)
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		catalog = self.__catalog
-		Di, Ti = ("D"+i, "T"+i)
 		filters = {key[0]: A[key] for key in {Di, Ti}.intersection(A.keys())}
 		found_values = catalog.values("R", filters)
 		if found_values == NODE_NOT_FOUND:
@@ -64,17 +59,12 @@ class THICK_STOCK():
 	def establish(self, csp, curvar, value, participants):
 		'''Establishes consistency after curvar: value assignment.'''
 		i = curvar[1]
-		Ti = "T"+i
+		Ti, Di, Ri = "T"+i, "D"+i, "R"+i
 		if curvar == Ti:
 			return REVISED_NONE
-		assigned_vars = csp.get_assigned_vars()
-		participants = participants.intersection(assigned_vars)
-		if len(participants) == 0:
-			raise Exception("curvar looks wrong", curvar)
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		catalog = self.__catalog
-		Di, Ri = ("D"+i, "R"+i)
 		filters = {key[0]: A[key] for key in {Di, Ri}.intersection(A.keys())}
 		found_values = catalog.values("T", filters)
 		if found_values == NODE_NOT_FOUND:
@@ -100,17 +90,12 @@ class DIAM_STOCK():
 	def establish(self, csp, curvar, value, participants):
 		'''Establishes consistency after curvar: value assignment.'''
 		i = curvar[1]
-		Di = "D"+i
+		Ti, Ri, Di = "T"+i, "R"+i, "D"+i
 		if curvar == Di:
 			return REVISED_NONE
-		assigned_vars = csp.get_assigned_vars()
-		participants = participants.intersection(assigned_vars)
-		if len(participants) == 0:
-			raise Exception("curvar looks wrong", curvar)
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		catalog = self.__catalog
-		Ti, Ri = ("T"+i, "R"+i)
 		filters = {key[0]: A[key] for key in {Ti, Ri}.intersection(A.keys())}
 		found_values = catalog.values("D", filters)
 		if found_values == NODE_NOT_FOUND:
@@ -136,10 +121,7 @@ class PIECE_STOCK():
 	def establish(self, csp, curvar, value, participants):
 		'''Establishes consistency after curvar: value assignment.'''
 		i = curvar[1]
-		Pi, Di, Ri, Ti = ("P"+i, "D"+i, "R"+i, "T"+i)
-		assigned_vars = csp.get_assigned_vars()
-		if {Pi, Ti, Ri, Di}.issubset(assigned_vars):
-			return REVISED_NONE
+		Pi, Di, Ri, Ti = "P"+i, "D"+i, "R"+i, "T"+i
 		A = csp.get_assignment()
 		D = csp.get_domains()
 		if curvar == Pi:
@@ -161,10 +143,7 @@ class PIECE_STOCK():
 			return REVISED_NONE
 		A = csp.get_assignment()
 		i = reduced_P[1]
-		Di, Ri, Ti = ("D"+i, "R"+i, "T"+i)
-		assigned_vars = csp.get_assigned_vars()
-		if {Ti, Ri, Di}.issubset(assigned_vars):
-			return REVISED_NONE
+		Di, Ri, Ti = "D"+i, "R"+i, "T"+i
 		left_numbers = set([])
 		D = csp.get_domains()
 		for piece in D[reduced_P]:
@@ -217,4 +196,4 @@ class PIECE_STOCK():
 				new_reduced_vars.add(Ri)
 		if len(new_reduced_vars) == 0:
 			return ALREADY_CONSISTENT
-		return MADE_CONSISTENT, new_reduced_vars
+		return (MADE_CONSISTENT, new_reduced_vars)

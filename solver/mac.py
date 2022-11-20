@@ -65,10 +65,14 @@ class MAC():
         
         Constraints that may have bigger impacts are called first.'''
         csp = self.__csp
+        unassigned_vars = csp.get_unassigned_vars()
         constraints = self.__X2C[curvar]
         reduced_vars = set([])
         for const in constraints:
-            parts = csp.get_neighbors(const)
+            parts = copy.deepcopy(csp.get_neighbors(const))
+            unassigned_parts = parts.intersection(unassigned_vars)
+            if unassigned_parts == set([]):
+                continue
             result = self.__refs[const].establish(csp, curvar, value, parts)
             if result == CONTRADICTION:
                 return CONTRADICTION
@@ -88,14 +92,17 @@ class MAC():
         '''Recursively propagates domain reductions.'''
         csp = self.__csp
         new_reduced_vars = set([])
+        unassigned_vars = csp.get_unassigned_vars()
         while len(reduced_vars) > 0:
             _var = reduced_vars.pop()
             constraints = self.__X2C[_var]
             for constraint in constraints:
-                participants = csp.get_neighbors(constraint)
-                reduced_prtcns = reduced_vars.intersection(participants)
+                parts = copy.deepcopy(csp.get_neighbors(constraint))
+                if parts.intersection(unassigned_vars) == set([]):
+                    continue
+                reduced_prtcns = reduced_vars.intersection(parts)
                 reduced_prtcns.add(_var)
-                res = self.__refs[constraint].propagate(csp, reduced_prtcns, participants)
+                res = self.__refs[constraint].propagate(csp, reduced_prtcns, parts)
                 if res == CONTRADICTION:
                     return CONTRADICTION
                 elif isinstance(res, tuple) and res[0] == MADE_CONSISTENT:

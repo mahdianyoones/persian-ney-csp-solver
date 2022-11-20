@@ -32,9 +32,6 @@ class DIAMDEC():
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
-        unassigned_vars = csp.get_unassigned_vars()
-        if len(participants) == 0:
-            return REVISED_NONE
         Dvari, Dvarj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()

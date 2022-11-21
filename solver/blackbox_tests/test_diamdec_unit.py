@@ -68,21 +68,6 @@ class test_DIAMDEC(unittest.TestCase):
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
-    def test_establish_does_no_revision(self):
-        sut = self.__sut
-        csp = self.__csp
-        assert_constraint = self.__case_runner.assert_constraint
-        given = {
-            "A": {"D6": 10, "D7": 9},
-            "curvar": "D7",
-            "value": 9,
-            "participants": {"D6", "D7"}
-        }
-        expect = {
-            "out": REVISED_NONE
-        }
-        assert_constraint(csp, sut, "establish", given, expect)
-
     def test_establish_makes_consistent(self):
         sut = self.__sut
         csp = self.__csp
@@ -118,7 +103,7 @@ class test_DIAMDEC(unittest.TestCase):
             "participants": {"D6", "D7"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, "D7")
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -135,7 +120,7 @@ class test_DIAMDEC(unittest.TestCase):
             "participants": {"D6", "D7"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, "D6")
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 

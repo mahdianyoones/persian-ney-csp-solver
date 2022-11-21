@@ -39,9 +39,6 @@ class DIAMDEC():
 
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
-        unassigned_vars = csp.get_unassigned_vars()
-        if len(participants.intersection(unassigned_vars)) == 0:
-            raise Exception("Members are all assigned; no call is needed.")
         Dvari, Dvarj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
@@ -63,14 +60,14 @@ class DIAMDEC():
         if Dvari in A or len(Di) == len(D[Dvari]):
             Di = DOMAIN_INTACT
         elif len(Di) == 0:
-            return CONTRADICTION
+            return (CONTRADICTION, Dvari)
         else:
             reduced_vars.add(Dvari)
             csp.update_domain(Dvari, Di)
         if Dvarj in A or len(Dj) == len(D[Dvarj]):
             Dj = DOMAIN_INTACT
         elif len(Dj) == 0:
-            return CONTRADICTION
+            return (CONTRADICTION, Dvarj)
         else:
             reduced_vars.add(Dvarj)
             csp.update_domain(Dvarj, Dj)

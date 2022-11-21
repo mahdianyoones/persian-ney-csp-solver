@@ -122,7 +122,7 @@ class test_STOCK(unittest.TestCase):
             "participants": {"D1", "R1", "T1", "P1"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"P1"})
         }
         assert_constraint(csp, self.__sut_pstock, "establish", given, expect)
 
@@ -136,7 +136,7 @@ class test_STOCK(unittest.TestCase):
             "participants": {"D1", "R1", "T1"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"T1"})
         }
         assert_constraint(csp, self.__sut_tstock, "establish", given, expect)
     

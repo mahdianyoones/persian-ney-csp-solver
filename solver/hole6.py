@@ -45,6 +45,8 @@ class HOLE6():
         h = self.__h
         s = self.__space
         new_domains = self.__new_domains(D, lowers, ims, h, s)		
+        if new_domains == CONTRADICTION:
+            return (CONTRADICTION, self.__failed_set(csp))
         return self.__update(csp, new_domains, ims)
 
     def propagate(self, csp, reduced_vars, participants):
@@ -61,8 +63,10 @@ class HOLE6():
         h = self.__h
         s = self.__space
         if self.__contradiction(lowers, h, s):
-            return CONTRADICTION
+            return (CONTRADICTION, self.__failed_set(csp))
         new_domains = self.__new_domains(D, lowers, ims, h, s)
+        if new_domains == CONTRADICTION:
+            return (CONTRADICTION, self.__failed_set(csp))
         return self.__update(csp, new_domains, ims)
     
     def __contradiction(self, lows, h, s):
@@ -85,6 +89,12 @@ class HOLE6():
             lowers[curvar] = value
         return lowers
         
+    def __failed_set(self, csp):
+        '''Returns the failed set.'''
+        members = {"L1", "L2", "L3", "L4", "L5"}
+        unassigned = csp.get_unassigned_vars()
+        return members.intersection(unassigned)
+
     def __impactables(self, A, curvar, imap):
         '''Defines what variables could reduce due to assignment to curvar.'''
         ims = set([])
@@ -117,9 +127,7 @@ class HOLE6():
 
     def __update(self, csp, new_domains, ims):
         '''Carries out the final domain updates.'''
-        if new_domains == CONTRADICTION:
-            return CONTRADICTION
-        elif len(new_domains) > 0:
+        if len(new_domains) > 0:
             for var, new_domain in new_domains.items():
                 csp.update_domain(var, new_domain)
             return (MADE_CONSISTENT, set(new_domains.keys()))

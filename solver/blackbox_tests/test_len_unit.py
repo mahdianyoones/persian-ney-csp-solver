@@ -44,7 +44,7 @@ class test_LEN(unittest.TestCase):
             "reduced_vars": {"L7"},
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1", "L2", "L3", "L4", "L5", "L6", "L7"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
         # case 2
@@ -61,7 +61,7 @@ class test_LEN(unittest.TestCase):
             "reduced_vars": {"L7"},
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1", "L2", "L3", "L4", "L5", "L6", "L7"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
@@ -79,7 +79,7 @@ class test_LEN(unittest.TestCase):
             "value": 20
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L7"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
         # case 2
@@ -92,7 +92,20 @@ class test_LEN(unittest.TestCase):
             "value": 19
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L7"})
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        # case 3
+        given = {
+            "A": {"L1": 100, "L2": 100, "L3": 100, "L7": 19, "L5": 100, "L6": 20},
+            "D": {
+                "L4": {"min": 1, "max": 3}
+            },
+            "curvar": "L6",
+            "value": 20
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L4"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
 

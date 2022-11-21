@@ -74,14 +74,14 @@ class MAC():
             if unassigned_parts == set([]):
                 continue
             result = self.__refs[const].establish(csp, curvar, value, parts)
-            if result == CONTRADICTION:
-                return CONTRADICTION
+            if result[0] == CONTRADICTION:
+                return result
             elif isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
                 reduced_vars.update(result[1])
         if len(reduced_vars) > 0:
             result = self.propagate(copy.deepcopy(reduced_vars))
-            if result == CONTRADICTION:
-                return CONTRADICTION
+            if result[0] == CONTRADICTION:
+                return result
             elif isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
                 reduced_vars.update(result[1])
         if len(reduced_vars) > 0:
@@ -103,8 +103,8 @@ class MAC():
                 reduced_prtcns = reduced_vars.intersection(parts)
                 reduced_prtcns.add(_var)
                 res = self.__refs[constraint].propagate(csp, reduced_prtcns, parts)
-                if res == CONTRADICTION:
-                    return CONTRADICTION
+                if res[0] == CONTRADICTION:
+                    return res
                 elif isinstance(res, tuple) and res[0] == MADE_CONSISTENT:
                     new_reduced_vars.update(res[1])
                     reduced_vars.update(res[1])

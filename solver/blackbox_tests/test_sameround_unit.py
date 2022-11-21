@@ -69,7 +69,7 @@ class test_SAMEROUND(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"R1", "R3", "R4", "R5", "R6", "R7"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
     

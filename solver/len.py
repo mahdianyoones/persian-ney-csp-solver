@@ -32,10 +32,10 @@ class LEN():
         if len(assigned_members) == 7:
             return REVISED_NONE
         if len(assigned_members) < 6:
-            return self.__examine_bounds(D, A, _len)                
+            return self.__examine_bounds(csp, D, A, _len)                
         new_val = _len - assigned_sum
         if new_val > D[unassigned]["max"] or new_val < D[unassigned]["min"]:
-            return CONTRADICTION
+            return (CONTRADICTION, {unassigned})
         if new_val < D[unassigned]["max"] or new_val > D[unassigned]["min"]:
             csp.update_domain(unassigned, {"min": new_val, "max": new_val})
             return (MADE_CONSISTENT, {unassigned})
@@ -48,9 +48,9 @@ class LEN():
         A = csp.get_assignment()
         D = csp.get_domains()
         _len = self.__len
-        return self.__examine_bounds(D, A, _len)
+        return self.__examine_bounds(csp, D, A, _len)
 
-    def __examine_bounds(self, D, A, _len):
+    def __examine_bounds(self, csp, D, A, _len):
         '''Checks if contradiction due to bounds has occured.
 
             Contradiction cases:
@@ -80,5 +80,11 @@ class LEN():
                 lows_sum += D[v]["min"]
                 examined.add(v)
         if ups_sum < _len or lows_sum > _len:
-            return CONTRADICTION
+            return (CONTRADICTION, self.__failed_set(csp))
         return ALREADY_CONSISTENT
+
+    def __failed_set(self, csp):
+        '''Returns the failed set.'''
+        members = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
+        unassigned = csp.get_unassigned_vars()
+        return members.intersection(unassigned)

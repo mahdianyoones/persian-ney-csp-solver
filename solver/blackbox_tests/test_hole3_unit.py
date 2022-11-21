@@ -36,7 +36,7 @@ class Test_HOLE3(unittest.TestCase):
             "value": 24
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
 

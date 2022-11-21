@@ -191,7 +191,7 @@ class test_DIAMDEC_INTEGRATION(unittest.TestCase):
         # act
         res = self.__mac.propagate({"D1"})
         # assess
-        self.assertEqual(res, CONTRADICTION)
+        self.assertEqual(res[0], CONTRADICTION)
 
 if __name__ == "__main__":
     unittest.main()

@@ -68,10 +68,16 @@ class SAMEROUND():
         newdomains = self.__new_domains(value, D, examined)
         reduced = set([])
         if newdomains == CONTRADICTION:
-            return CONTRADICTION
+            return (CONTRADICTION, self.__failed_set(csp))
         if len(newdomains.keys()) == 0:
             return ALREADY_CONSISTENT
         for vi, new_domain in newdomains.items():
             csp.update_domain(vi, new_domain)
             reduced.add(vi)
         return (MADE_CONSISTENT, reduced)
+
+    def __failed_set(self, csp):
+        '''Returns the failed set.'''
+        participants = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+        unassigned = csp.get_unassigned_vars()
+        return participants.intersection(unassigned)            

@@ -1,5 +1,4 @@
 from constants import *
-import copy
 
 class HOLE1():
     '''Implements hole1 constraint.
@@ -42,7 +41,9 @@ class HOLE1():
         lowers = self.__lowers(A, D, curvar, value)
         h = self.__h
         s = self.__space
-        new_domains = self.__new_domains(D, lowers, ims, h, s)		
+        new_domains = self.__new_domains(D, lowers, ims, h, s)
+        if new_domains == CONTRADICTION:
+            return (CONTRADICTION, self.__failed_set(csp))		
         return self.__update(csp, new_domains, ims)
     
     def propagate(self, csp, reduced_vars, participants):
@@ -59,8 +60,10 @@ class HOLE1():
         h = self.__h
         s = self.__space
         if self.__contradiction(lowers, h, s):
-            return CONTRADICTION
+            return (CONTRADICTION, self.__failed_set(csp))
         new_domains = self.__new_domains(D, lowers, ims, h, s)
+        if new_domains == CONTRADICTION:
+            return (CONTRADICTION, self.__failed_set(csp))
         return self.__update(csp, new_domains, ims)
     
     def __contradiction(self, lows, h, s):
@@ -109,18 +112,15 @@ class HOLE1():
                 new_domains[var] = new_domain
         return new_domains
 
-    def __confset(self, csp):
-        '''Returns the conflict set.'''
+    def __failed_set(self, csp):
+        '''Returns the failed set.'''
         members = {"L1", "L2", "L3"}
-        assigned = csp.get_assigned_vars()
-        return members.intersection(assigned)
+        unassigned = csp.get_unassigned_vars()
+        return members.intersection(unassigned)
 
     def __update(self, csp, new_domains, ims):
         '''Carries out the final domain updates.'''
-        if new_domains == CONTRADICTION:
-            confset = self.__confset(csp)
-            return CONTRADICTION
-        elif len(new_domains) > 0:
+        if len(new_domains) > 0:
             for var, new_domain in new_domains.items():
                 csp.update_domain(var, new_domain)
             return (MADE_CONSISTENT, set(new_domains.keys()))

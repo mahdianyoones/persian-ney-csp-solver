@@ -36,7 +36,7 @@ class Test_HOLE1(unittest.TestCase):
             "reduced_vars": {"L1"},
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1", "L2", "L3"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
         # case 2
@@ -49,7 +49,7 @@ class Test_HOLE1(unittest.TestCase):
             "value": 48
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L3"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
 

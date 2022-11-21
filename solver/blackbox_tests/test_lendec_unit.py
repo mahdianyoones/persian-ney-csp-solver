@@ -112,24 +112,9 @@ class test_LENDEC(unittest.TestCase):
             "participants": {"L2", "L3"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L2", "L3"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
-
-    def test_establish_does_no_revision(self):
-        sut = self.__sut
-        csp = self.__csp
-        assert_constraint = self.__case_runner.assert_constraint
-        given = {
-            "A": {"L2": 12, "L3": 11},
-            "curvar": "L3",
-            "value": 11,
-            "participants": {"L2", "L3"}
-        }
-        expect = {
-            "out": REVISED_NONE
-        }
-        assert_constraint(csp, sut, "establish", given, expect)
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

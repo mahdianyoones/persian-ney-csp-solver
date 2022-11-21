@@ -126,7 +126,7 @@ class test_PIECEMAX(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
@@ -143,7 +143,7 @@ class test_PIECEMAX(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"P1", "L1"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 

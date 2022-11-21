@@ -124,7 +124,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"},
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1", "L2"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
         given = {
@@ -135,7 +135,7 @@ class test_HALF(unittest.TestCase):
             "reduced_vars": {"L1"},
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1", "L2"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 

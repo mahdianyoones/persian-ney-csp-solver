@@ -126,7 +126,7 @@ class test_PIECEMIN(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"P1", "L1"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
@@ -143,24 +143,9 @@ class test_PIECEMIN(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"L1"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
-
-    def test_establish_revises_nothing(self):
-        sut = self.__sut
-        csp = self.__csp
-        assert_constraint = self.__case_runner.assert_constraint
-        given = {
-            "A": {"P1": ("1", 40), "L1": 30},
-            "curvar": "L1",
-            "value": 30,
-            "participants": {"L1", "P1"}
-        }
-        expect = {
-            "out": REVISED_NONE
-        }
-        assert_constraint(csp, sut, "establish", given, expect)
 
 if __name__ == "__main__":
     unittest.main()

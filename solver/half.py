@@ -30,7 +30,7 @@ class HALF():
 		if curvar == "L1": # L2 is not assigned
 			new_value = value * 2
 			if new_value < D["L2"]["min"] or new_value > D["L2"]["max"]:
-				return CONTRADICTION
+				return (CONTRADICTION, "L2")
 			if D["L2"]["min"] == D["L2"]["max"]:
 				return ALREADY_CONSISTENT
 			else:
@@ -39,7 +39,7 @@ class HALF():
 		else: # L1 is not assigned
 			new_value = math.ceil(value / 2)
 			if new_value < D["L1"]["min"] or new_value > D["L1"]["max"]:
-				return CONTRADICTION
+				return (CONTRADICTION, "L1")
 			if D["L1"]["min"] == D["L1"]["max"]:
 				return ALREADY_CONSISTENT
 			else:
@@ -47,7 +47,21 @@ class HALF():
 				return (MADE_CONSISTENT, {"L1"})
 
 	def propagate(self, csp, reduced_vars, participants):
-		'''Establishes consistency when L1 andor L2 are reduced elsewhere.'''
+		'''Establishes consistency when L1 andor L2 are reduced elsewhere.
+		
+		If contradiction occurs, both L1 and L2 are deemed failed.
+		We cannot return one of them since their domains fail together.
+
+		Take the following case:
+
+		"L1": {"min": 20, "max": 20}
+		"L2": {"min": 41, "max": 70}
+		
+		This contradiction occurs since ALL tuples of values for L1 and L2
+		together violate the half constraint.
+		
+		Therefore, in all constraint we shall deem ALL unassigned participants
+		failed.'''
 		A = csp.get_assignment()
 		if "L1" in A or "L2" in A:	# Already made consistent by establish
 			return REVISED_NONE
@@ -58,7 +72,7 @@ class HALF():
 		if self.___consistent(low1, up1, low2, up2):
 			return ALREADY_CONSISTENT
 		if self.__contradiction(low1, up1, low2, up2):
-			return CONTRADICTION
+			return (CONTRADICTION, {"L1", "L2"})
 		(low1, up1, low2, up2) = self.__mix(D, low1, up1, low2, up2)
 		if up1 - low1 < D["L1"]["max"] - D["L1"]["min"]:
 			reduced.add("L1")

@@ -71,7 +71,7 @@ class test_SAMETHICK(unittest.TestCase):
             "value": 2.5
         }
         expect = {
-            "out": CONTRADICTION
+            "out": (CONTRADICTION, {"T1", "T3", "T4", "T5", "T6", "T7"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
     

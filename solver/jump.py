@@ -92,22 +92,21 @@ class JUMP():
                 self.__confsets[v] = {}
             self.__confsets[v][curvar] = value
 
-    def absorb(self, jump_target, jump_origin):
+    def absorb(self, target, origin):
         '''Absorbs conflict set from jump origin.'''
-        if not jump_origin in self.__confsets:
-            raise Exception("Jump origin doesn't exist.")
-        if not jump_target in self.__confsets:
-            self.__confsets[jump_target] = {}
-        for v, val in self.__confsets[jump_origin].items():
-            if v == jump_target:
+        if not origin in self.__confsets:
+            return # nothing to absrob
+        if not target in self.__confsets:
+            self.__confsets[target] = {}
+        for v, val in self.__confsets[origin].items():
+            if v == target:
                 continue
-            self.__confsets[jump_target][v] = val
+            self.__confsets[target][v] = val
         
     def unaccumulate(self, A, curvar):
         '''Removes curvar: value from all confsets.'''
-        confsets = copy.deepcopy(self.__confsets)
-        for _var, confset in confsets.items():
-            if curvar in confset:
+        for _var in self.__confsets.keys():
+            if curvar in self.__confsets[_var]:
                 del self.__confsets[_var][curvar]
 
     def canbackjump(self, curvar):

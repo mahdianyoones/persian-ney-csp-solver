@@ -13,8 +13,8 @@ from unary import UNARY
 from mac import MAC
 from pickup import SELECT
 from constants import *
+import random
 
-@unittest.skip("")
 class test_SOLVER(unittest.TestCase):
 
     NO_SOLUTION_DS = "contains_no_solution"
@@ -44,51 +44,38 @@ class test_SOLVER(unittest.TestCase):
         res = self.__find(catalog, kook, csp)
         self.assertNotEqual(res[0], SOLUTION)
 
-    def test_finds_no_solution_for_F_short(self):
-        self.__assert_finds_no_solution("F_short", self.NO_SOLUTION_DS)
+    def test_finds_no_solution_for_a_random_kook(self):
+        '''Asserts that no solution for no register can be found.'''
+        kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall", 
+        "F_short"]
+        random_kook = kooks[random.randint(0, len(kooks) - 1)]
+        self.__assert_finds_no_solution(random_kook, self.NO_SOLUTION_DS)
 
-    def test_finds_no_solution_for_E(self):
-        self.__assert_finds_no_solution("E", self.NO_SOLUTION_DS)
-
-    def test_finds_no_solution_for_D(self):
-        self.__assert_finds_no_solution("D", self.NO_SOLUTION_DS)
-
-    def test_finds_no_solution_for_C(self):
-        self.__assert_finds_no_solution("C", self.NO_SOLUTION_DS)
-
-    def test_finds_no_solution_for_Bb(self):
-        self.__assert_finds_no_solution("Bb", self.NO_SOLUTION_DS)
-
-    def test_finds_no_solution_for_A(self):
-        self.__assert_finds_no_solution("A", self.NO_SOLUTION_DS)
-
-    def test_finds_no_solution_for_G(self):
-        self.__assert_finds_no_solution("G", self.NO_SOLUTION_DS)
-
-    def test_finds_no_solution_for_F_tall(self):
-        self.__assert_finds_no_solution("F_tall", self.NO_SOLUTION_DS)
-
-    def test_finds_a_solution_for_F_short(self):
-        self.__assert_finds_solution("F_short", self.SOLUTION_DS)
-
+    @unittest.skip("")
     def test_finds_a_solution_for_E(self):
         self.__assert_finds_solution("E", self.SOLUTION_DS)
 
+    @unittest.skip("")
     def test_finds_a_solution_for_D(self):
         self.__assert_finds_solution("D", self.SOLUTION_DS)
 
+    @unittest.skip("")
     def test_finds_a_solution_for_C(self):
         self.__assert_finds_solution("C", self.SOLUTION_DS)
 
+    @unittest.skip("")
     def test_finds_a_solution_for_Bb(self):
         self.__assert_finds_solution("Bb", self.SOLUTION_DS)
 
+    @unittest.skip("")
     def test_finds_a_solution_for_A(self):
         self.__assert_finds_solution("A", self.SOLUTION_DS)
 
+    @unittest.skip("")
     def test_finds_a_solution_for_G(self):
         self.__assert_finds_solution("G", self.SOLUTION_DS)
 
+    @unittest.skip("")
     def test_finds_a_solution_for_F_tall(self):
         self.__assert_finds_solution("F_tall", self.SOLUTION_DS)
     

@@ -60,14 +60,14 @@ class DIAMDEC():
         if Dvari in A or len(Di) == len(D[Dvari]):
             Di = DOMAIN_INTACT
         elif len(Di) == 0:
-            return (CONTRADICTION, Dvari)
+            return (CONTRADICTION, {Dvari})
         else:
             reduced_vars.add(Dvari)
             csp.update_domain(Dvari, Di)
         if Dvarj in A or len(Dj) == len(D[Dvarj]):
             Dj = DOMAIN_INTACT
         elif len(Dj) == 0:
-            return (CONTRADICTION, Dvarj)
+            return (CONTRADICTION, {Dvarj})
         else:
             reduced_vars.add(Dvarj)
             csp.update_domain(Dvarj, Dj)

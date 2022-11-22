@@ -30,7 +30,7 @@ class HALF():
 		if curvar == "L1": # L2 is not assigned
 			new_value = value * 2
 			if new_value < D["L2"]["min"] or new_value > D["L2"]["max"]:
-				return (CONTRADICTION, "L2")
+				return (CONTRADICTION, {"L2"})
 			if D["L2"]["min"] == D["L2"]["max"]:
 				return ALREADY_CONSISTENT
 			else:
@@ -39,7 +39,7 @@ class HALF():
 		else: # L1 is not assigned
 			new_value = math.ceil(value / 2)
 			if new_value < D["L1"]["min"] or new_value > D["L1"]["max"]:
-				return (CONTRADICTION, "L1")
+				return (CONTRADICTION, {"L1"})
 			if D["L1"]["min"] == D["L1"]["max"]:
 				return ALREADY_CONSISTENT
 			else:

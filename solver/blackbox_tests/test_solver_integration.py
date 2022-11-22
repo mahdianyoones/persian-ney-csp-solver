@@ -49,50 +49,24 @@ class test_SOLVER(unittest.TestCase):
         '''Asserts that no solution for no register can be found.'''
         kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall", 
         "F_short"]
-        random_kook = kooks[random.randint(0, len(kooks) - 1)]
-        self.__assert_finds_no_solution(random_kook, self.NO_SOLUTION_DS)
+        for i in range(0, 3):
+            random_kook = kooks[random.randint(0, len(kooks) - 1)]
+            self.__assert_finds_no_solution(random_kook, self.NO_SOLUTION_DS)
 
-    def test_finds_a_solution_for_F_short(self):
-        self.__assert_finds_solution("F_short", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_E(self):
-        self.__assert_finds_solution("E", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_D(self):
-        self.__assert_finds_solution("D", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_C(self):
-        self.__assert_finds_solution("C", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_Bb(self):
-        self.__assert_finds_solution("Bb", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_A(self):
-        self.__assert_finds_solution("A", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_G(self):
-        self.__assert_finds_solution("G", self.SOLUTION_DS)
-
-    def test_finds_a_solution_for_F_tall(self):
-        self.__assert_finds_solution("F_tall", self.SOLUTION_DS)
+    def test_finds_a_solution_for_a_random_kook(self):
+        '''Asserts that a solution is found.'''
+        kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall", 
+        "F_short"]
+        for i in range(0, 3):
+            random_kook = kooks[random.randint(0, len(kooks) - 1)]
+            self.__assert_finds_solution(random_kook, self.SOLUTION_DS)
     
-    def test_finds_solution_for_F_short_data(self):
-        self.__assert_finds_solution("F_short", self.REAL_DS)
-    
-    def test_finds_solution_for_E_real_data(self):
-        self.__assert_finds_solution("E", self.REAL_DS)
-
-    def test_finds_solution_for_D_real_data(self):
-        self.__assert_finds_solution("D", self.REAL_DS)
-
-    def test_finds_solution_for_C_real_data(self):
-        self.__assert_finds_solution("C", self.REAL_DS)
-
-    def test_finds_solution_for_Bb_real_data(self):
-        self.__assert_finds_solution("Bb", self.REAL_DS)
-
-    def test_finds_solution_for_A_real_data(self):
-        self.__assert_finds_solution("A", self.REAL_DS)
+    def test_finds_a_solution_for_a_random_kook_real_ds(self):
+        '''Asserts that a solution is found.'''
+        kooks = ["F_short", "E", "D", "C", "Bb", "A"]
+        for i in range(0, 3):
+            random_kook = kooks[random.randint(0, len(kooks) - 1)]
+            self.__assert_finds_solution(random_kook, self.REAL_DS)
 
     def test_finds_no_solution_for_G_real_data(self):
         self.__assert_finds_no_solution("G", self.REAL_DS)

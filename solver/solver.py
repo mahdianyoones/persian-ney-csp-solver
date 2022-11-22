@@ -87,7 +87,7 @@ class SOLVER():
                     self.__jump.absorb(jump_target, jump_origin)
                     continue
     
-    def find(self, catalog, spec):
+    def find_independent(self, catalog, spec):
         '''Runs MAC for all variables first and then calls DFS.
         
         If MAC figures out any contradiction before search begins, no
@@ -104,27 +104,30 @@ class SOLVER():
             return CONTRADICTION
         return self.__dfs()
 
-def human_readable(solution):
-    '''Prints a prettified view of the given solution.'''
-    for v in ["L1", "L2", "L3", "L4", "L5", "L6", "L7"]:
-        print(v, ": ", solution[v])
-    for v in ["D1", "D2", "D3", "D4", "D5", "D6", "D7"]:
-        print(v, ": ", solution[v])
-    print("T: ", solution["T1"])
-    print("R: ", solution["R1"])
+    def __remove_solution_nodes(self, catalog, solution):
+       for i in range(1, 8):
+            i = str(i)
+            Li = "L" + i
+            Pi = "P" + i
+            Ti = "T" + i
+            Di = "D" + i
+            Ri = "R" + i
+            Psol, Tsol, Dsol = solution[Pi], solution[Ti], solution[Di]
+            Rsol, Lsol = solution[Ri], solution[Li]
+            catalog.remove_piece(Psol, Tsol, Dsol, Rsol)
+            no_sol, l_piece = Psol
+            if l_piece > Lsol:
+                no_new = no_sol + "+"
+                Lnew = l_piece - Lsol
+                catalog.add_piece(no_new, Lnew, Tsol, Dsol, Rsol)
 
-def main():
-    catalog = CATALOG(current+"/pieces.csv")
-    for kook in {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}:
-        csp = CSP()
-        select = SELECT(csp)
-        mac = MAC(csp, catalog, specs[kook])
-        solver = SOLVER(csp, select, mac)
-        res = solver.find(catalog, specs[kook])
+    def find_coexistent(self, catalog, spec):
+        '''Runs MAC for all variables first and then calls DFS.
+        
+        If MAC figures out any contradiction before search begins, no
+        solution could ever be found.'''
+        res = self.find_independent(catalog, spec)
         if res[0] == SOLUTION:
-            print("\nSolution for ", kook, "\n")
-            human_readable(res[1])
-        else:
-            print("\nNo solution for ", kook, "\n")
-if __name__ == "__main__":	
-    main()
+            solution = res[1]
+            self.__remove_solution_nodes(catalog, solution)
+        return res

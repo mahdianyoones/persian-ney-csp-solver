@@ -15,7 +15,7 @@ from pickup import SELECT
 from constants import *
 import random
 
-class test_SOLVER(unittest.TestCase):
+class test_SOLVER_INTEGRATION(unittest.TestCase):
 
     NO_SOLUTION_DS = "contains_no_solution"
     SOLUTION_DS = "contains_solutions"

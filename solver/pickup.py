@@ -1,5 +1,6 @@
 from asyncio import constants
 from constants import *
+import copy
 
 class SELECT():
 	'''Helps select next variable and next value for assignment.'''
@@ -28,12 +29,14 @@ class SELECT():
 		MRV is used as a tie breaker.'''
 		D = csp.get_domains()
 		ua = csp.get_unassigned_vars()
+		if len(ua) == 1:
+			return copy.deepcopy(ua).pop()
 		degrees = self.__degree
 		impacts = self.__impact		
 		best = {
 			"var": None, 
-			"size": float("inf"), 
-			"degree": float("-inf"),
+			"size": 10000000000, # an arbitrary very big number 
+			"degree": -1,
 			"impact": -1
 		}
 		for unassigned_var in ua:
@@ -73,7 +76,7 @@ class SELECT():
 		if curvar[0] == "L":
 			if domain["min"] > domain["max"]:
 				return True
-		elif len(domain) == 0: # D, T, and R variables
+		elif len(domain) == 0: # D, T, R, and P variables
 			return True
 		return False			
 
@@ -93,6 +96,8 @@ class SELECT():
 		T and R variables are made consistent very strongly'''
 		for v in csp.get_variables():
 			if v[0] == "T" or v[0] == "R":
+				self.__impact[v] = 2
+			if v[0] == "D":
 				self.__impact[v] = 1
 			else:
 				self.__impact[v] = 0

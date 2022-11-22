@@ -19,6 +19,7 @@ class test_SOLVER(unittest.TestCase):
 
     NO_SOLUTION_DS = "contains_no_solution"
     SOLUTION_DS = "contains_solutions"
+    REAL_DS = "real_pieces"
 
     def __find(self, catalog, kook, csp = None):
         '''Generalises arrange and act of all test cases in this suite.'''
@@ -51,31 +52,27 @@ class test_SOLVER(unittest.TestCase):
         random_kook = kooks[random.randint(0, len(kooks) - 1)]
         self.__assert_finds_no_solution(random_kook, self.NO_SOLUTION_DS)
 
-    @unittest.skip("")
+    def test_finds_a_solution_for_F_short(self):
+        self.__assert_finds_solution("F_short", self.SOLUTION_DS)
+
     def test_finds_a_solution_for_E(self):
         self.__assert_finds_solution("E", self.SOLUTION_DS)
 
-    @unittest.skip("")
     def test_finds_a_solution_for_D(self):
         self.__assert_finds_solution("D", self.SOLUTION_DS)
 
-    @unittest.skip("")
     def test_finds_a_solution_for_C(self):
         self.__assert_finds_solution("C", self.SOLUTION_DS)
 
-    @unittest.skip("")
     def test_finds_a_solution_for_Bb(self):
         self.__assert_finds_solution("Bb", self.SOLUTION_DS)
 
-    @unittest.skip("")
     def test_finds_a_solution_for_A(self):
         self.__assert_finds_solution("A", self.SOLUTION_DS)
 
-    @unittest.skip("")
     def test_finds_a_solution_for_G(self):
         self.__assert_finds_solution("G", self.SOLUTION_DS)
 
-    @unittest.skip("")
     def test_finds_a_solution_for_F_tall(self):
         self.__assert_finds_solution("F_tall", self.SOLUTION_DS)
     

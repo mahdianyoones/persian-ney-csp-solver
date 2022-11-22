@@ -97,7 +97,7 @@ class SELECT():
 		for v in csp.get_variables():
 			if v[0] == "T" or v[0] == "R":
 				self.__impact[v] = 2
-			if v[0] == "D":
+			elif v[0] == "D":
 				self.__impact[v] = 1
 			else:
 				self.__impact[v] = 0

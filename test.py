@@ -12,7 +12,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def run_unit_tests():
-	print(f"{bcolors.OKBLUE}\nRunning unit tests\n{bcolors.ENDC}")
+	print(f"{bcolors.OKBLUE}\nRunning all test cases\n{bcolors.ENDC}")
 	loader = unittest.TestLoader()
 	suite = loader.discover("solver/blackbox_tests")
 	runner = unittest.TextTestRunner()

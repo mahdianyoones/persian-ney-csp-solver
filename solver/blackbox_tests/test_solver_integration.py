@@ -94,13 +94,11 @@ class test_SOLVER(unittest.TestCase):
     def test_finds_solution_for_A_real_data(self):
         self.__assert_finds_solution("A", self.REAL_DS)
 
-    @unittest.skip("")
-    def test_finds_solution_for_G_real_data(self):
-        self.__assert_finds_solution("G", self.REAL_DS)
+    def test_finds_no_solution_for_G_real_data(self):
+        self.__assert_finds_no_solution("G", self.REAL_DS)
 
-    @unittest.skip("")
-    def test_finds_solution_for_F_tall_real_data(self):
-        self.__assert_finds_solution("F_tall", self.REAL_DS)
+    def test_finds_no_solution_for_F_tall_real_data(self):
+        self.__assert_finds_no_solution("F_tall", self.REAL_DS)
 
 if __name__ == "__main__":
     unittest.main()

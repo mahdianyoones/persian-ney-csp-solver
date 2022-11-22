@@ -112,7 +112,8 @@ class JUMP():
     def canbackjump(self, curvar):
         '''Is there any variable in conflict with curvar?
         
-        i.e. did any assignment in the past make curvar shed values?'''
+        i.e. did any assignment in the past make curvar or subsequent
+        variables shed values?'''
         if curvar in self.__confsets:
             if len(self.__confsets[curvar].keys()) > 0:
                 return True

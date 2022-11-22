@@ -83,7 +83,4 @@ class Test_HOLE3(unittest.TestCase):
         assert_constraint(csp, sut, "propagate", given, expect)
         
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(Test_HOLE3)
-    runner.run(suite)
+    unittest.main()

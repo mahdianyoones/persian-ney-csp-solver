@@ -117,7 +117,4 @@ class test_LENDEC(unittest.TestCase):
         assert_constraint(csp, sut, "propagate", given, expect)
 
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(test_LENDEC)
-    runner.run(suite)
+    unittest.main()

@@ -64,7 +64,4 @@ class test_UNARY(unittest.TestCase):
         self.assertEqual(D["L6"]["min"], 20)
 
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(test_UNARY)
-    runner.run(suite)            
+    unittest.main()

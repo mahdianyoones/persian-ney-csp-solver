@@ -156,7 +156,4 @@ class test_STOCK(unittest.TestCase):
         assert_constraint(csp, self.__sut_tstock, "propagate", given, expect)
 
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(test_STOCK)
-    runner.run(suite)        
+    unittest.main()

@@ -212,7 +212,4 @@ class test_HALF(unittest.TestCase):
         assert_constraint(csp, sut, "establish", given, expect)
 
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(test_HALF)
-    runner.run(suite)
+    unittest.main()

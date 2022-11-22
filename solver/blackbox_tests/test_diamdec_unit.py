@@ -103,7 +103,7 @@ class test_DIAMDEC(unittest.TestCase):
             "participants": {"D6", "D7"}
         }
         expect = {
-            "out": (CONTRADICTION, "D7")
+            "out": (CONTRADICTION, {"D7"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -120,12 +120,9 @@ class test_DIAMDEC(unittest.TestCase):
             "participants": {"D6", "D7"}
         }
         expect = {
-            "out": (CONTRADICTION, "D6")
+            "out": (CONTRADICTION, {"D6"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    loader = unittest.defaultTestLoader 
-    suite = loader.loadTestsFromTestCase(test_DIAMDEC)
-    runner.run(suite)
+    unittest.main()

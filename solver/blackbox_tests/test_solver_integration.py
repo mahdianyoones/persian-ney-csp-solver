@@ -76,17 +76,31 @@ class test_SOLVER(unittest.TestCase):
     def test_finds_a_solution_for_F_tall(self):
         self.__assert_finds_solution("F_tall", self.SOLUTION_DS)
     
+    def test_finds_solution_for_F_short_data(self):
+        self.__assert_finds_solution("F_short", self.REAL_DS)
+    
+    def test_finds_solution_for_E_real_data(self):
+        self.__assert_finds_solution("E", self.REAL_DS)
+
+    def test_finds_solution_for_D_real_data(self):
+        self.__assert_finds_solution("D", self.REAL_DS)
+
+    def test_finds_solution_for_C_real_data(self):
+        self.__assert_finds_solution("C", self.REAL_DS)
+
+    def test_finds_solution_for_Bb_real_data(self):
+        self.__assert_finds_solution("Bb", self.REAL_DS)
+
+    def test_finds_solution_for_A_real_data(self):
+        self.__assert_finds_solution("A", self.REAL_DS)
+
     @unittest.skip("")
-    def test_finds_solution_for_all_real_data(self):
-        dataset = "real_pieces"
-        self.__assert_finds_solution("F_short", dataset)
-        self.__assert_finds_solution("E", dataset)
-        self.__assert_finds_solution("D", dataset)
-        self.__assert_finds_solution("C", dataset)
-        self.__assert_finds_solution("Bb", dataset)
-        self.__assert_finds_solution("A", dataset)
-        self.__assert_finds_solution("G", dataset)
-        self.__assert_finds_solution("F_tall", dataset)
+    def test_finds_solution_for_G_real_data(self):
+        self.__assert_finds_solution("G", self.REAL_DS)
+
+    @unittest.skip("")
+    def test_finds_solution_for_F_tall_real_data(self):
+        self.__assert_finds_solution("F_tall", self.REAL_DS)
 
 if __name__ == "__main__":
     unittest.main()

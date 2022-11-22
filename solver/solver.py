@@ -26,9 +26,9 @@ class SOLVER():
         csp.backup_domains()
         result = self.__mac.establish(curvar, value)
         reduced_vars = set([])
-        if result == CONTRADICTION:
+        if result[0] == CONTRADICTION:
             self.__unassign(csp, curvar)
-            return INCONSISTENT_ASSIGNMENT
+            return (INCONSISTENT_ASSIGNMENT, result[1])
         if isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
             reduced_vars.update(result[1])
         return (CONSISTENT_ASSIGNMENT, reduced_vars)
@@ -36,6 +36,8 @@ class SOLVER():
     def __unassign(self, csp, curvar):
         csp.unassign(curvar)
         csp.revert_domains() # undo establish and propagation effects
+        A = csp.get_assignment()
+        self.__jump.unaccumulate(A, curvar)
 
     def __dfs(self):
         '''Recursively assigns values to variables to find a solution.
@@ -63,7 +65,9 @@ class SOLVER():
                 return (BACKTRACK, None)
             val = self.__select.nextval(curvar, domain)		
             assign_res = self.__assign(curvar, val)
-            if assign_res == INCONSISTENT_ASSIGNMENT:
+            if assign_res[0] == INCONSISTENT_ASSIGNMENT:
+                for failed_var in assign_res[1]:
+                    self.__jump.absorb(curvar, failed_var)                
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
                 return (SOLUTION, csp.get_assignment())

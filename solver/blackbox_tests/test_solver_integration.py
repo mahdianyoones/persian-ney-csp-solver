@@ -30,7 +30,7 @@ class test_SOLVER_INTEGRATION(unittest.TestCase):
         UNARY.init_domains(csp, catalog)
         UNARY.unarify(csp, specs[kook])
         sut = SOLVER(csp, select, mac)
-        res = sut.find(catalog, specs[kook])
+        res = sut.find_independent(catalog, specs[kook])
         return res
 
     def __assert_finds_solution(self, kook, dataset, csp = None):

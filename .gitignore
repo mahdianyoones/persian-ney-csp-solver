@@ -130,3 +130,5 @@ dmypy.json
 
 # Visual studio code workspace file
 *.code-workspace
+
+speed_profile

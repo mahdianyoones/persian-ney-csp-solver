@@ -1,7 +1,7 @@
 import unittest
 
 class bcolors:
-    HEADER = '\033[95m'
+    HEADER = '\033[95m' 
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
@@ -11,7 +11,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def run_unit_tests():
+def run_all_tests():
 	print(f"{bcolors.OKBLUE}\nRunning all test cases\n{bcolors.ENDC}")
 	loader = unittest.TestLoader()
 	suite = loader.discover("solver/blackbox_tests")
@@ -19,4 +19,4 @@ def run_unit_tests():
 	runner.run(suite)
 
 if __name__ == "__main__":
-	run_unit_tests()
+	run_all_tests()

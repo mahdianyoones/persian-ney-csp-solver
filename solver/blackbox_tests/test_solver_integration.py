@@ -47,16 +47,14 @@ class test_SOLVER_INTEGRATION(unittest.TestCase):
 
     def test_finds_no_solution_for_a_random_kook(self):
         '''Asserts that no solution for no register can be found.'''
-        kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall", 
-        "F_short"]
+        kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
         for i in range(0, 3):
             random_kook = kooks[random.randint(0, len(kooks) - 1)]
             self.__assert_finds_no_solution(random_kook, self.NO_SOLUTION_DS)
 
     def test_finds_a_solution_for_a_random_kook(self):
         '''Asserts that a solution is found.'''
-        kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall", 
-        "F_short"]
+        kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
         for i in range(0, 3):
             random_kook = kooks[random.randint(0, len(kooks) - 1)]
             self.__assert_finds_solution(random_kook, self.SOLUTION_DS)

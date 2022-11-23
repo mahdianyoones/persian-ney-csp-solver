@@ -40,7 +40,7 @@ class test_SOLVER_COEXISTENT_INTEGRATION(unittest.TestCase):
             res = self.__find(catalog, kook)
             if res[0] == SOLUTION:
                 solution = res[1]
-                coex_solutions[kook] = copy.deepcopy(solution)
+                coex_solutions[kook] = solution
         return coex_solutions
 
     def test_finds_solutions_for_some_kooks_among_artificial_data(self):

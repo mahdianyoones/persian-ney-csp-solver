@@ -40,4 +40,4 @@ if __name__ == "__main__":
     cProfile.run("main()", "speed_profile")
     p = pstats.Stats('speed_profile')
     p.strip_dirs()
-    p.sort_stats(pstats.SortKey.TIME).print_stats(1).print_callers(.1)
+    p.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(20)

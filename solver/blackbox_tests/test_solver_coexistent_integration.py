@@ -13,7 +13,6 @@ from unary import UNARY
 from mac import MAC
 from pickup import SELECT
 from constants import *
-import copy, json
 
 class test_SOLVER_COEXISTENT_INTEGRATION(unittest.TestCase):
 

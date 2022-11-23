@@ -1,8 +1,4 @@
 from spec import specs
-from csp import CSP
-from mac import MAC
-from catalog import CATALOG
-from pickup import SELECT
 from jump import JUMP
 from constants import *
 from unary import UNARY
@@ -53,7 +49,7 @@ class SOLVER():
         '''
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
-        domain = copy.deepcopy(csp.get_domain(curvar))
+        domain = copy.copy(csp.get_domain(curvar))
         while True:
             if self.__select.domain_exhausted(curvar, domain):
                 if csp.assigned_count() == 0:
@@ -98,7 +94,7 @@ class SOLVER():
         res = UNARY.unarify(self.__csp, spec)
         if res == CONTRADICTION:
             return CONTRADICTION
-        X = copy.deepcopy(self.__csp.get_variables())
+        X = copy.copy(self.__csp.get_variables())
         res = self.__mac.propagate(X)
         if res == CONTRADICTION:
             return CONTRADICTION

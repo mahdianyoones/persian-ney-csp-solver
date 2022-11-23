@@ -11,7 +11,7 @@ class CSP():
 		self.__D = {}
 		self.__domains_backups = [] # order matters
 		self.__assignment = {}
-		self.__unassigned = copy.deepcopy(self.__X)
+		self.__unassigned = copy.copy(self.__X)
 		self.__assigned = [] # order matters
 
 	def __init_main_csp(self):
@@ -51,12 +51,18 @@ class CSP():
 	def update_domain(self, var, new_domain):
 		self.__D[var] = new_domain
 	
+	def copy_domain(self, domain):
+		copied = {}
+		for v, vals in domain.items():
+			copied[v] = copy.copy(vals)
+		return copied
+
 	def backup_domains(self):
-		self.__domains_backups.append(copy.deepcopy(self.__D))
+		self.__domains_backups.append(self.copy_domain(self.__D))
 	
 	def revert_domains(self):
 		last_D = self.__domains_backups.pop()
-		self.__D = copy.deepcopy(last_D)
+		self.__D = last_D
 	
 	def get_assignment(self):
 		return self.__assignment

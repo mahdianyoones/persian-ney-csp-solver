@@ -17,8 +17,9 @@ class PIECEMAX():
 
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
-        one_of_them = participants.pop()
-        i = one_of_them[1]
+        for p in participants:
+            i = p[1]
+            break
         Li, Pi = "L"+i, "P"+i
         A = csp.get_assignment()
         D = csp.get_domains()

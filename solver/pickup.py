@@ -30,7 +30,7 @@ class SELECT():
 		D = csp.get_domains()
 		ua = csp.get_unassigned_vars()
 		if len(ua) == 1:
-			return copy.deepcopy(ua).pop()
+			return copy.copy(ua).pop()
 		degrees = self.__degree
 		impacts = self.__impact		
 		best = {

@@ -45,13 +45,13 @@ class UNARY():
 			return CONTRADICTION
 		for var in X:
 			if var[0] == "D":
-				csp.update_domain(var, copy.deepcopy(diams))
+				csp.update_domain(var, copy.copy(diams))
 			elif var[0] == "R":
-				csp.update_domain(var, copy.deepcopy(rounds))
+				csp.update_domain(var, copy.copy(rounds))
 			elif var[0] == "T":
-				csp.update_domain(var, copy.deepcopy(thicks))
+				csp.update_domain(var, copy.copy(thicks))
 			elif var[0] == "P":
-				csp.update_domain(var, copy.deepcopy(pieces))
+				csp.update_domain(var, copy.copy(pieces))
 			else:
 				arbitrary = 100000
 				csp.update_domain(var, {"min": 1, "max": arbitrary})
@@ -71,7 +71,7 @@ class UNARY():
 		if not "L6" in X:
 			return
 		L6 = csp.get_domain("L6")
-		new_d = copy.deepcopy(L6)
+		new_d = copy.copy(L6)
 		new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
 		if new_d["min"] > L6["max"]:
 			return CONTRADICTION

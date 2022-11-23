@@ -69,7 +69,7 @@ class MAC():
         constraints = self.__X2C[curvar]
         reduced_vars = set([])
         for const in constraints:
-            parts = copy.deepcopy(csp.get_neighbors(const))
+            parts = csp.get_neighbors(const)
             unassigned_parts = parts.intersection(unassigned_vars)
             if unassigned_parts == set([]):
                 continue
@@ -79,7 +79,7 @@ class MAC():
             elif isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
                 reduced_vars.update(result[1])
         if len(reduced_vars) > 0:
-            result = self.propagate(copy.deepcopy(reduced_vars))
+            result = self.propagate(copy.copy(reduced_vars))
             if result[0] == CONTRADICTION:
                 return result
             elif isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
@@ -97,7 +97,7 @@ class MAC():
             _var = reduced_vars.pop()
             constraints = self.__X2C[_var]
             for constraint in constraints:
-                parts = copy.deepcopy(csp.get_neighbors(constraint))
+                parts = csp.get_neighbors(constraint)
                 if parts.intersection(unassigned_vars) == set([]):
                     continue
                 reduced_prtcns = reduced_vars.intersection(parts)

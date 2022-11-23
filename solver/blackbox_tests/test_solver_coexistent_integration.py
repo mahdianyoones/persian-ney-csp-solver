@@ -48,33 +48,18 @@ class test_SOLVER_COEXISTENT_INTEGRATION(unittest.TestCase):
         dsname = "contains_solutions"
         coex_solutions = self.__find_coexistent_solutions(dsname, kooks)
         self.assertTrue(len(coex_solutions) >= 1)
-        print()
-        print("Found coexisting solutions for some kooks using artificial data: ")
-        print()
-        print(json.dumps(coex_solutions, sort_keys=True))
-        print()
 
     def test_finds_solutions_for_all_kooks_among_artificial__data(self):
         dsname = "contains_all_coexistent_solutions"
         kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
         coex_solutions = self.__find_coexistent_solutions(dsname, kooks)
         self.assertEqual(len(coex_solutions), len(kooks))
-        print()
-        print("Found coexisting solutions for all kooks using artificial data: ")
-        print()
-        print(json.dumps(coex_solutions, sort_keys=True))
-        print()
 
     def test_finds_solutions_for_some_kooks_among_real_data(self):
         kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
         dsname = "real_pieces"
         coex_solutions = self.__find_coexistent_solutions(dsname, kooks)
         self.assertTrue(len(coex_solutions) >= 1)
-        print()
-        print("Found coexisting solutions for some kooks using real data: ")
-        print()
-        print(json.dumps(coex_solutions, sort_keys=True))
-        print()
 
 if __name__ == "__main__":
     unittest.main()

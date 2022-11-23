@@ -37,7 +37,7 @@ class test_PIECEMIN(unittest.TestCase):
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
-    def test_establish_finds_L_consistent(self):
+    def test_establish_does_not_revise_L(self):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
@@ -51,7 +51,7 @@ class test_PIECEMIN(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": ALREADY_CONSISTENT
+            "out": REVISED_NONE
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -126,11 +126,11 @@ class test_PIECEMIN(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": (CONTRADICTION, {"P1", "L1"})
+            "out": (CONTRADICTION, {"P1"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 
-    def test_propagate_detects_P_contradictory(self):
+    def test_propagate_does_not_revise_L(self):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
@@ -143,7 +143,7 @@ class test_PIECEMIN(unittest.TestCase):
             "participants": {"L1", "P1"}
         }
         expect = {
-            "out": (CONTRADICTION, {"L1"})
+            "out": REVISED_NONE
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 

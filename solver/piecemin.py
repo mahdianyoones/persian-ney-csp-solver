@@ -2,6 +2,13 @@ from constants import *
 import copy
 
 class PIECEMIN():
+    '''Implements piecemin consistency algorithm.
+    
+    Ensures that pieces suitable for a node (Pi) are at least as tall as the
+    length of the node (Li).
+
+    i.e. it remove values from Pi where Pi.len < Li when Li is assigned, and
+    Pi.len < Li[min] when Li is not assigned.'''
 
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after curvar: value assignment.
@@ -10,47 +17,37 @@ class PIECEMIN():
         i = curvar[1]
         Li, Pi = "L" + i, "P" + i
         A = csp.get_assignment()
+        if Pi in A:
+            return REVISED_NONE
         D = csp.get_domains()
         return self.__revise(csp, Li, Pi, A, D)
 
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
-        one_of_them = participants.pop()
-        i = one_of_them[1]
+        for p in participants:
+            i = p[1]
+            break
         Li, Pi = "L" + i, "P" + i
         A = csp.get_assignment()
+        if Pi in A:
+            return REVISED_NONE
         D = csp.get_domains()
         return self.__revise(csp, Li, Pi, A, D)
 
     def __revise(self, csp, Li, Pi, A, D):
         '''Removes illegal values from the domain of Pi, if possible.'''
-        if not Pi in A:
-            if Li in A:
-                min_len = A[Li]
-            else:
-                min_len = D[Li]["min"]
-            reduced_vars = set([])
-            for piece in copy.deepcopy(D[Pi]):
-                p, _len = piece
-                if min_len > _len:
-                    D[Pi].remove(piece)
-                    reduced_vars.add(Pi)
-            if D[Pi] == set([]):
-                return (CONTRADICTION, self.__failed_set(csp, {Li, Pi}))
-            if len(reduced_vars) == 0:
-                return ALREADY_CONSISTENT
-            return MADE_CONSISTENT, {Pi}
+        if Li in A:
+            min_len = A[Li]
         else:
-            if Li in A:
-                min_len = A[Li]
-            else:
-                min_len = D[Li]["min"]
-            p, _len = A[Pi]
-            if min_len > _len:
-                return (CONTRADICTION, self.__failed_set(csp, {Li, Pi}))
-            return ALREADY_CONSISTENT 
-
-    def __failed_set(self, csp, participants):
-        '''Returns the failed set.'''
-        unassigned = csp.get_unassigned_vars()
-        return participants.intersection(unassigned)    
+            min_len = D[Li]["min"]
+        new_domain = set([])
+        for piece in D[Pi]:
+            p, _len = piece
+            if min_len <= _len:
+                new_domain.add(piece)
+        if new_domain == set([]):
+            return (CONTRADICTION, {Pi})
+        elif len(new_domain) == len(D[Pi]):
+            return ALREADY_CONSISTENT
+        csp.update_domain(Pi, new_domain)
+        return (MADE_CONSISTENT, {Pi})

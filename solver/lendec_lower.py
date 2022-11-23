@@ -19,9 +19,6 @@ class LENDEC_LOWER():
 
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after curvar: value assignment.'''
-        unassigned_vars = csp.get_unassigned_vars()
-        if len(participants.intersection(unassigned_vars)) == 0:
-            return REVISED_NONE
         Li, Lj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
@@ -29,9 +26,6 @@ class LENDEC_LOWER():
 
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
-        unassigned_vars = csp.get_unassigned_vars()
-        if len(participants.intersection(unassigned_vars)) == 0:
-            raise Exception("Members are all assigned; no call is needed.")
         Li, Lj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()

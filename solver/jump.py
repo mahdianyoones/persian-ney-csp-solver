@@ -103,7 +103,7 @@ class JUMP():
                 continue
             self.__confsets[target][v] = val
         
-    def unaccumulate(self, A, curvar):
+    def unaccumulate(self, curvar):
         '''Removes curvar: value from all confsets.'''
         for _var in self.__confsets.keys():
             if curvar in self.__confsets[_var]:

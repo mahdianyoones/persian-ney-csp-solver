@@ -1,4 +1,4 @@
-import copy
+import copy, random
 
 class CSP():
 
@@ -69,6 +69,22 @@ class CSP():
 	
 	def get_assigned_vars(self):
 		return self.__assigned
+
+	def get_values(self, var):
+		if var[0] == "L":
+			domain = self.get_domain(var)
+			lower = int(domain["min"])
+			upper = int(domain["max"])
+			if var == "L2":
+				vals = [v for v in range(lower, upper+2, 2)]
+			else:
+				vals = [v for v in range(lower, upper+1)]
+			random.shuffle(vals)
+			return set(vals)
+		else:
+			vals = copy.copy(self.get_domain(var))
+			random.shuffle(list(vals))
+			return vals
 
 	def get_unassigned_vars(self):
 		return self.__unassigned

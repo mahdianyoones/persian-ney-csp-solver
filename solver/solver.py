@@ -32,8 +32,7 @@ class SOLVER():
     def __unassign(self, csp, curvar):
         csp.unassign(curvar)
         csp.revert_domains() # undo establish and propagation effects
-        A = csp.get_assignment()
-        self.__jump.unaccumulate(A, curvar)
+        self.__jump.unaccumulate(curvar)
 
     def __dfs(self):
         '''Recursively assigns values to variables to find a solution.
@@ -49,9 +48,9 @@ class SOLVER():
         '''
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
-        domain = copy.copy(csp.get_domain(curvar))
+        values = csp.get_values(curvar)
         while True:
-            if self.__select.domain_exhausted(curvar, domain):
+            if len(values) == 0:
                 if csp.assigned_count() == 0:
                     return (SEARCH_SPACE_EXHAUSTED, None)
                 if self.__jump.canbackjump(curvar):
@@ -59,7 +58,7 @@ class SOLVER():
                     jump_target = self.__jump.jump_target(csp, curvar)
                     return (BACKJUMP, jump_origin, jump_target)
                 return (BACKTRACK, None)
-            val = self.__select.nextval(curvar, domain)		
+            val = values.pop()	
             assign_res = self.__assign(curvar, val)
             if assign_res[0] == INCONSISTENT_ASSIGNMENT:
                 for failed_var in assign_res[1]:
@@ -67,6 +66,7 @@ class SOLVER():
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
                 return (SOLUTION, csp.get_assignment())
+                continue
             self.__jump.accumulate(curvar, val, assign_res[1])
             dfs_res = self.__dfs()
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:

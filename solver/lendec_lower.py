@@ -43,10 +43,15 @@ class LENDEC_LOWER():
             threshold = math.ceil(2/3 * D[Li]["min"])
         if Lj in A:
             if A[Lj] < threshold:
-                return CONTRADICTION
+                return (CONTRADICTION, self.__failed_set(csp, {Li, Lj}))
         elif D[Lj]["min"] < threshold:
             if D[Lj]["max"] >= threshold:
                 csp.update_domain(Lj, {"min": threshold, "max": D[Lj]["max"]})
                 return (MADE_CONSISTENT, {Lj})
-            return CONTRADICTION
+            return (CONTRADICTION, self.__failed_set(csp, {Li, Lj}))
         return ALREADY_CONSISTENT
+
+    def __failed_set(self, csp, participants):
+        '''Returns the failed set.'''
+        unassigned = csp.get_unassigned_vars()
+        return participants.intersection(participants)

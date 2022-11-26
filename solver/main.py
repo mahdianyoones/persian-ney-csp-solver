@@ -13,16 +13,18 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 from verify import is_valid
-
-def find():
-    kook = "A"
+       
+def main():
+    kook = "F_short"
     data_set_path = current+"/pieces.csv"
     catalog = CATALOG(data_set_path)
     csp = CSP()
     select = SELECT(csp)
     mac = MAC(csp, catalog, specs[kook])
     UNARY.init_domains(csp, catalog)
-    UNARY.unarify(csp, specs[kook])
+    res = UNARY.unarify(csp, specs[kook])
+    if res == CONTRADICTION:
+        print("No solution could exist. Unary constaints violated!")
     solver = SOLVER(csp, select, mac)
     solutions, solutions_counter = solver.find_independent(catalog, specs[kook], find_all = True)
     print("Found: {:} solutions".format(solutions_counter))
@@ -32,9 +34,6 @@ def find():
             valid_counter += 1
     if valid_counter == len(solutions):
         print("Verified {a:} solutions, {b:} are valid".format(a=len(solutions), b=valid_counter))
-        
-def main():
-    find()
-
+ 
 if __name__ == "__main__":
     main()

@@ -48,12 +48,14 @@ class SOLVER():
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
         values = csp.get_shuffled_values(curvar)
-        forced_backtrack = False
+        branch_succeed = False
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
                     return (SEARCH_SPACE_EXHAUSTED, None)
-                if not forced_backtrack and self.__jump.canbackjump(curvar):
+                if branch_succeed:
+                    return (VICTORY, None)
+                if self.__jump.canbackjump(curvar):
                     jump_origin = curvar
                     jump_target = self.__jump.jump_target(csp, curvar)
                     return (BACKJUMP, jump_origin, jump_target)
@@ -62,25 +64,25 @@ class SOLVER():
             assign_res = self.__assign(curvar, val)
             if assign_res[0] == INCONSISTENT_ASSIGNMENT:
                 for failed_var in assign_res[1]:
-                    self.__jump.absorb(curvar, failed_var)             
+                    self.__jump.absorb(curvar, failed_var)    
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
                 if not find_all:
                     return (SOLUTION, csp.get_assignment())
                 self.__solutions.append(copy.copy(csp.get_assignment()))
                 self.__solutions_counter += 1
-                if self.__solutions_counter % 10000 == 0:
-                    print("Found {:} solutions so far.".format(self.__solutions_counter))
                 self.__unassign(csp, curvar)
-                forced_backtrack = True
+                branch_succeed = True
                 continue
             self.__jump.accumulate(curvar, val, assign_res[1])
             dfs_res = self.__dfs(find_all)
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
             self.__unassign(csp, curvar)
+            if dfs_res[0] == VICTORY:
+                branch_succeed = True
+                continue
             if dfs_res[0] == BACKTRACK:
-                forced_backtrack = False
                 continue # May not happen at all!
             if dfs_res[0] == BACKJUMP:
                 if dfs_res[2] != curvar:

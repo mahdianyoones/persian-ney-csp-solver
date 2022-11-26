@@ -20,44 +20,46 @@ class test_SOLVER_COEXISTENT_INTEGRATION(unittest.TestCase):
     SOLUTION_DS = "contains_solutions"
     REAL_DS = "real_pieces"
 
-    def __find(self, catalog, kook, csp = None):
+    def __find(self, catalog, spec, csp = None):
         '''Generalises arrange and act of all test cases in this suite.'''
         csp = CSP()
         select = SELECT(csp)
-        mac = MAC(csp, catalog, specs[kook])
+        mac = MAC(csp, catalog, spec)
         UNARY.init_domains(csp, catalog)
-        UNARY.unarify(csp, specs[kook])
+        UNARY.unarify(csp, spec)
         sut = SOLVER(csp, select, mac)
-        res = sut.find_coexistent(catalog, specs[kook])
+        res = sut.find_coexistent(catalog, spec)
         return res
 
-    def __find_coexistent_solutions(self, dataset, kooks):
+    def __find_coexistent_solutions(self, dataset, _specs):
         data_set_path = current+"/"+dataset+".csv"
         catalog = CATALOG(data_set_path)
         coex_solutions = {}
-        for kook in kooks:
-            res = self.__find(catalog, kook)
+        for kook, _spec in _specs.items():
+            res = self.__find(catalog, _spec)
             if res[0] == SOLUTION:
-                solution = res[1]
-                coex_solutions[kook] = solution
+                coex_solutions[kook] = res[1]
         return coex_solutions
 
     def test_finds_solutions_for_some_kooks_among_artificial_data(self):
         kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
         dsname = "contains_solutions"
-        coex_solutions = self.__find_coexistent_solutions(dsname, kooks)
+        _specs = {kook: specs[kook] for kook in kooks}
+        coex_solutions = self.__find_coexistent_solutions(dsname, _specs)
         self.assertTrue(len(coex_solutions) >= 1)
 
     def test_finds_solutions_for_all_kooks_among_artificial__data(self):
         dsname = "contains_all_coexistent_solutions"
         kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
-        coex_solutions = self.__find_coexistent_solutions(dsname, kooks)
+        _specs = {kook: specs[kook] for kook in kooks}
+        coex_solutions = self.__find_coexistent_solutions(dsname, _specs)
         self.assertEqual(len(coex_solutions), len(kooks))
 
     def test_finds_solutions_for_some_kooks_among_real_data(self):
         kooks = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
         dsname = "real_pieces"
-        coex_solutions = self.__find_coexistent_solutions(dsname, kooks)
+        _specs = {kook: specs[kook] for kook in kooks}
+        coex_solutions = self.__find_coexistent_solutions(dsname, _specs)
         self.assertTrue(len(coex_solutions) >= 1)
 
 if __name__ == "__main__":

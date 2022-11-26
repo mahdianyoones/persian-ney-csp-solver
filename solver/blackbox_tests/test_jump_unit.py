@@ -152,7 +152,7 @@ class test_JUMP(unittest.TestCase):
         sut.absorb("D2", "L7")
         csp.unassign("D2")
         A = csp.get_assignment()
-        sut.unaccumulate(A, "D2")
+        sut.unaccumulate("D2")
         self.assertFalse(sut.canbackjump("L7"))
 
 if __name__ == "__main__":

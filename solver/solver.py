@@ -114,7 +114,7 @@ class SOLVER():
             self.__dfs(find_all=True)
             return self.__solutions, self.__solutions_counter
         else:
-            self.__dfs()            
+            return self.__dfs()            
 
     def __remove_solution_nodes(self, catalog, solution):
        for i in range(1, 8):

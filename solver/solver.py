@@ -1,4 +1,3 @@
-from spec import specs
 from jump import JUMP
 from constants import *
 from unary import UNARY
@@ -14,7 +13,7 @@ class SOLVER():
         self.__select = select
         self.__mac = mac
         self.__jump = JUMP()
-                            
+
     def __assign(self, curvar, value):
         '''Tries assigning curvar: value.'''
         csp = self.__csp
@@ -34,7 +33,7 @@ class SOLVER():
         csp.revert_domains() # undo establish and propagation effects
         self.__jump.unaccumulate(curvar)
 
-    def __dfs(self):
+    def __dfs(self, find_all = False):
         '''Recursively assigns values to variables to find a solution.
         
         When the domain of a variable is exhausted without any solution
@@ -48,12 +47,13 @@ class SOLVER():
         '''
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
-        values = csp.get_values(curvar)
+        values = csp.get_shuffled_values(curvar)
+        forced_backtrack = False
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
                     return (SEARCH_SPACE_EXHAUSTED, None)
-                if self.__jump.canbackjump(curvar):
+                if not forced_backtrack and self.__jump.canbackjump(curvar):
                     jump_origin = curvar
                     jump_target = self.__jump.jump_target(csp, curvar)
                     return (BACKJUMP, jump_origin, jump_target)
@@ -62,17 +62,25 @@ class SOLVER():
             assign_res = self.__assign(curvar, val)
             if assign_res[0] == INCONSISTENT_ASSIGNMENT:
                 for failed_var in assign_res[1]:
-                    self.__jump.absorb(curvar, failed_var)                
+                    self.__jump.absorb(curvar, failed_var)             
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
-                return (SOLUTION, csp.get_assignment())
+                if not find_all:
+                    return (SOLUTION, csp.get_assignment())
+                self.__solutions.append(copy.copy(csp.get_assignment()))
+                self.__solutions_counter += 1
+                if self.__solutions_counter % 10000 == 0:
+                    print("Found {:} solutions so far.".format(self.__solutions_counter))
+                self.__unassign(csp, curvar)
+                forced_backtrack = True
                 continue
             self.__jump.accumulate(curvar, val, assign_res[1])
-            dfs_res = self.__dfs()
+            dfs_res = self.__dfs(find_all)
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
             self.__unassign(csp, curvar)
             if dfs_res[0] == BACKTRACK:
+                forced_backtrack = False
                 continue # May not happen at all!
             if dfs_res[0] == BACKJUMP:
                 if dfs_res[2] != curvar:
@@ -83,7 +91,7 @@ class SOLVER():
                     self.__jump.absorb(jump_target, jump_origin)
                     continue
     
-    def find_independent(self, catalog, spec):
+    def find_independent(self, catalog, spec, find_all = False):
         '''Runs MAC for all variables first and then calls DFS.
         
         If MAC figures out any contradiction before search begins, no
@@ -98,7 +106,13 @@ class SOLVER():
         res = self.__mac.propagate(X)
         if res == CONTRADICTION:
             return CONTRADICTION
-        return self.__dfs()
+        if find_all:
+            self.__solutions = []
+            self.__solutions_counter = 0
+            self.__dfs(find_all=True)
+            return self.__solutions, self.__solutions_counter
+        else:
+            self.__dfs()            
 
     def __remove_solution_nodes(self, catalog, solution):
        for i in range(1, 8):

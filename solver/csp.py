@@ -45,6 +45,7 @@ class CSP():
 			if i >= 2 and i < 7:
 				participants = {"L"+str(i), "L"+str(i+1)}
 				self.__C["lendec"+str(i)] = participants
+			if i >= 2 and i < 6:			
 				participants = {"L"+str(i), "L"+str(i+1)}
 				self.__C["lendeclower"+str(i)] = participants
 
@@ -70,7 +71,7 @@ class CSP():
 	def get_assigned_vars(self):
 		return self.__assigned
 
-	def get_values(self, var):
+	def get_shuffled_values(self, var):
 		if var[0] == "L":
 			domain = self.get_domain(var)
 			lower = int(domain["min"])

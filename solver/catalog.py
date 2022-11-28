@@ -183,10 +183,10 @@ class CATALOG():
 		return node.get_meta()
 
 	def get_pieces(self, numbers):
-		pieces = []
+		pieces = {}
 		for no in numbers:
 			if no in self.__pieces:
-				pieces.append(self.__pieces[no])
+				pieces[no] = self.__pieces[no]
 		return pieces
 
 	def add_from_csv(self, csvfile):

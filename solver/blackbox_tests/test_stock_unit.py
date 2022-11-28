@@ -78,6 +78,7 @@ class test_STOCK(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
+            "A": {"P1": ("11", 120)},
             "curvar": "P1",
             "value": ("11", 120),
             "participants": {"R1", "T1", "D1", "P1"}

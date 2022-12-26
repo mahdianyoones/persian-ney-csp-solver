@@ -49,13 +49,10 @@ class SOLVER():
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
         values = csp.get_shuffled_values(curvar)
-        branch_succeed = False
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
                     return (SEARCH_SPACE_EXHAUSTED, None)
-                if branch_succeed:
-                    return (VICTORY, None)
                 if self.__jump.canbackjump(curvar):
                     jump_origin = curvar
                     jump_target = self.__jump.jump_target(csp, curvar)
@@ -68,25 +65,12 @@ class SOLVER():
                     self.__jump.absorb(curvar, failed_var)    
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
-                if not find_all:
-                    return (SOLUTION, csp.get_assignment())
-                self.__solutions.append(copy.copy(csp.get_assignment()))
-                self.__solutions_counter += 1
-                if self.__solutions_counter % 50000 == 0:
-                    s = self.__solutions_counter
-                    print("Found {:} solutions so far".format(s))
-                    time.sleep(15) # to cool the CPU down
-                self.__unassign(csp, curvar)
-                branch_succeed = True
-                continue
+                return (SOLUTION, csp.get_assignment())
             self.__jump.accumulate(curvar, val, assign_res[1])
             dfs_res = self.__dfs(find_all)
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
             self.__unassign(csp, curvar)
-            if dfs_res[0] == VICTORY:
-                branch_succeed = True
-                continue
             if dfs_res[0] == BACKTRACK:
                 continue # May not happen at all!
             if dfs_res[0] == BACKJUMP:
@@ -113,13 +97,7 @@ class SOLVER():
         res = self.__mac.propagate(X)
         if res == CONTRADICTION:
             return CONTRADICTION
-        if find_all:
-            self.__solutions = []
-            self.__solutions_counter = 0
-            self.__dfs(find_all=True)
-            return self.__solutions, self.__solutions_counter
-        else:
-            return self.__dfs()            
+        return self.__dfs()            
 
     def __remove_solution_nodes(self, catalog, solution):
        for i in range(1, 8):

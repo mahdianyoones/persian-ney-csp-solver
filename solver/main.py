@@ -1,9 +1,6 @@
 import os
 from sys import path as sp
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sp.append(parent)
-
+import json
 from spec import specs
 from solver import SOLVER
 from csp import CSP
@@ -13,7 +10,11 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 from verify import is_valid
-       
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sp.append(parent)
+
 def main():
     kook = "F_short"
     data_set_path = current+"/pieces.csv"
@@ -26,14 +27,10 @@ def main():
     if res == CONTRADICTION:
         print("No solution could exist. Unary constaints violated!")
     solver = SOLVER(csp, select, mac)
-    solutions, solutions_counter = solver.find_independent(catalog, specs[kook], find_all = True)
-    print("Found: {:} solutions".format(solutions_counter))
-    valid_counter = 0
-    for solution in solutions:
-        if is_valid(solution, catalog, kook):
-            valid_counter += 1
-    if valid_counter == len(solutions):
-        print("Verified {a:} solutions, {b:} are valid".format(a=len(solutions), b=valid_counter))
+    indicator, solution = solver.find_independent(catalog, specs[kook])
+    if is_valid(solution, catalog, kook):
+        print("Found a solution: ")
+        print(json.dumps(solution, indent=1))
  
 if __name__ == "__main__":
     main()

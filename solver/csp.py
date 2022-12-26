@@ -15,40 +15,46 @@ class CSP():
         self.__assigned = [] # order matters
 
     def __init_main_csp(self):
-        self.__X = {
-                    "L1", "L2", "L3", "L4", "L5", "L6", "L7",
-                    "P1", "P2", "P3", "P4", "P5", "P6", "P7",
-                    "D1", "D2", "D3", "D4", "D5", "D6", "D7",
-                    "R1", "R2", "R3", "R4", "R5", "R6", "R7",
-                    "T1", "T2", "T3", "T4", "T5", "T6", "T7"}
+        self.__X = {"L1", "L2", "L3", "L4", "L5", "L6", "L7",
+                    "P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         self.__C = {
-            "samethick":	{"T1", "T2", "T3", "T4", "T5", "T6", "T7"},
-            "sameround":	{"R1", "R2", "R3", "R4", "R5", "R6", "R7"},
-            "len":	 		{"L1", "L2", "L3", "L4", "L5", "L6", "L7"},
-            "hole6":		{"L1", "L2", "L3", "L4", "L5"},
-            "hole3":		{"L1", "L2", "L3", "L4"},
-            "hole1":		{"L1", "L2", "L3",},
-            "half":			{"L1", "L2"}
+            "samethick":	    {"P1", "P2", "P3", "P4", "P5", "P6", "P7"},
+            "sameround":	    {"P1", "P2", "P3", "P4", "P5", "P6", "P7"},
+            "len":	 		    {"L1", "L2", "L3", "L4", "L5", "L6", "L7"},
+            "hole6":		    {"L1", "L2", "L3", "L4", "L5"},
+            "hole3":		    {"L1", "L2", "L3", "L4"},
+            "hole1":		    {"L1", "L2", "L3",},
+            "half":			    {"L1", "L2"},
+            "diamdec1-2":       {"P1", "P2"},
+            "diamdec2-3":       {"P2", "P3"},
+            "diamdec3-4":       {"P3", "P4"},
+            "diamdec4-5":       {"P4", "P5"},
+            "diamdec5-6":       {"P5", "P6"},
+            "diamdec6-7":       {"P6", "P7"},
+            "lendec2-3":        {"L2", "L3"},
+            "lendec3-4":        {"L3", "L4"},
+            "lendec4-5":        {"L4", "L5"},
+            "lendec5-6":        {"L5", "L6"},
+            "lendec6-7":        {"L6", "L7"},
+            "lendeclower2-3":   {"L2", "L3"},
+            "lendeclower3-4":   {"L3", "L4"},
+            "lendeclower4-5":   {"L4", "L5"},
+            "lendeclower5-6":   {"L5", "L6"},
+            "piecemin1":        {"P1", "L1"},
+            "piecemin2":        {"P2", "L2"},
+            "piecemin3":        {"P3", "L3"},
+            "piecemin4":        {"P4", "L4"},
+            "piecemin5":        {"P5", "L5"},
+            "piecemin6":        {"P6", "L6"},
+            "piecemin7":        {"P7", "L7"},
+            "nodemax1":         {"P1", "L1"},
+            "nodemax2":         {"P2", "L2"},
+            "nodemax3":         {"P3", "L3"},
+            "nodemax4":         {"P4", "L4"},
+            "nodemax5":         {"P5", "L5"},
+            "nodemax6":         {"P6", "L6"},
+            "nodemax7":         {"P7", "L7"},
         }
-        for i in range(1, 8):
-            participants = {"T"+str(i), "R"+str(i), "D"+str(i), "P"+str(i)}
-            self.__C["pstock"+str(i)] = participants
-            participants = {"T"+str(i), "R"+str(i), "D"+str(i)}
-            self.__C["rstock"+str(i)] = participants
-            self.__C["dstock"+str(i)] = participants
-            self.__C["tstock"+str(i)] = participants
-            participants = {"P"+str(i), "L"+str(i)}
-            self.__C["piecemin"+str(i)] = participants
-            self.__C["nodemax"+str(i)] = participants
-            if i < 7:
-                participants = {"D"+str(i), "D"+str(i+1)}
-                self.__C["diamdec"+str(i)] = participants
-            if i >= 2 and i < 7:
-                 participants = {"L"+str(i), "L"+str(i+1)}
-                 self.__C["lendec"+str(i)] = participants
-            if i >= 2 and i < 6:			
-                 participants = {"L"+str(i), "L"+str(i+1)}
-                 self.__C["lendeclower"+str(i)] = participants
 
     def update_domain(self, var, new_domain):
         self.__D[var] = new_domain

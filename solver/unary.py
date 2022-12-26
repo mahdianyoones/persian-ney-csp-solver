@@ -1,5 +1,6 @@
 import copy
 from constants import *
+import csv
 
 class UNARY():
 	'''Implements unary constraints.
@@ -25,32 +26,26 @@ class UNARY():
 		if res == CONTRADICTION:
 			return CONTRADICTION
 
-	def init_domains(csp, catalog):
-		'''Defines initial values for domains of all vars except Ls.
+	def init_domains(csp, data_set_path):
+		'''Defines initial values for domains of all variables..
 		
 		Contradiction cannot occur at this stage unless the dataset contains
 		no pieces.'''	
 		X = csp.get_variables()
-		diams = catalog.values("D")
-		if len(diams) == 0:
-			return CONTRADICTION
-		thicks = catalog.values("T")
-		if len(thicks) == 0:
-			return CONTRADICTION
-		rounds = catalog.values("R")
-		if len(rounds) == 0:
-			return CONTRADICTION
-		pieces = catalog.pieces()
+		pieces = set([])
+		with open(data_set_path) as f:
+			reader = csv.reader(f)
+			for p in reader:
+				L = float(p[1]) * 10 # cm -> mm
+				T = float(p[2])
+				R = float(p[3])
+				D = float(p[4])
+				no = p[0]
+				pieces.add((no, L, T, R, D))
 		if len(pieces) == 0:
 			return CONTRADICTION
 		for var in X:
-			if var[0] == "D":
-				csp.update_domain(var, copy.copy(diams))
-			elif var[0] == "R":
-				csp.update_domain(var, copy.copy(rounds))
-			elif var[0] == "T":
-				csp.update_domain(var, copy.copy(thicks))
-			elif var[0] == "P":
+			if var[0] == "P":
 				csp.update_domain(var, copy.copy(pieces))
 			else:
 				arbitrary = 100000
@@ -79,17 +74,16 @@ class UNARY():
 				
 	def __first_node_diameter(csp, spec):
 		'''Node 1 cannot have a diameter below a certain value (e.g. 18mm).'''
-		X = csp.get_variables()
-		if not "D1" in X:
-			return
-		D1 = csp.get_domain("D1")
-		legal_values = set([])
-		for diam in D1:
-			if diam >= spec["topd"]["min"] and diam <= spec["topd"]["max"]:
-				legal_values.add(diam)
-		if len(legal_values) == 0:
+		P1 = csp.get_domain("P1")
+		max_diam = spec["topd"]["max"]
+		min_diam = spec["topd"]["min"]
+		legal_pieces = set([])
+		for piece in P1:
+			if piece[4] >= min_diam and piece[4] <= max_diam:
+				legal_pieces.add(piece)
+		if len(legal_pieces) == 0:
 			return CONTRADICTION
-		csp.update_domain("D1", legal_values)
+		csp.update_domain("P1", legal_pieces)
 
 	def __fourth_node_two_holes(csp, spec):
 		'''Implements a length constraint on L4.

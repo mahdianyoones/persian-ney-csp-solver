@@ -9,32 +9,38 @@ class JUMP():
         
         Example:
         
-        D1 is assigned 18
+        P1 is assigned (1,1,1,1,18)
         
-        If by establishing this assignment, L7 sheds some values,
-        L7's has now a conflict set:
+        If by establishing this assignment, P7 sheds some values,
+        P7's has now a conflict set:
 
         {
-            D1: 18
+            P1: ((1,1,1,1,18), 4)
         }
 
-        Later, T7 is assigned 2 which impacts L7 too. L7's conflict set
-        accumulates this assignment as well:
+        Since the values of P variables are compound, we need to indicate what
+        member of the piece assigned to P1 has caused the reduction in P7. 
+        4 in the above tuple indicates that the diameter of P1, which is 18,
+        caused some reductions in the domain of P7.
+        
+        Then, P2 is assigned (1,1,1,1,14) which again caused reduction in
+        P7 due to, say, diamdec constraint. The cause of this reduction is
+        also recorded in the conflict set of P7:
 
         {
-            D1: 18,
-            T7: 2
+            P1: ((1,1,1,1,18), 4),
+            P7: ((1,1,1,1,14), 4)
         }
-        
-        Some time later, when L7 is selected for assignment, its domain gets
+
+        Some time later, when P7 is selected for assignment, its domain gets
         drained hence prompting a jump back. 
 
         Assume the assignments are as follows:
 
-        D1, D2, D3, T7, T1, T2, T3, L7
+        P1, P2, P3, L1, L2, L3, P7
 
-        T7 is selected as a jump target since it's the latest assigned
-        variable in the conflict set of L7.
+        P7 is selected as a jump target since it's the latest assigned
+        variable in the conflict set of P7.
 
         Jumping must happen to the near past not distant past.
         
@@ -42,10 +48,12 @@ class JUMP():
         make a tiny change and quicky get back to today?
         
         If we jumped to the last year instead, we would have to repeat a
-        full year again to see if that solves the issue of today!
+        full year again to see if that solves the issue of today! This 
+        sort of jump also eliminates any solution that might yield by only
+        changing yesterday.
 
         Also, when jump happens to a variable, since it's value is changed,
-        it must be removed from the conflict set of variables that it
+        it must be removed from the conflict set of the variables that it
         conflicted with before.
 
         i.e. assigning different values to the same variable may cause
@@ -72,7 +80,7 @@ class JUMP():
         change of which fixes the problem.
 
         That's why the destination of jump (one of the suspicious dates
-        when a bad decision was made) abrobs the conflict set of the jump
+        when a bad decision was made) absrobs the conflict set of the jump
         origin.
 
         If making different decisions at the jumped-to date does not fix

@@ -16,14 +16,14 @@ class test_DIAMDEC(unittest.TestCase):
     '''Test the behavior of diameter decrement constraints.
     
     This consistency algorithm covers 6 similar constraints on 6
-    groups of variables as follows:
+    binary constraints as follows:
     
-    1- D1 & D2
-    2- D2 & D3
-    3- D3 & D4
-    4- D4 & D5
-    5- D5 & D6
-    6- D6 & D7
+    1- P1 & P2
+    2- P2 & P3
+    3- P3 & P4
+    4- P4 & P5
+    5- P5 & P6
+    6- P6 & P7
     
     Every call to establish or propagate only revises the variables of one
     of these 6 constraints.'''
@@ -38,13 +38,13 @@ class test_DIAMDEC(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"D1": 14},
+            "A": {"P1": (1, 1, 1, 1, 14)},
             "D": {
-                "D2": {13},
+                "P2": {(0, 0, 0, 0, 13)},
             },
-            "curvar": "D1",
-            "value": 14,
-            "participants": {"D1", "D2"}
+            "curvar": "P1",
+            "value": (1, 1, 1, 1, 14),
+            "participants": {"P1", "P2"}
         }
         expect = {
             "out": ALREADY_CONSISTENT
@@ -57,11 +57,11 @@ class test_DIAMDEC(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "D1": {15, 14},
-                "D2": {13, 14},
+                "P1": {(1, 1, 1, 1, 14), (1, 1, 1, 1, 15)},
+                "P2": {(1, 1, 1, 1, 13), (1, 1, 1, 1, 14)},
             },
-            "reduced_vars": {"D1"},
-            "participants": {"D1", "D2"}
+            "reduced_vars": {"P1"},
+            "participants": {"P1", "P2"}
         }
         expect = {
             "out": ALREADY_CONSISTENT
@@ -73,18 +73,32 @@ class test_DIAMDEC(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"D6": 10},
+            "A": {"P6": (1, 1, 1, 1, 10)},
             "D": {
-                "D7": {5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 13},
+                "P7": {
+                    (1, 1, 1, 1, 5),
+                    (1, 1, 1, 1, 8),
+                    (1, 1, 1, 1, 8.5),
+                    (1, 1, 1, 1, 9),
+                    (1, 1, 1, 1, 9.5),
+                    (1, 1, 1, 1, 10),
+                    (1, 1, 1, 1, 10.5),
+                    (1, 1, 1, 1, 11),
+                    (1, 1, 1, 1, 11.5),
+                    (1, 1, 1, 1, 13)
+                }
             },
-            "curvar": "D6",
-            "value": 10,
-            "participants": {"D6", "D7"}
+            "curvar": "P6",
+            "value": (1, 1, 1, 1, 10),
+            "participants": {"P6", "P7"}
         }
         expect = {
-            "out": (MADE_CONSISTENT, {"D7"}),
+            "out": (MADE_CONSISTENT, {"P7"}),
             "D": {
-                "D7": {9, 9.5}
+                "P7": {
+                    (1, 1, 1, 1, 9),
+                    (1, 1, 1, 1, 9.5)
+                }
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)
@@ -94,16 +108,19 @@ class test_DIAMDEC(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"D6": 10},
+            "A": {"P6": (1, 1, 1, 1, 10)},
             "D": {
-                "D7": {5, 8.9},
+                "P7": {
+                    (1, 1, 1, 1, 5),
+                    (1, 1, 1, 1, 8.9)                    
+                },
             },
-            "curvar": "D6",
-            "value": 10,
-            "participants": {"D6", "D7"}
+            "curvar": "P6",
+            "value": (1, 1, 1, 1, 10),
+            "participants": {"P6", "P7"}
         }
         expect = {
-            "out": (CONTRADICTION, {"D7"})
+            "out": (CONTRADICTION, {"P7"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -113,14 +130,20 @@ class test_DIAMDEC(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "D6": {10, 11},
-                "D7": {5, 8.9},
+                "P6": {
+                    (1, 1, 1, 1, 10),
+                    (1, 1, 1, 1, 11)
+                },
+                "P7": {
+                    (1, 1, 1, 1, 5),
+                    (1, 1, 1, 1, 8.9)                    
+                },
             },
-            "reduced_vars": {"D6"},
-            "participants": {"D6", "D7"}
+            "reduced_vars": {"P6"},
+            "participants": {"P6", "P7"}
         }
         expect = {
-            "out": (CONTRADICTION, {"D6"})
+            "out": (CONTRADICTION, {"P6"})
         }
         assert_constraint(csp, sut, "propagate", given, expect)
 

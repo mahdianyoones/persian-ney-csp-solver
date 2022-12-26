@@ -3,16 +3,13 @@ import copy
 
 class DIAMDEC():
     '''Implements diameter decrement consistency.
-    
-        The constraint makes sure the following relations exist between D
-        variables:
-    
-        0.5 <= D2 - D1 <= 1.5
-        0.5 <= D3 - D2 <= 1.5
-        0.5 <= D4 - D3 <= 1.5
-        0.5 <= D5 - D4 <= 1.5
-        0.5 <= D6 - D5 <= 1.5
-        0.5 <= D7 - D6 <= 1.5
+        
+        0.5 <= P2.diameter - P1.diameter <= 1.5
+        0.5 <= P3.diameter - P2.diameter <= 1.5
+        0.5 <= P4.diameter - P3.diameter <= 1.5
+        0.5 <= P5.diameter - P4.diameter <= 1.5
+        0.5 <= P6.diameter - P5.diameter <= 1.5
+        0.5 <= P7.diameter - P6.diameter <= 1.5
 
         i.e. the diamater difference between adjacent nodes must 
         fall into an accepted range.
@@ -21,7 +18,7 @@ class DIAMDEC():
         having min and max as lower and upper bounds.
 
         The algorithm assumes that the order of assignments are in the
-        order of variables indices. That is D1, D2, D3, D4, D5, D6, and D7.
+        order of variables indices. That is P1, P2, P3, P4, P5, P6, and P7.
 
         This constraint restricts final solutions to conic-shape ones.'''
 
@@ -32,45 +29,45 @@ class DIAMDEC():
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
-        Dvari, Dvarj = sorted(participants)
+        Pi, Pj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
-        return self.__revise(csp, Dvari, Dvarj, A, D, self.__ddiff)
+        return self.__revise(csp, Pi, Pj, A, D, self.__ddiff)
 
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes consistency after reduction of some variables.'''
-        Dvari, Dvarj = sorted(participants)
+        Pi, Pj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
-        return self.__revise(csp, Dvari, Dvarj, A, D, self.__ddiff)
+        return self.__revise(csp, Pi, Pj, A, D, self.__ddiff)
 
-    def __revise(self, csp, Dvari, Dvarj, A, D, ddiff):
+    def __revise(self, csp, Pi, Pj, A, D, ddiff):
         '''Removes illegal values from Dvari and Dvarj'''
-        Di = set([])
-        Dj = set([])
-        i_diams = {A[Dvari]} if Dvari in A else D[Dvari]
-        j_diams = {A[Dvarj]} if Dvarj in A else D[Dvarj]
-        for di in i_diams:              
-            for dj in j_diams:
-                diff = di - dj
+        domain_i = set([])
+        domain_j = set([])
+        i_pieces = {A[Pi]} if Pi in A else D[Pi]
+        j_pieces = {A[Pj]} if Pj in A else D[Pj]
+        for piece_i in i_pieces:              
+            for piece_j in j_pieces:
+                diff = piece_i[4] - piece_j[4]
                 if diff <= ddiff["max"] and diff >= ddiff["min"]:
-                    Dj.add(dj)
-                    Di.add(di)
+                    domain_j.add(piece_j)
+                    domain_i.add(piece_i)
         reduced_vars = set([])
-        if Dvari in A or len(Di) == len(D[Dvari]):
-            Di = DOMAIN_INTACT
-        elif len(Di) == 0:
-            return (CONTRADICTION, {Dvari})
+        if Pi in A or len(domain_i) == len(D[Pi]):
+            domain_i = DOMAIN_INTACT
+        elif len(domain_i) == 0:
+            return (CONTRADICTION, {Pi})
         else:
-            reduced_vars.add(Dvari)
-            csp.update_domain(Dvari, Di)
-        if Dvarj in A or len(Dj) == len(D[Dvarj]):
-            Dj = DOMAIN_INTACT
-        elif len(Dj) == 0:
-            return (CONTRADICTION, {Dvarj})
+            reduced_vars.add(Pi)
+            csp.update_domain(Pi, domain_i)
+        if Pj in A or len(domain_j) == len(D[Pj]):
+            domain_j = DOMAIN_INTACT
+        elif len(domain_j) == 0:
+            return (CONTRADICTION, {Pj})
         else:
-            reduced_vars.add(Dvarj)
-            csp.update_domain(Dvarj, Dj)
-        if Di == DOMAIN_INTACT and Dj == DOMAIN_INTACT:
+            reduced_vars.add(Pj)
+            csp.update_domain(Pj, domain_j)
+        if domain_i == DOMAIN_INTACT and domain_j == DOMAIN_INTACT:
             return ALREADY_CONSISTENT
         return (MADE_CONSISTENT, reduced_vars)

@@ -3,6 +3,7 @@ from constants import *
 from unary import UNARY
 import copy
 import os
+import time
 
 current = os.path.dirname(os.path.realpath(__file__))
 
@@ -71,6 +72,10 @@ class SOLVER():
                     return (SOLUTION, csp.get_assignment())
                 self.__solutions.append(copy.copy(csp.get_assignment()))
                 self.__solutions_counter += 1
+                if self.__solutions_counter % 50000 == 0:
+                    s = self.__solutions_counter
+                    print("Found {:} solutions so far".format(s))
+                    time.sleep(15) # to cool the CPU down
                 self.__unassign(csp, curvar)
                 branch_succeed = True
                 continue

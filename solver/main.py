@@ -1,7 +1,7 @@
-import os.path as op
+import os
 from sys import path as sp
-current = op.dirname(op.realpath(__file__))
-parent = op.dirname(current)
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
 sp.append(parent)
 
 from spec import specs

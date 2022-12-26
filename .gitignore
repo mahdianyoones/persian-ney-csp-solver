@@ -132,3 +132,6 @@ dmypy.json
 *.code-workspace
 
 speed_profile
+*.db
+*.db-journal
+*.stats

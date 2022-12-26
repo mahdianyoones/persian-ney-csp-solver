@@ -8,7 +8,24 @@ class SAMETHICK():
     
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes indirect consistency W.R.T. same_th.'''
-        return REVISED_NONE
+        D = csp.get_domains()
+        T_vars = {"T1", "T2", "T3", "T4", "T5", "T6", "T7"}
+        if T_vars.intersection(csp.get_assigned_vars()) != set([]):
+            return REVISED_NONE
+        common_values = D["T1"]
+        T_vars.remove("T1")
+        for v in T_vars:
+            common_values = common_values.intersection(D[v])
+        if common_values == set([]):
+            return CONTRADICTION, self.__failed_set(csp)
+        reduced_vars = set([])
+        for v in T_vars:
+            if common_values != D[v] and len(common_values) < len(D[v]):
+                reduced_vars.add(v)
+                csp.update_domain(v, common_values)
+        if reduced_vars != set([]):
+            return MADE_CONSISTENT, reduced_vars
+        return ALREADY_CONSISTENT
     
     def __new_domains(self, value, D, examined):
         '''Returns new domains for participating variables.'''

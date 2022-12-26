@@ -42,7 +42,24 @@ class SAMEROUND():
     
     def propagate(self, csp, reduced_vars, participants):
         '''Establishes indirect consistency W.R.T. same_r.'''
-        return REVISED_NONE
+        D = csp.get_domains()
+        R_vars = {"R1", "R2", "R3", "R4", "R5", "R6", "R7"}
+        if R_vars.intersection(csp.get_assigned_vars()) != set([]):
+            return REVISED_NONE
+        common_values = D["R1"]
+        R_vars.remove("R1")
+        for v in R_vars:
+            common_values = common_values.intersection(D[v])
+        if common_values == set([]):
+            return CONTRADICTION, self.__failed_set(csp)
+        reduced_vars = set([])
+        for v in R_vars:
+            if common_values != D[v] and len(common_values) < len(D[v]):
+                reduced_vars.add(v)
+                csp.update_domain(v, common_values)
+        if reduced_vars != set([]):
+            return MADE_CONSISTENT, reduced_vars
+        return ALREADY_CONSISTENT
     
     def __new_domains(self, value, D, examined):
         '''Returns new domains for participating variables.'''

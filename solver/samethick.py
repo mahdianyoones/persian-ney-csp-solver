@@ -1,54 +1,39 @@
 from constants import *
 
 class SAMETHICK():
-    '''Applies same thickness constraints.
-    
-    The variables T1 Trought T7 must have the same value in the
-    final solution.'''
+    '''Applies same thickness constraint.'''
     
     def propagate(self, csp, reduced_vars, participants):
-        '''Establishes indirect consistency W.R.T. same_th.'''
-        D = csp.get_domains()
-        T_vars = {"T1", "T2", "T3", "T4", "T5", "T6", "T7"}
-        if T_vars.intersection(csp.get_assigned_vars()) != set([]):
-            return REVISED_NONE
-        common_values = D["T1"]
-        T_vars.remove("T1")
-        for v in T_vars:
-            common_values = common_values.intersection(D[v])
-        if common_values == set([]):
-            return CONTRADICTION, self.__failed_set(csp)
-        reduced_vars = set([])
-        for v in T_vars:
-            if common_values != D[v] and len(common_values) < len(D[v]):
-                reduced_vars.add(v)
-                csp.update_domain(v, common_values)
-        if reduced_vars != set([]):
-            return MADE_CONSISTENT, reduced_vars
-        return ALREADY_CONSISTENT
+        '''Establishes indirect consistency W.R.T. samethick.'''
+        return REVISED_NONE
     
-    def __new_domains(self, value, D, examined):
+    def __new_domains(self, value, D, revising_vars):
         '''Returns new domains for participating variables.'''
         newdomains = {}
-        for _var in examined:
-            if not value in D[_var]:
+        assigned_thickness = value[2]
+        for revising_var in revising_vars:
+            newdomains[revising_var] = set([])
+            for piece in D[revising_var]:
+                if piece[2] == assigned_thickness:
+                    newdomains[revising_var].add(piece)
+            if len(newdomains[revising_var]) == 0:
                 return CONTRADICTION
-            elif len(D[_var]) == 1:
+            elif D[revising_var] == newdomains[revising_var]:
+                del newdomains[revising_var]
                 continue
-            newdomains[_var] = {value}
         return newdomains
              
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
-        examined = set([])
-        for v in {"T1", "T2", "T3", "T4", "T5", "T6", "T7"}:
+        revising_vars = set([])
+        for v in participants: # P1 thorugh P7
             if v in A and v != curvar:
                 return REVISED_NONE
             if not v in A and v != curvar:
-                examined.add(v)
+                revising_vars.add(v)
         D = csp.get_domains()
-        newdomains = self.__new_domains(value, D, examined)
+        newdomains = self.__new_domains(value, D, revising_vars)
         reduced = set([])
         if newdomains == CONTRADICTION:
             return (CONTRADICTION, self.__failed_set(csp))
@@ -61,6 +46,6 @@ class SAMETHICK():
 
     def __failed_set(self, csp):
         '''Returns the failed set.'''
-        participants = {"T1", "T2", "T3", "T4", "T5", "T6", "T7"}
+        participants = {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         unassigned = csp.get_unassigned_vars()
-        return participants.intersection(unassigned)                    
+        return participants.intersection(unassigned)

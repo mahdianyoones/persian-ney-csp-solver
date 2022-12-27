@@ -3,9 +3,7 @@ import os.path as op
 from sys import path as sp
 current = op.dirname(op.realpath(__file__))
 parent = op.dirname(current)
-grandparent = op.dirname(op.dirname(current))
 sp.append(parent)
-sp.append(grandparent)
 
 from csp import CSP
 from samethick import SAMETHICK
@@ -25,29 +23,34 @@ class test_SAMETHICK(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"T2": 2.5},
+            "A": {"P2": (1,1,2.5,1,1)},
             "D": {
-                "T1": {2.5, 2},
-                "T2": {2.5, 5, 4},
-                "T3": {0, 2.5},
-                "T4": {0, 2.5},
-                "T5": {0, 2.5},
-                "T6": {0, 2.5},
-                "T7": {0, 2.5}
+                "P1": {(1,1,2,1,1), (1,1,2.5,1,1)},
+                "P2": {(1,1,5,1,1), (1,1,2.5,1,1), (1,1,4,1,1)},
+                "P3": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P4": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P5": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P6": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P7": {(1,1,0,1,1), (1,1,2.5,1,1)}
             },
-            "curvar": "T2",
-            "value": 2.5
+            "curvar": "P2",
+            "value": (1,1,2.5,1,1),
+            "participants": {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         }
         expect = {
-            "out": (MADE_CONSISTENT,{"T1", "T3", "T4", "T5", "T6", "T7"}),
+            "out": (MADE_CONSISTENT, {"P1", "P3", "P4", "P5", "P6", "P7"}),
             "D": {
-                "T1": {2.5},
-                "T2": {2.5, 5, 4},
-                "T3": {2.5},
-                "T4": {2.5},
-                "T5": {2.5},
-                "T6": {2.5},
-                "T7": {2.5}
+                "P1": {(1,1,2.5,1,1)},
+                "P2": {
+                    (1,1,2.5,1,1),
+                    (1,1,5,1,1),
+                    (1,1,4,1,1)
+                },
+                "P3": {(1,1,2.5,1,1)},
+                "P4": {(1,1,2.5,1,1)},
+                "P5": {(1,1,2.5,1,1)},
+                "P6": {(1,1,2.5,1,1)},
+                "P7": {(1,1,2.5,1,1)}
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)
@@ -57,28 +60,29 @@ class test_SAMETHICK(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"T2": 2.5},
+            "A": {"P2": (1,1,2.5,1,1)},
             "D": {
-                "T1": {0},
-                "T2": {2.5},
-                "T3": {0, 2.5},
-                "T4": {0, 2.5},
-                "T5": {0, 2.5},
-                "T6": {0, 2.5},
-                "T7": {0, 2.5}
+                "P1": {(1,1,0,1,1)},
+                "P2": {(1,1,2.5,1,1)},
+                "P3": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P4": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P5": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P6": {(1,1,0,1,1), (1,1,2.5,1,1)},
+                "P7": {(1,1,0,1,1), (1,1,2.5,1,1)}
             },
-            "curvar": "T2",
-            "value": 2.5
+            "curvar": "P2",
+            "value": (1,1,2.5,1,1),
+            "participants": {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         }
         expect = {
-            "out": (CONTRADICTION, {"T1", "T3", "T4", "T5", "T6", "T7"})
+            "out": (CONTRADICTION, {"P1", "P3", "P4", "P5", "P6", "P7"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
     
     def test_establishes_once_only(self):
         '''Enforces the case that the algorithm simply does nothing!
         
-        The algorithm only checks domains if THE FIRST T variable is being
+        The algorithm only checks domains if THE FIRST P variable is being
         established. Otherwise, we are sure that domains are consistent AND further
         reduction is impossible.
         
@@ -87,18 +91,19 @@ class test_SAMETHICK(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"T1": 2.5},
+            "A": {"P1": (1,1,2.5,1,1)},
             "D": {
-                "T1": {2.5},
-                "T2": {2.5},
-                "T3": {2.5},
-                "T4": {2.5},
-                "T5": {2.5},
-                "T6": {2.5},
-                "T7": {2.5}
+                "P1": {(1,1,2.5,1,1)},
+                "P2": {(1,1,2.5,1,1)},
+                "P3": {(1,1,2.5,1,1)},
+                "P4": {(1,1,2.5,1,1)},
+                "P5": {(1,1,2.5,1,1)},
+                "P6": {(1,1,2.5,1,1)},
+                "P7": {(1,1,2.5,1,1)}
             },
-            "curvar": "T2",
-            "value": 2.5
+            "curvar": "P2",
+            "value": (1,1,2.5,1,1),
+            "participants": {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         }
         expect = {
             "out": REVISED_NONE
@@ -111,16 +116,17 @@ class test_SAMETHICK(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "T1": {2.5},
-                "T2": {2.5},
-                "T3": {2.5},
-                "T4": {2.5},
-                "T5": {2.5},
-                "T6": {2.5},
-                "T7": {2.5}
+                "P1": {(1,1,2.5,1,1)},
+                "P2": {(1,1,2.5,1,1)},
+                "P3": {(1,1,2.5,1,1)},
+                "P4": {(1,1,2.5,1,1)},
+                "P5": {(1,1,2.5,1,1)},
+                "P6": {(1,1,2.5,1,1)},
+                "P7": {(1,1,2.5,1,1)}
             },
-            "curvar": "T1",
-            "value": 2.5
+            "curvar": "P1",
+            "value": (1,1,2.5,1,1),
+            "participants": {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         }
         expect = {
             "out": ALREADY_CONSISTENT

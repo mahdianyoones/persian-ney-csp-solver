@@ -8,188 +8,107 @@ sp.append(parent)
 sp.append(grandparent)
 
 from csp import CSP
-from catalog import CATALOG
 from mac import MAC
 from unary import UNARY
 from testspec import specs
 from constants import *
 
 class test_DIAMDEC_INTEGRATION(unittest.TestCase):
-    '''Tests the behavior of MAC.
-
-    samethick:	    (T1, T2, T3, T4, T5, T6, T7)
-    sameround:	    (R1, R2, R3, R4, R5, R6, R7)
-    len:	 	    (L1, L2, L3, L4, L5, L6, L7)
-    hole6:		    (L1, L2, L3, L4, L5)
-    hole3:		    (L1, L2, L3, L4)
-    hole1:		    (L1, L2, L3)
-    half:           (L1, L2)
-
-    lendec2:        (L2, L3)
-    lendec3:        (L3, L4)
-    lendec4:        (L4, L5)
-    lendec5:        (L5, L6)
-    lendec6:        (L6, L7)
-
-    lendeclower2:   (L2, L3)
-    lendeclower3:   (L3, L4)
-    lendeclower4:   (L4, L5)
-    lendeclower5:   (L5, L6)
-
-    diamdec1:       (D1, D2)
-    diamdec2:       (D2, D3)
-    diamdec3:       (D3, D4)
-    diamdec4:       (D4, D5)
-    diamdec5:       (D5, D6)
-    diamdec6:       (D6, D7)
-
-    pstock1:        (T1, R1, D1, P1)
-    pstock2:        (T2, R2, D2, P2)
-    pstock3:        (T3, R3, D3, P3)
-    pstock4:        (T4, R4, D4, P4)
-    pstock5:        (T5, R5, D5, P5)
-    pstock6:        (T6, R6, D6, P6)
-    pstock7:        (T7, R7, D7, P7)
-
-    dstock1:        (T1, R1, D1)
-    dstock2:        (T2, R2, D2)
-    dstock3:        (T3, R3, D3)
-    dstock4:        (T4, R4, D4)
-    dstock5:        (T5, R5, D5)
-    dstock6:        (T6, R6, D6)
-    dstock7:        (T7, R7, D7)
-
-    rstock1:        (T1, R1, D1)
-    rstock2:        (T2, R2, D2)
-    rstock3:        (T3, R3, D3)
-    rstock4:        (T4, R4, D4)
-    rstock5:        (T5, R5, D5)
-    rstock6:        (T6, R6, D6)
-    rstock7:        (T7, R7, D7)
-
-    tstock1:        (T1, R1, D1)
-    tstock2:        (T2, R2, D2)
-    tstock3:        (T3, R3, D3)
-    tstock4:        (T4, R4, D4)
-    tstock5:        (T5, R5, D5)
-    tstock6:        (T6, R6, D6)
-    tstock7:        (T7, R7, D7)
-
-    piecemin1:      (L1, P1)
-    piecemin2:      (L2, P2)
-    piecemin3:      (L3, P3)
-    piecemin4:      (L4, P4)
-    piecemin5:      (L5, P5)
-    piecemin6:      (L6, P6)
-    piecemin7:      (L7, P7)
-
-    nodemax1:       (L1, P1)
-    nodemax2:       (L2, P2)
-    nodemax3:       (L3, P3)
-    nodemax4:       (L4, P4)
-    nodemax5:       (L5, P5)
-    nodemax6:       (L6, P6)
-    nodemax7:       (L7, P7)
-    '''
+    '''Tests the behavior of MAC.'''
 
     def __assert_domains_are_consistent(self):
         D = self.__csp.get_domains()
         A = self.__csp.get_assignment()
         ddiff = specs["C"]["ddiff"]
-        for i in range(2, 7):
-            Dprev = "D"+str(i-1)
-            _min = A[Dprev] if Dprev in A else min(D[Dprev])
-            _max = A[Dprev] if Dprev in A else max(D[Dprev])
-            valid_range = {
-                "min": _min - ddiff["max"], 
-                "max": _max - ddiff["min"], 
-            }
-            Dcur = "D"+str(i)
-            if Dcur in A:
-                self.assertTrue(A[Dcur] >= valid_range["min"])
-                self.assertTrue(A[Dcur] <= valid_range["max"])
-            else:
-                for d in D[Dcur]:
-                    self.assertTrue(d >= valid_range["min"])
-                    self.assertTrue(d <= valid_range["max"])
+        for i in range(2, 8):
+            Pi = "P"+str(i-1)
+            Pj = "P"+str(i)
+            pieces_i = {A[Pi]} if Pi in A else D[Pi]
+            pieces_j = {A[Pj]} if Pj in A else D[Pj]
+            for piece_i in pieces_i:
+                valid_counterparts = 0
+                for piece_j in pieces_j:
+                    diff = piece_i[4] - piece_j[4]
+                    if diff >= ddiff["min"] and diff <= ddiff["max"]:
+                        valid_counterparts += 1
+                self.assertTrue(valid_counterparts >= 1)
 
     def setUp(self):
-        self.__X = {"D1", "D2", "D3", "D4", "D5", "D6", "D7"}
+        self.__X = {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         self.__C = {
-            "diamdec1": {"D1", "D2"},
-            "diamdec2": {"D2", "D3"},
-            "diamdec3": {"D3", "D4"},
-            "diamdec4": {"D4", "D5"},
-            "diamdec5": {"D5", "D6"},
-            "diamdec6": {"D6", "D7"}
+            "diamdec1-2": {"P1", "P2"},
+            "diamdec2-3": {"P2", "P3"},
+            "diamdec3-4": {"P3", "P4"},
+            "diamdec4-5": {"P4", "P5"},
+            "diamdec5-6": {"P5", "P6"},
+            "diamdec6-7": {"P6", "P7"}
         }
         self.__csp = CSP(self.__X, self.__C)
         current = op.dirname(__file__)
-        catalog = CATALOG()
-        catalog.setup(current+"/real_pieces.csv")
-        self.__mac = MAC(self.__csp, catalog, specs["C"])
-        UNARY.init_domains(self.__csp, catalog)
+        data_set_path = current+"/real_pieces.csv"
+        self.__mac = MAC(self.__csp, specs["C"])
+        UNARY.init_domains(self.__csp, data_set_path)
         UNARY.unarify(self.__csp, specs["C"])
-
-    def test_D1_reduction_propagates_to_all(self):
+    
+    def test_P1_reduction_propagates_to_all(self):
         '''Tests the behavior of diamdec for all its related constraints.'''
         # act
-        res = self.__mac.propagate({"D1"})
+        res = self.__mac.propagate({"P1"})
         # assess
         self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.assertEqual(res[1], {"P1", "P2", "P3", "P4", "P5", "P6", "P7"})
         self.__assert_domains_are_consistent()
     
-    def test_D7_reduction_propagates_to_all(self):
+    def test_P7_reduction_propagates_to_all(self):
         '''Tests the behavior of diamdec for all its related constraints.'''
         # act
-        res = self.__mac.propagate({"D7"})
+        res = self.__mac.propagate({"P7"})
         # assess
         self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.assertEqual(res[1], {"P1", "P2", "P3", "P4", "P5", "P6", "P7"})
         self.__assert_domains_are_consistent()
 
-    def test_D5_reduction_propagates_to_all(self):
+    def test_P5_reduction_propagates_to_all(self):
         '''Tests the behavior of diamdec for all its related constraints.'''
         # act
-        res = self.__mac.propagate({"D5"})
+        res = self.__mac.propagate({"P5"})
         # assess
         self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6", "D7"})
+        self.assertEqual(res[1], {"P1", "P2", "P3", "P4", "P5", "P6", "P7"})
         self.__assert_domains_are_consistent()
 
-    def test_D1_assignment_gets_established(self):
+    def test_P1_assignment_gets_established(self):
         # arrange
-        self.__csp.assign("D1", 18)
+        self.__csp.assign("P1", (1,1,1,1,18))
         # act
-        res = self.__mac.establish("D1", 18)
+        res = self.__mac.establish("P1", (1,1,1,1,18))
         self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D2", "D3", "D4", "D5", "D6", "D7"})
+        self.assertEqual(res[1], {"P2", "P3", "P4", "P5", "P6", "P7"})
         self.__assert_domains_are_consistent()
 
-    def test_D7_assignment_gets_established(self):
+    def test_P7_assignment_gets_established(self):
         # arrange
-        self.__csp.assign("D7", 13.5)
+        self.__csp.assign("P7", (1,1,1,1,13.5))
         # act
-        res = self.__mac.establish("D7", 13.5)
+        res = self.__mac.establish("P7", (1,1,1,1,13.5))
         self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D1", "D2", "D3", "D4", "D5", "D6"})
+        self.assertEqual(res[1], {"P1", "P2", "P3", "P4", "P5", "P6"})
         self.__assert_domains_are_consistent()
 
-    def test_D4_assignment_gets_established(self):
+    def test_P4_assignment_gets_established(self):
         # arrange
-        self.__csp.assign("D4", 16)
+        self.__csp.assign("P4", (1,1,1,1,16))
         # act
-        res = self.__mac.establish("D4", 16)
+        res = self.__mac.establish("P4", (1,1,1,1,16))
         self.assertEqual(res[0], MADE_CONSISTENT)
-        self.assertEqual(res[1], {"D1", "D2", "D3", "D5", "D6", "D7"})
+        self.assertEqual(res[1], {"P1", "P2", "P3", "P5", "P6", "P7"})
         self.__assert_domains_are_consistent()
 
-    def test_D1_reduction_propagates_to_contradiction(self):
+    def test_P1_reduction_propagates_to_contradiction(self):
         # arrange
-        self.__csp.update_domain("D7", {20})
+        self.__csp.update_domain("P7", {(1,1,1,1,20)})
         # act
-        res = self.__mac.propagate({"D1"})
+        res = self.__mac.propagate({"P1"})
         # assess
         self.assertEqual(res[0], CONTRADICTION)
 

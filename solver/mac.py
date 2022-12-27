@@ -9,7 +9,6 @@ from diamdec import DIAMDEC
 from samethick import SAMETHICK
 from sameround import SAMEROUND
 from half import HALF
-from stock import THICK_STOCK, DIAM_STOCK, PIECE_STOCK, ROUND_STOCK
 from piecemin import PIECEMIN
 from piecemax import PIECEMAX
 from constants import *
@@ -17,13 +16,17 @@ from constants import *
 class MAC():
     '''Implements MAC for binary and higher constraints.'''
 
-    def __init__(self, csp, catalog, spec):
+    def __init__(self, csp, spec):
         self.__csp = csp
-        self.__catalog = catalog
         self.__X2C = {}
         self.__constraints_order = {}
-        self.__init_c_order(csp)
+        self.__init_constraints_order(csp)
         self.__init_X2C(csp)
+        self.__pieceminref = PIECEMIN()
+        self.__piecemaxref = PIECEMAX()
+        self.__diamdecref = DIAMDEC(spec["ddiff"])
+        self.__lendecref = LENDEC()
+        self.__llref = LENDEC_LOWER()
         self.__refs = {
             "hole1":		HOLE1(spec["h1"], spec["hmarg"]),
             "hole3":		HOLE3(spec["h3"], spec["hmarg"]),
@@ -31,29 +34,37 @@ class MAC():
             "half":			HALF(),
             "samethick":	SAMETHICK(),
             "sameround":	SAMEROUND(),
-            "len":			LEN(spec["len"])
+            "len":			LEN(spec["len"]),
+            "diamdec1-2":       self.__diamdecref,
+            "diamdec2-3":       self.__diamdecref,
+            "diamdec3-4":       self.__diamdecref,
+            "diamdec4-5":       self.__diamdecref,
+            "diamdec5-6":       self.__diamdecref,
+            "diamdec6-7":       self.__diamdecref,
+            "lendec2-3":        self.__lendecref,
+            "lendec3-4":        self.__lendecref,
+            "lendec4-5":        self.__lendecref,
+            "lendec5-6":        self.__lendecref,
+            "lendec6-7":        self.__lendecref,
+            "lendeclower2-3":   self.__llref,
+            "lendeclower3-4":   self.__llref,
+            "lendeclower4-5":   self.__llref,
+            "lendeclower5-6":   self.__llref,
+            "piecemin1":        self.__pieceminref,
+            "piecemin2":        self.__pieceminref,
+            "piecemin3":        self.__pieceminref,
+            "piecemin4":        self.__pieceminref,
+            "piecemin5":        self.__pieceminref,
+            "piecemin6":        self.__pieceminref,
+            "piecemin7":        self.__pieceminref,
+            "nodemax1":         self.__piecemaxref,
+            "nodemax2":         self.__piecemaxref,
+            "nodemax3":         self.__piecemaxref,
+            "nodemax4":         self.__piecemaxref,
+            "nodemax5":         self.__piecemaxref,
+            "nodemax6":         self.__piecemaxref,
+            "nodemax7":         self.__piecemaxref
         }
-        self.__pstockref = PIECE_STOCK(self.__catalog)
-        self.__rstockref = ROUND_STOCK(self.__catalog)
-        self.__dstockref = DIAM_STOCK(self.__catalog)
-        self.__tstockref = THICK_STOCK(self.__catalog)
-        self.__pieceminref = PIECEMIN()
-        self.__piecemaxref = PIECEMAX()
-        self.__diamdecref = DIAMDEC(spec["ddiff"])
-        self.__lendecref = LENDEC()
-        self.__llref = LENDEC_LOWER()
-        for i in range(1, 8):
-            self.__refs["pstock"+str(i)] = self.__pstockref
-            self.__refs["rstock"+str(i)] = self.__rstockref
-            self.__refs["dstock"+str(i)] = self.__dstockref
-            self.__refs["tstock"+str(i)] = self.__tstockref
-            self.__refs["piecemin"+str(i)] = self.__pieceminref
-            self.__refs["nodemax"+str(i)] = self.__piecemaxref
-            if i < 7:
-                self.__refs["diamdec"+str(i)] = self.__diamdecref
-            if i >= 2 and i < 7:
-                self.__refs["lendec"+str(i)] = self.__lendecref
-                self.__refs["lendeclower"+str(i)] = self.__llref
 
     def establish(self, curvar, value):
         '''Establishes consistency after var: value assignment.
@@ -112,7 +123,7 @@ class MAC():
             return (MADE_CONSISTENT, new_reduced_vars)
         return ALREADY_CONSISTENT
     
-    def __init_c_order(self, csp):
+    def __init_constraints_order(self, csp):
         '''Determines the order of constraints.
         
         A constraint order denotes the number of participants it has.'''
@@ -121,7 +132,7 @@ class MAC():
             self.__constraints_order[constraint] = 8 - len(participants)
 
     def __init_X2C(self, csp):
-        '''Buils a map from each variable to the constraints they participate.
+        '''Builds a map from each variable to the constraints they participate in.
         
         Constraints of each variable are sorted based on their order.'''
         C = csp.get_constraints()

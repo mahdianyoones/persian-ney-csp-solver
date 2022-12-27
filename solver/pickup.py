@@ -73,11 +73,9 @@ class SELECT():
 	def __init_impact(self, csp):
 		'''Determines the impact of selecting variables.
 		
-		T and R variables are made consistent very strongly'''
+		P variables are made consistent very strongly.'''
 		for v in csp.get_variables():
-			if v[0] == "T" or v[0] == "R":
-				self.__impact[v] = 2
-			elif v[0] == "D":
+			if v[0] == "P":
 				self.__impact[v] = 1
 			else:
 				self.__impact[v] = 0

@@ -130,7 +130,7 @@ class MAC():
         constraints = csp.get_constraints()
         for constraint, participants in constraints.items():
             self.__constraints_order[constraint] = 8 - len(participants)
-
+        
     def __init_X2C(self, csp):
         '''Builds a map from each variable to the constraints they participate in.
         

@@ -34,7 +34,7 @@ class SOLVER():
         csp.revert_domains() # undo establish and propagation effects
         self.__jump.unaccumulate(curvar)
 
-    def __dfs(self, find_all = False):
+    def __dfs(self):
         '''Recursively assigns values to variables to find a solution.
         
         When the domain of a variable is exhausted without any solution
@@ -62,12 +62,12 @@ class SOLVER():
             assign_res = self.__assign(curvar, val)
             if assign_res[0] == INCONSISTENT_ASSIGNMENT:
                 for failed_var in assign_res[1]:
-                    self.__jump.absorb(curvar, failed_var)    
+                    self.__jump.absorb(curvar, failed_var)
                 continue # try the next value
             if csp.unassigned_count() == 0: # solution
                 return (SOLUTION, csp.get_assignment())
             self.__jump.accumulate(curvar, val, assign_res[1])
-            dfs_res = self.__dfs(find_all)
+            dfs_res = self.__dfs()
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
             self.__unassign(csp, curvar)
@@ -82,12 +82,12 @@ class SOLVER():
                     self.__jump.absorb(jump_target, jump_origin)
                     continue
     
-    def find_independent(self, catalog, spec, find_all = False):
+    def find_independent(self, spec, data_set_path):
         '''Runs MAC for all variables first and then calls DFS.
         
         If MAC figures out any contradiction before search begins, no
         solution could ever be found.'''
-        res = UNARY.init_domains(self.__csp, catalog)
+        res = UNARY.init_domains(self.__csp, data_set_path)
         if res == CONTRADICTION:
             return CONTRADICTION
         res = UNARY.unarify(self.__csp, spec)
@@ -97,32 +97,4 @@ class SOLVER():
         res = self.__mac.propagate(X)
         if res == CONTRADICTION:
             return CONTRADICTION
-        return self.__dfs()            
-
-    def __remove_solution_nodes(self, catalog, solution):
-       for i in range(1, 8):
-            i = str(i)
-            Li = "L" + i
-            Pi = "P" + i
-            Ti = "T" + i
-            Di = "D" + i
-            Ri = "R" + i
-            Psol, Tsol, Dsol = solution[Pi], solution[Ti], solution[Di]
-            Rsol, Lsol = solution[Ri], solution[Li]
-            catalog.remove_piece(Psol, Tsol, Dsol, Rsol)
-            no_sol, l_piece = Psol
-            if l_piece > Lsol:
-                no_new = no_sol + "+"
-                Lnew = l_piece - Lsol
-                catalog.add_piece(no_new, Lnew, Tsol, Dsol, Rsol)
-
-    def find_coexistent(self, catalog, spec):
-        '''Runs MAC for all variables first and then calls DFS.
-        
-        If MAC figures out any contradiction before search begins, no
-        solution could ever be found.'''
-        res = self.find_independent(catalog, spec)
-        if res[0] == SOLUTION:
-            solution = res[1]
-            self.__remove_solution_nodes(catalog, solution)
-        return res
+        return self.__dfs()

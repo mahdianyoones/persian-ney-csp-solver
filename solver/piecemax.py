@@ -28,11 +28,11 @@ class PIECEMAX():
     def __revise(self, csp, Li, Pi, A, D):
         '''Makes the upper bound of Li consistent, if possible.'''
         if Pi in A:
-            p, max_len = A[Pi]
+            max_len = A[Pi][1]
         else:
             max_len = 0
             for piece in D[Pi]:
-                p, _len = piece
+                _len = piece[1]
                 if _len > max_len:
                     max_len = _len
         if D[Li]["max"] <= max_len:

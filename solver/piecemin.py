@@ -42,7 +42,7 @@ class PIECEMIN():
             min_len = D[Li]["min"]
         new_domain = set([])
         for piece in D[Pi]:
-            p, _len = piece
+            _len = piece[1]
             if min_len <= _len:
                 new_domain.add(piece)
         if new_domain == set([]):

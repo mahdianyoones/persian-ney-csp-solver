@@ -25,7 +25,11 @@ class test_PIECEMIN(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "P1": {("1", 40), ("2", 41), ("3", 42)},
+                "P1": {
+                    (1,40,1,1,1),
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),
+                },
             },
             "A": {"L1": 40},
             "curvar": "L1",
@@ -42,12 +46,12 @@ class test_PIECEMIN(unittest.TestCase):
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
         given = {
-            "A": {"P1": ("3", 42)},
+            "A": {"P1": (1,42,1,1,1)},
             "D": {
                 "L1": {"min": 41, "max": 100},
             },
             "curvar": "P1",
-            "value": ("3", 42),
+            "value": (1,42,1,1,1),
             "participants": {"L1", "P1"}
         }
         expect = {
@@ -61,7 +65,11 @@ class test_PIECEMIN(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "P1": {("1", 40), ("2", 41), ("3", 42)},
+                "P1": {
+                    (1,40,1,1,1),
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                },
                 "L1": {"min": 40, "max": 100}
             },
             "reduced_vars": {"L1"},
@@ -78,7 +86,11 @@ class test_PIECEMIN(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "P1": {("1", 40), ("2", 41), ("3", 42)},
+                "P1": {
+                    (1,40,1,1,1),
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                },
             },
             "A": {"L1": 41},
             "curvar": "L1",
@@ -88,7 +100,10 @@ class test_PIECEMIN(unittest.TestCase):
         expect = {
             "out": (MADE_CONSISTENT, {"P1"}),
             "D": {
-                "P1": {("2", 41), ("3", 42)},
+                "P1": {
+                    (1,41,1,1,1),
+                    (1,42,1,1,1)
+                },
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)
@@ -100,7 +115,11 @@ class test_PIECEMIN(unittest.TestCase):
         given = {
             "D": {
                 "L1": {"min": 41, "max": 100},
-                "P1": {("1", 40), ("2", 41), ("3", 42)}
+                "P1": {
+                    (1,40,1,1,1),
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                }
             },
             "reduced_vars": {"P1"},
             "participants": {"L1", "P1"}
@@ -108,7 +127,10 @@ class test_PIECEMIN(unittest.TestCase):
         expect = {
             "out": (MADE_CONSISTENT, {"P1"}),
             "D": {
-                "P1": {("2", 41), ("3", 42)},
+                "P1": {
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                },
             }
         }
         assert_constraint(csp, sut, "propagate", given, expect)
@@ -119,7 +141,11 @@ class test_PIECEMIN(unittest.TestCase):
         assert_constraint = self.__case_runner.assert_constraint
         given = {
             "D": {
-                "P1": {("1", 40), ("2", 41), ("3", 42)},
+                "P1": {
+                    (1,40,1,1,1),
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                },
                 "L1": {"min": 43, "max": 100}
             },
             "reduced_vars": {"L1"},
@@ -138,7 +164,7 @@ class test_PIECEMIN(unittest.TestCase):
             "D": {
                 "L1": {"min": 43, "max": 100}
             },
-            "A": {"P1": ("1", 40)},
+            "A": {"P1": (1,40,1,1,1)},
             "reduced_vars": {"L1"},
             "participants": {"L1", "P1"}
         }

@@ -8,8 +8,8 @@ class LEN():
     
     Formally, it enforces L1 + L2 + L3 + L4 + L5 + L6 + L7 = len.'''
 
-    def __init__(self, len):
-        self.__len = len
+    def __init__(self, len, mouthpiece_len):
+        self.__len = len - mouthpiece_len
     
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after curvar: value.

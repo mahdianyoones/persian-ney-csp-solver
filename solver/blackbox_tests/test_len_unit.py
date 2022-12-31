@@ -19,7 +19,7 @@ class test_LEN(unittest.TestCase):
     def setUp(self):
         self.__csp = CSP()
         len = 524
-        self.__sut = LEN(len)
+        self.__sut = LEN(len, 0)
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
     def test_contradiction_is_detected_by_propagate(self):

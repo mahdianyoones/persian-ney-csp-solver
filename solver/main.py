@@ -26,9 +26,14 @@ def main():
         print("No solution could exist. Unary constaints violated!")
     solver = SOLVER(csp, select, mac)
     indicator, solution = solver.find_independent(specs[kook], data_set_path)
-    if is_valid(solution, kook):
-        print("Found a solution: ")
-        print(json.dumps(solution, indent=4))
- 
+    if indicator == SOLUTION:
+        if is_valid(solution, kook):
+            print("Found a solution: ")
+            print(json.dumps(solution, indent=4))
+        else:
+            print("Found a solution, but invalid!:")    
+            print(json.dumps(solution, indent=4))
+    else:
+        print("Could not find a solution.")
 if __name__ == "__main__":
     main()

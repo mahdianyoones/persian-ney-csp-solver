@@ -8,22 +8,22 @@ class HOLE6():
 
     The following relation must exist:
 
-    L1 + L2 + L3 + L4 + L5 + hole_margin < h6.
+    mouthpiece_len + L1 + L2 + L3 + L4 + L5 + hole_margin < h6.
     
     From which we can define the upper bounds for L1, L2, L3, L4, and L5
     as such:
 
-    - L1_max < h6 - L2_min - L3_min - L4_min - L5_min - hole_margin
-    - L2_max < h6 - L1_min - L3_min - L4_min - L5_min - hole_margin
-    - L3_max < h6 - L1_min - L2_min - L4_min - L5_min - hole_margin
-    - L4_max < h6 - L1_min - L2_min - L3_min - L5_min - hole_margin
-    - L5_max < h6 - L1_min - L2_min - L3_min - L4_min - hole_margin	
+    1) L1_max < h6 - L2_min - L3_min - L4_min - L5_min - hole_margin - mouthpiece_len
+    2) L2_max < h6 - L1_min - L3_min - L4_min - L5_min - hole_margin - mouthpiece_len
+    3) L3_max < h6 - L1_min - L2_min - L4_min - L5_min - hole_margin - mouthpiece_len
+    4) L4_max < h6 - L1_min - L2_min - L3_min - L5_min - hole_margin - mouthpiece_len
+    5) L5_max < h6 - L1_min - L2_min - L3_min - L4_min - hole_margin - mouthpiece_len
     
     Also, we can detect contradiction from their lower bounds. That is:
     
-    L1_min + L2_min + L3_min + L4_min + L5_min + hole_margin >= h6.'''
+    mouthpiece_len + L1_min + L2_min + L3_min + L4_min + L5_min + hole_margin >= h6.'''
 
-    def __init__(self, h6, hmarg):
+    def __init__(self, h6, hmarg, mouthpiece_len):
         self.__h = h6
         self.__space = hmarg
         self.__impact_map = {
@@ -33,6 +33,7 @@ class HOLE6():
             "L4": {"L1", "L2", "L3", "L5"},
             "L5": {"L1", "L2", "L3", "L4"},
         }
+        self.__mp = mouthpiece_len        
 
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after the assignment curvar: value.'''
@@ -44,7 +45,7 @@ class HOLE6():
         lowers = self.__lowers(A, D, curvar, value)
         h = self.__h
         s = self.__space
-        new_domains = self.__new_domains(D, lowers, ims, h, s)		
+        new_domains = self.__new_domains(D, lowers, ims, h, s, self.__mp)		
         if new_domains == CONTRADICTION:
             return (CONTRADICTION, self.__failed_set(csp))
         return self.__update(csp, new_domains, ims)
@@ -62,16 +63,16 @@ class HOLE6():
         lowers = self.__lowers(A, D)
         h = self.__h
         s = self.__space
-        if self.__contradiction(lowers, h, s):
+        if self.__contradiction(lowers, h, s, self.__mp):
             return (CONTRADICTION, self.__failed_set(csp))
-        new_domains = self.__new_domains(D, lowers, ims, h, s)
+        new_domains = self.__new_domains(D, lowers, ims, h, s, self.__mp)
         if new_domains == CONTRADICTION:
             return (CONTRADICTION, self.__failed_set(csp))
         return self.__update(csp, new_domains, ims)
     
-    def __contradiction(self, lows, h, s):
+    def __contradiction(self, lows, h, s, mp):
         '''Detects contradiction'''
-        if lows["L1"]+lows["L2"]+lows["L3"]+lows["L4"]+lows["L5"] + s >= h:
+        if mp + lows["L1"]+lows["L2"]+lows["L3"]+lows["L4"]+lows["L5"] + s >= h:
             return True
         return False
             
@@ -103,19 +104,19 @@ class HOLE6():
                 ims.add(var)
         return ims
          
-    def __new_domains(self, D, lows, ims, h, s):
+    def __new_domains(self, D, lows, ims, h, s, mp):
         '''Calculates new consistent bounds.'''
         ups = {}
         if "L1" in ims:
-            ups["L1"] = h-lows["L2"]-lows["L3"]-lows["L4"]-lows["L5"]-s-1
+            ups["L1"] = h-mp-lows["L2"]-lows["L3"]-lows["L4"]-lows["L5"]-s-1
         if "L2" in ims:
-            ups["L2"] = h-lows["L1"]-lows["L3"]-lows["L4"]-lows["L5"]-s-1
+            ups["L2"] = h-mp-lows["L1"]-lows["L3"]-lows["L4"]-lows["L5"]-s-1
         if "L3" in ims:
-            ups["L3"] = h-lows["L1"]-lows["L2"]-lows["L4"]-lows["L5"]-s-1
+            ups["L3"] = h-mp-lows["L1"]-lows["L2"]-lows["L4"]-lows["L5"]-s-1
         if "L4" in ims:
-            ups["L4"] = h-lows["L1"]-lows["L2"]-lows["L3"]-lows["L5"]-s-1
+            ups["L4"] = h-mp-lows["L1"]-lows["L2"]-lows["L3"]-lows["L5"]-s-1
         if "L5" in ims:
-            ups["L5"] = h-lows["L1"]-lows["L2"]-lows["L3"]-lows["L4"]-s-1
+            ups["L5"] = h-mp-lows["L1"]-lows["L2"]-lows["L3"]-lows["L4"]-s-1
         new_domains = {}			
         for var, new_upper in ups.items():
             if new_upper < D[var]["min"]:

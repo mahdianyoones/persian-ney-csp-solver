@@ -7,22 +7,22 @@ class HOLE1():
 
     The following relation must exist between variables.
 
-    L1 + L2 + L3 + hole_margin < h1.
+    mouthpiece_len + L1 + L2 + L3 + hole_margin < h1.
 
     From which we can define the upper bounds for L1, L2, and L3 as such:
     
-    1) L1_max < h3 - L2_min - L3_min - hole_margin
-    2) L2_max < h3 - L1_min - L3_min - hole_margin
-    3) L3_max < h3 - L1_min - L2_min - hole_margin
+    1) L1_max < h3 - L2_min - L3_min - hole_margin - mouthpiece_len
+    2) L2_max < h3 - L1_min - L3_min - hole_margin - mouthpiece_len
+    3) L3_max < h3 - L1_min - L2_min - hole_margin - mouthpiece_len
 
     Also, we can detect contradiction from their lower bounds. That is:
     
-    L1_min + L2_min + L3_min + hole_margin >= h3.
+    mouthpiece_len + L1_min + L2_min + L3_min + hole_margin >= h3.
     
     In this case, consistency is impossible, since the lower bounds cannot
     be reduced.'''
 
-    def __init__(self, h1, hmarg):
+    def __init__(self, h1, hmarg, mouthpiece_len):
         self.__h = h1
         self.__space = hmarg
         self.__impact_map = {
@@ -30,6 +30,7 @@ class HOLE1():
             "L2": {"L1", "L3"},
             "L3": {"L1", "L2"}
         }
+        self.__mp = mouthpiece_len
     
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after assignment curvar: value.'''
@@ -41,7 +42,7 @@ class HOLE1():
         lowers = self.__lowers(A, D, curvar, value)
         h = self.__h
         s = self.__space
-        new_domains = self.__new_domains(D, lowers, ims, h, s)
+        new_domains = self.__new_domains(D, lowers, ims, h, s, self.__mp)
         if new_domains == CONTRADICTION:
             return (CONTRADICTION, self.__failed_set(csp))		
         return self.__update(csp, new_domains, ims)
@@ -59,16 +60,16 @@ class HOLE1():
         lowers = self.__lowers(A, D)
         h = self.__h
         s = self.__space
-        if self.__contradiction(lowers, h, s):
+        if self.__contradiction(lowers, h, s, self.__mp):
             return (CONTRADICTION, self.__failed_set(csp))
-        new_domains = self.__new_domains(D, lowers, ims, h, s)
+        new_domains = self.__new_domains(D, lowers, ims, h, s, self.__mp)
         if new_domains == CONTRADICTION:
             return (CONTRADICTION, self.__failed_set(csp))
         return self.__update(csp, new_domains, ims)
     
-    def __contradiction(self, lows, h, s):
+    def __contradiction(self, lows, h, s, mp):
         '''Detects contradiction'''
-        if lows["L1"] + lows["L2"] + lows["L3"] + s >= h:
+        if mp + lows["L1"] + lows["L2"] + lows["L3"] + s >= h:
             return True
         return False
             
@@ -94,15 +95,15 @@ class HOLE1():
                 ims.add(var)
         return ims
          
-    def __new_domains(self, D, lowers, ims, h, s):
+    def __new_domains(self, D, lowers, ims, h, s, mp):
         '''Calculates new consistent bounds.'''
         ups = {}
         if "L1" in ims:
-            ups["L1"] = h - lowers["L2"] - lowers["L3"] - s - 1
+            ups["L1"] = h - mp - lowers["L2"] - lowers["L3"] - s - 1
         if "L2" in ims:
-            ups["L2"] = h - lowers["L1"] - lowers["L3"] - s - 1
+            ups["L2"] = h - mp - lowers["L1"] - lowers["L3"] - s - 1
         if "L3" in ims:
-            ups["L3"] = h - lowers["L1"] - lowers["L2"] - s - 1
+            ups["L3"] = h - mp - lowers["L1"] - lowers["L2"] - s - 1
         new_domains = {}			
         for var, new_upper in ups.items():
             if new_upper < D[var]["min"]:

@@ -19,7 +19,7 @@ class Test_HOLE3(unittest.TestCase):
         self.__csp = CSP()
         hmarg = 10
         h3 = 371
-        self.__sut = HOLE3(h3, hmarg)
+        self.__sut = HOLE3(h3, hmarg, 0)
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
     def test_contradiction_is_detected(self):

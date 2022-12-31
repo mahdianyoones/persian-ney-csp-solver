@@ -28,13 +28,13 @@ class MAC():
         self.__lendecref = LENDEC()
         self.__llref = LENDEC_LOWER()
         self.__refs = {
-            "hole1":		HOLE1(spec["h1"], spec["hmarg"]),
-            "hole3":		HOLE3(spec["h3"], spec["hmarg"]),
-            "hole6":		HOLE6(spec["h6"], spec["hmarg"]),
+            "hole1":		HOLE1(spec["h1"], spec["hmarg"], spec["mp"]),
+            "hole3":		HOLE3(spec["h3"], spec["hmarg"], spec["mp"]),
+            "hole6":		HOLE6(spec["h6"], spec["hmarg"], spec["mp"]),
             "half":			HALF(),
             "samethick":	SAMETHICK(),
             "sameround":	SAMEROUND(),
-            "len":			LEN(spec["len"]),
+            "len":			LEN(spec["len"], spec["mp"]),
             "diamdec1-2":       self.__diamdecref,
             "diamdec2-3":       self.__diamdecref,
             "diamdec3-4":       self.__diamdecref,

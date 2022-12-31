@@ -18,19 +18,19 @@ def get_violations(a, kook = None):
         violated_vars.update(set(["L1", "L2"]))
         violated_consts.add("half")
     # hole 1
-    if not a["L1"]+a["L2"]+a["L3"]+spec["hmarg"] < spec["h1"]:
+    if not spec["mp"]+a["L1"]+a["L2"]+a["L3"]+spec["hmarg"] < spec["h1"]:
         violated_vars.update(set(["L1", "L2", "L3"]))
         violated_consts.add("hole1")
     # hole 3    
-    if not a["L1"]+a["L2"]+a["L3"]+a["L4"]+spec["hmarg"] < spec["h3"]:
+    if not spec["mp"]+a["L1"]+a["L2"]+a["L3"]+a["L4"]+spec["hmarg"] < spec["h3"]:
         violated_vars.update(set(["L1", "L2", "L3", "L4"]))
         violated_consts.add("hole3")
     # hole 6  
-    if not a["L1"]+a["L2"]+a["L3"]+a["L4"]+a["L5"]+spec["hmarg"] < spec["h6"]:
+    if not spec["mp"]+a["L1"]+a["L2"]+a["L3"]+a["L4"]+a["L5"]+spec["hmarg"] < spec["h6"]:
         violated_vars.update(set(["L1", "L2", "L3", "L4", "L5"]))
         violated_consts.add("hole6")
     # len
-    if not a["L1"]+a["L2"]+a["L3"]+a["L4"]+a["L5"]+a["L6"]+a["L7"] == spec["len"]:
+    if not spec["mp"]+a["L1"]+a["L2"]+a["L3"]+a["L4"]+a["L5"]+a["L6"]+a["L7"] == spec["len"]:
         violated_vars.update(set(["L1", "L2", "L3", "L4", "L5", "L6", "L7"]))
         violated_consts.add("len")
     # lendec lower

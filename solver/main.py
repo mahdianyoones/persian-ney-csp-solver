@@ -15,7 +15,7 @@ parent = os.path.dirname(current)
 sp.append(parent)
 
 def main():
-    kook = "F_short"
+    kook = "Bb"
     data_set_path = current+"/pieces.csv"
     csp = CSP()
     select = SELECT(csp)

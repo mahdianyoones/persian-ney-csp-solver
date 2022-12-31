@@ -43,49 +43,52 @@ class test_SOLVER_INTEGRATION(unittest.TestCase):
 
     # Existing solutions are found in an artificial dataset
 
-    def finds_a_solution_for_F_short_artificial_dataset(self):
+    def test_finds_a_solution_for_F_short_artificial_dataset(self):
         self.__assert_finds_solution("F_short", self.SOLUTION_DS)
 
-    def finds_a_solution_for_E_artificial_dataset(self):
+    def test_finds_a_solution_for_E_artificial_dataset(self):
         self.__assert_finds_solution("E", self.SOLUTION_DS)
 
-    def finds_a_solution_for_D_artificial_dataset(self):
+    def test_finds_a_solution_for_D_artificial_dataset(self):
         self.__assert_finds_solution("D", self.SOLUTION_DS)
 
-    def finds_a_solution_for_C_artificial_dataset(self):
+    def test_finds_a_solution_for_C_artificial_dataset(self):
         self.__assert_finds_solution("C", self.SOLUTION_DS)
 
-    def finds_a_solution_for_Bb_artificial_dataset(self):
+    def test_finds_a_solution_for_Bb_artificial_dataset(self):
         self.__assert_finds_solution("Bb", self.SOLUTION_DS)
 
-    def finds_a_solution_for_A_artificial_dataset(self):
+    def test_finds_a_solution_for_A_artificial_dataset(self):
         self.__assert_finds_solution("A", self.SOLUTION_DS)
 
-    def finds_a_solution_for_G_artificial_dataset(self):
+    def test_finds_a_solution_for_G_artificial_dataset(self):
         self.__assert_finds_solution("G", self.SOLUTION_DS)
 
-    def finds_a_solution_for_F_tall_artificial_dataset(self):
+    def test_finds_a_solution_for_F_tall_artificial_dataset(self):
         self.__assert_finds_solution("F_tall", self.SOLUTION_DS)
 
     # Existing solutions are found in a real dataset
 
-    def finds_a_solution_for_F_short_real_dataset(self):
+    def test_finds_a_solution_for_F_short_real_dataset(self):
         self.__assert_finds_solution("F_short", self.REAL_DS)
 
-    def finds_a_solution_for_E_real_dataset(self):
+    def test_finds_a_solution_for_E_real_dataset(self):
         self.__assert_finds_solution("E", self.REAL_DS)
 
-    def finds_a_solution_for_D_real_dataset(self):
+    def test_finds_a_solution_for_D_real_dataset(self):
         self.__assert_finds_solution("D", self.REAL_DS)
 
-    def finds_a_solution_for_C_real_dataset(self):
+    def test_finds_a_solution_for_C_real_dataset(self):
         self.__assert_finds_solution("C", self.REAL_DS)
 
-    def finds_a_solution_for_Bb_real_dataset(self):
+    def test_finds_a_solution_for_Bb_real_dataset(self):
         self.__assert_finds_solution("Bb", self.REAL_DS)
 
-    def finds_a_solution_for_A_real_dataset(self):
+    def test_finds_a_solution_for_A_real_dataset(self):
         self.__assert_finds_solution("A", self.REAL_DS)
+
+    def test_finds_a_solution_for_G_real_data(self):
+        self.__assert_finds_solution("G", self.REAL_DS)
 
     # No solution is found in an artificial dataset
 
@@ -114,9 +117,6 @@ class test_SOLVER_INTEGRATION(unittest.TestCase):
         self.__assert_finds_no_solution("F_tall", self.NO_SOLUTION_DS)
 
     # No solution is found in a real dataset
-
-    def test_finds_no_solution_for_G_real_data(self):
-        self.__assert_finds_no_solution("G", self.REAL_DS)
 
     def test_finds_no_solution_for_F_tall_real_data(self):
         self.__assert_finds_no_solution("F_tall", self.REAL_DS)

@@ -2,13 +2,11 @@ from constants import *
 import copy
 
 class PIECEMIN():
-    '''Implements piecemin consistency algorithm.
+    '''Establishes Pi.len <= Li.min when Li is not assigned,
+    and Pi.len <= Li.value when assigned.
     
     Ensures that pieces suitable for a node (Pi) are at least as tall as the
-    length of the node (Li).
-
-    i.e. it remove values from Pi where Pi.len < Li when Li is assigned, and
-    Pi.len < Li[min] when Li is not assigned.'''
+    length of the node (Li). Illegal pieces are removed from the domain of Pi.'''
 
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after curvar: value assignment.

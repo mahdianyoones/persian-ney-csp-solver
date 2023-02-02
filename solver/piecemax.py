@@ -2,6 +2,8 @@ from constants import *
 import copy
 
 class PIECEMAX():
+    '''Establishes Li.max <= tallest(Pi) when Li is not assigned,
+    and Li.value <= tallest(Pi) when it is assigned.'''
 
     def establish(self, csp, curvar, value, participants):
         '''Establishes consistency after curvar: value assignment.

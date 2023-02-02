@@ -35,5 +35,6 @@ def main():
             print(json.dumps(solution, indent=4))
     else:
         print("Could not find a solution.")
+        
 if __name__ == "__main__":
     main()

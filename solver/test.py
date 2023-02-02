@@ -14,7 +14,7 @@ class bcolors:
 def run_all_tests():
 	print(f"{bcolors.OKBLUE}\nRunning all test cases\n{bcolors.ENDC}")
 	loader = unittest.TestLoader()
-	suite = loader.discover("solver/blackbox_tests")
+	suite = loader.discover("blackbox_tests")
 	runner = unittest.TextTestRunner()
 	runner.run(suite)
 

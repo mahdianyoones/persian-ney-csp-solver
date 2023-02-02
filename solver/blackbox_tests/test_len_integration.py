@@ -8,7 +8,6 @@ sp.append(parent)
 sp.append(grandparent)
 
 from csp import CSP
-from catalog import CATALOG
 from mac import MAC
 from unary import UNARY
 from testspec import specs

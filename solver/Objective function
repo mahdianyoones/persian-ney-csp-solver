@@ -1,0 +1,116 @@
+The optimal solution has three propertiers:
+
+1 - Variation in items
+
+e.g. {Bb, C, and F_tall} is preferred over {Bb, Bb, Bb}
+
+2 - Contains more valuable items
+
+e.g. {Bb, C, A} is preferred over {E, F_tall, G}
+
+3 - Contains more items
+
+e.g. {Bb, Bb, Bb} is preferred over {Bb}
+
+We can combine the three objectives to scalarize the objective function. Three variables are calculated per each candidate solution:
+
+1- Variation
+
+{Bb, C, C, C, C, C, C, C, F_tall} yields 3
+
+{Bb, Bb, C, C, C, C, C, C, F_tall} yields 3
+
+{Bb, Bb, Bb, C, C, C, F_tall, F_tall, F_tall} yields 3
+
+{Bb, D, A, C, C, C, F_tall, F_tall, F_tall} yields 5
+
+{Bb, D, A, E, C, C, F_short, F_tall, F_tall} yields 7
+
+2- Sum of values of instruments 
+
+{Bb, C, C, C, C, C, C, C, F_tall} yields 4*8+1 = 33
+
+{Bb, Bb, C, C, C, C, C, C, F_tall} yields 8*4+1 = 33
+
+{Bb, Bb, Bb, C, C, C, F_tall, F_tall, F_tall} yields 6*4+2 = 26
+
+{Bb, D, A, C, C, C, F_tall, F_tall, F_tall} yields 4*4+3+2 = 16+5 = 21
+
+{Bb, D, A, E, C, C, F_short, F_tall, F_tall} yields 4+3+3+2+4+4+1+1+1 = 10+3+8+2 = 23
+
+3. Number of items
+
+{Bb, C, C, C, C, C, C, C, F_tall} yields 9
+
+{E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,EE,E,E,E} yields 20
+
+Ranges of above numbers:
+
+number of items => 1..30 (depending on the overall length of available pieces)
+variation => 1..8
+sum of items values => 120 (30*4)
+
+Parameters are normalized into a value between 0 and 1:
+
+    parameter - min_value
+    ----------------------
+    max_value - min_value
+
+Variation is more important than value and quantity, and value is more important than quantity:
+
+w_variation 3
+w_value 2
+w_abundance 1
+
+Therefore, the objective function would be:
+
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000
+f(solution) = (w_variation * variation_normalized) + (w_value * value_normalized) 
+                + (w_abundance * abundance_normalized)
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+Value of each items and how they are calculated:
+
+name       len    value
+-------------------------
+Bb          59      4
+C           53      4
+A           62      3
+D           47      3
+G           70      2
+E           42      2
+F_tall      79      1          
+F_short     39      1
+
+Instruments with moderate length are more preferrable. That is too short or too long instruments are rarely used. The middle length of all lengths is 56. The more distance the length of instrument from this middle, the worst, and the closer the better.
+
+53 and 59 are closest => Highest value = 4
+47 and 62 are second closest => Second value = 3
+42 and 70 are third closest => Third value = 2
+39 and 79 have most distance => Least value = 1
+
+39 42 47 53 {56} 59 62 70 79
+
+=======================================================================
+
+Bound function:
+
+Given a partial solution and an item to add to the solution, predict what will be the maximum utility of the solution.
+
+The easiest, and most relaxing, estimate is optimistically assuming that the remaining pieces would yield maximum value, variation, and abundance. For instance, if at any stage of the search, the totall length of unassigned pieces is 400cm, this estimate would be as follows:
+
+Maximum number of possible instruments: 
+
+    400 / most valuable instrument = 400 // 59 = 6 + instruments so far
+
+Maximum number of possible variation:
+
+    max(variation so far + 6, 7)
+
+Maximum value of instruments: 6*4 = 24 + values so far
+
+b(candidate) = (w_variation * max_variation_normalized) + 
+                (w_value * max_value_normalized) + 
+                (w_abundance * max_abundance_normalized) + 
+                f(candidate's parent)
+

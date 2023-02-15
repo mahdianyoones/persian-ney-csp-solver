@@ -2,6 +2,19 @@ import copy
 from constants import *
 import csv
 
+def get_pieces(data_set_path):
+	pieces = set([])
+	with open(data_set_path) as f:
+		reader = csv.reader(f)
+		for p in reader:
+			L = float(p[1]) * 10 # cm -> mm
+			T = float(p[2])
+			R = float(p[3])
+			D = float(p[4])
+			no = p[0]
+			pieces.add((no, L, T, R, D))
+	return pieces
+
 class UNARY():
 	'''Implements unary constraints.
 	
@@ -32,16 +45,7 @@ class UNARY():
 		Contradiction cannot occur at this stage unless the dataset contains
 		no pieces.'''	
 		X = csp.get_variables()
-		pieces = set([])
-		with open(data_set_path) as f:
-			reader = csv.reader(f)
-			for p in reader:
-				L = float(p[1]) * 10 # cm -> mm
-				T = float(p[2])
-				R = float(p[3])
-				D = float(p[4])
-				no = p[0]
-				pieces.add((no, L, T, R, D))
+		pieces = get_pieces(data_set_path)
 		if len(pieces) == 0:
 			return CONTRADICTION
 		for var in X:

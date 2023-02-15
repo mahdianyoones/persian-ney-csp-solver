@@ -1,7 +1,7 @@
 # Specification of the desired Ney
 common_specs = {
-	"mp":			10,							# mouthpiece length
-	"holed":		10,							# holes diameter
+	"mp":			9,							# mouthpiece length
+	"holed":		9,							# holes diameter
 	"topd":			{"min": 18, "max": 24},		# diamter at top
 	"minl":			20,							# minimum chunk length
 	"hmarg":		5,							# minimum hole/hole and hole/junction space

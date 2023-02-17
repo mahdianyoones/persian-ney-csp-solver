@@ -30,6 +30,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 30, "max": 36},
                 "L2": {"min": 59, "max": 70}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"}
         }
         expect = {
@@ -45,6 +46,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 19, "max": 30},
                 "L2": {"min": 40, "max": 61}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"}
         }
         expect = {
@@ -65,6 +67,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 29, "max": 36},
                 "L2": {"min": 60, "max": 70}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"}
         }
         expect = {
@@ -85,6 +88,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 30, "max": 35},
                 "L2": {"min": 59, "max": 72}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"}
         }
         expect = {
@@ -105,6 +109,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 30, "max": 35},
                 "L2": {"min": 60, "max": 70}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"}
         }
         expect = {
@@ -121,6 +126,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 20, "max": 20},
                 "L2": {"min": 41, "max": 70}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"},
         }
         expect = {
@@ -132,6 +138,7 @@ class test_HALF(unittest.TestCase):
                 "L1": {"min": 40, "max": 70},
                 "L2": {"min": 22, "max": 22}
             },
+            "participants": {"L1", "L2"},
             "reduced_vars": {"L1"},
         }
         expect = {
@@ -147,6 +154,7 @@ class test_HALF(unittest.TestCase):
             "D": {
                 "L2": {"min": 59, "max": 61}
             },
+            "participants": {"L1", "L2"},
             "A": {
                 "L1": 30
             },
@@ -164,6 +172,7 @@ class test_HALF(unittest.TestCase):
             "D": {
                 "L1": {"min": 29, "max": 31}
             },
+            "participants": {"L1", "L2"},
             "A": {
                 "L2": 60
             },
@@ -186,6 +195,7 @@ class test_HALF(unittest.TestCase):
             "D": {
                 "L2": {"min": 60, "max": 60}
             },
+            "participants": {"L1", "L2"},
             "A": {
                 "L1": 30
             },
@@ -200,6 +210,7 @@ class test_HALF(unittest.TestCase):
             "D": {
                 "L1": {"min": 30, "max": 30}
             },
+            "participants": {"L1", "L2"},
             "A": {
                 "L2": 60
             },

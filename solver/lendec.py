@@ -1,5 +1,4 @@
 from constants import *
-import copy
 
 class LENDEC():
     '''Implements length decrement boundary consistency.
@@ -20,7 +19,7 @@ class LENDEC():
     For each relation, a binary constraint is defined. This class establishes
     binary consistency for them all.'''
 
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, kook):
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
@@ -29,7 +28,7 @@ class LENDEC():
         D = csp.get_domains()
         return self.__revise(csp, Li, Lj, A, D)
 
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, kook):
         '''Establishes consistency after reduction of some variables.'''
         Li, Lj = sorted(participants)
         A = csp.get_assignment()

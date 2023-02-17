@@ -17,14 +17,14 @@ class LENDEC_LOWER():
 
     L6 >= 2/3 L5'''
 
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, kook):
         '''Establishes consistency after curvar: value assignment.'''
         Li, Lj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(csp, Li, Lj, A, D)
 
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, kook):
         '''Establishes consistency after reduction of some variables.'''
         Li, Lj = sorted(participants)
         A = csp.get_assignment()

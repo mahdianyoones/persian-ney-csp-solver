@@ -1,10 +1,16 @@
 import copy, random
 
 class CSP():
+    '''Encodes a CSP problem, encapculating operations on varialbes,
+    domains, values, and constraints.'''
 
-    def __init__(self, X=None, C=None):
+    def __init__(self, S=1, X=None, C=None):
+        '''Initiates an intial CSP problem.
+        
+        S is the number of solutions required.
+        X and C are possible to pass for test.'''
         if X == None and C == None:
-            self.__init_main_csp()
+            self.__init_main_csp(S)
         else:
             self.__X = X
             self.__C = C
@@ -14,47 +20,52 @@ class CSP():
         self.__unassigned = copy.copy(self.__X)
         self.__assigned = [] # order matters
 
-    def __init_main_csp(self):
-        self.__X = {"L1", "L2", "L3", "L4", "L5", "L6", "L7",
-                    "P1", "P2", "P3", "P4", "P5", "P6", "P7"}
-        self.__C = {
-            "samethick":	    {"P1", "P2", "P3", "P4", "P5", "P6", "P7"},
-            "sameround":	    {"P1", "P2", "P3", "P4", "P5", "P6", "P7"},
-            "len":	 		    {"L1", "L2", "L3", "L4", "L5", "L6", "L7"},
-            "hole6":		    {"L1", "L2", "L3", "L4", "L5"},
-            "hole3":		    {"L1", "L2", "L3", "L4"},
-            "hole1":		    {"L1", "L2", "L3",},
-            "half":			    {"L1", "L2"},
-            "diamdec1-2":       {"P1", "P2"},
-            "diamdec2-3":       {"P2", "P3"},
-            "diamdec3-4":       {"P3", "P4"},
-            "diamdec4-5":       {"P4", "P5"},
-            "diamdec5-6":       {"P5", "P6"},
-            "diamdec6-7":       {"P6", "P7"},
-            "lendec2-3":        {"L2", "L3"},
-            "lendec3-4":        {"L3", "L4"},
-            "lendec4-5":        {"L4", "L5"},
-            "lendec5-6":        {"L5", "L6"},
-            "lendec6-7":        {"L6", "L7"},
-            "lendeclower2-3":   {"L2", "L3"},
-            "lendeclower3-4":   {"L3", "L4"},
-            "lendeclower4-5":   {"L4", "L5"},
-            "lendeclower5-6":   {"L5", "L6"},
-            "piecemin1":        {"P1", "L1"},
-            "piecemin2":        {"P2", "L2"},
-            "piecemin3":        {"P3", "L3"},
-            "piecemin4":        {"P4", "L4"},
-            "piecemin5":        {"P5", "L5"},
-            "piecemin6":        {"P6", "L6"},
-            "piecemin7":        {"P7", "L7"},
-            "nodemax1":         {"P1", "L1"},
-            "nodemax2":         {"P2", "L2"},
-            "nodemax3":         {"P3", "L3"},
-            "nodemax4":         {"P4", "L4"},
-            "nodemax5":         {"P5", "L5"},
-            "nodemax6":         {"P6", "L6"},
-            "nodemax7":         {"P7", "L7"},
-        }
+    def __init_main_csp(self, S):
+        '''Creates variables and constraints on them.
+        
+        S is the number of solutions required.
+        e.g. if S = 2, two sets of variables are created (2*14 = 28 vars).'''
+        self.__X = set([])
+        self.__C = {}
+        for i in range(0, S):
+            self.__X.update({"L"+str(i*7+j) for j in range(1, 8)})
+            self.__X.update({"P"+str(i*7+j) for j in range(1, 8)})
+            self.__C["samethick"+str(i)] = {"P"+str(i*7+j) for j in range(1, 8)}
+            self.__C["sameround"+str(i)] = {"P"+str(i*7+j) for j in range(1, 8)}
+            self.__C["len"+str(i)] = {"L"+str(i*7+j) for j in range(1, 8)}
+            self.__C["hole6_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 6)}
+            self.__C["hole3_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 5)}
+            self.__C["hole1_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 4)}
+            self.__C["half_"+str(i)] = {"L"+str(i*7+1), "L"+str(i*7+2)}
+            self.__C["diamdec1-2_"+str(i)] = {"P"+str(i*7+1), "P"+str(i*7+2)}
+            self.__C["diamdec2-3_"+str(i)] = {"P"+str(i*7+2), "P"+str(i*7+3)}
+            self.__C["diamdec3-4_"+str(i)] = {"P"+str(i*7+3), "P"+str(i*7+4)}
+            self.__C["diamdec4-5_"+str(i)] = {"P"+str(i*7+4), "P"+str(i*7+5)}
+            self.__C["diamdec5-6_"+str(i)] = {"P"+str(i*7+5), "P"+str(i*7+6)}
+            self.__C["diamdec6-7_"+str(i)] = {"P"+str(i*7+7), "P"+str(i*7+7)}
+            self.__C["lendec2-3_"+str(i)] = {"L"+str(i*7+2), "L"+str(i*7+3)}
+            self.__C["lendec3-4_"+str(i)] = {"L"+str(i*7+3), "L"+str(i*7+4)}
+            self.__C["lendec4-5_"+str(i)] = {"L"+str(i*7+4), "L"+str(i*7+5)}
+            self.__C["lendec5-6_"+str(i)] = {"L"+str(i*7+5), "L"+str(i*7+6)}
+            self.__C["lendec6-7_"+str(i)] = {"L"+str(i*7+6), "L"+str(i*7+7)}
+            self.__C["lendeclower2-3_"+str(i)] = {"L"+str(i*7+2), "L"+str(i*7+3)}
+            self.__C["lendeclower3-4_"+str(i)] = {"L"+str(i*7+3), "L"+str(i*7+4)}
+            self.__C["lendeclower4-5_"+str(i)] = {"L"+str(i*7+4), "L"+str(i*7+5)}
+            self.__C["lendeclower5-6_"+str(i)] = {"L"+str(i*7+5), "L"+str(i*7+6)}
+            self.__C["piecemin1_"+str(i)] = {"P"+str(i*7+1), "L"+str(i*7+1)}
+            self.__C["piecemin2_"+str(i)] = {"P"+str(i*7+2), "L"+str(i*7+2)}
+            self.__C["piecemin3_"+str(i)] = {"P"+str(i*7+3), "L"+str(i*7+3)}
+            self.__C["piecemin4_"+str(i)] = {"P"+str(i*7+4), "L"+str(i*7+4)}
+            self.__C["piecemin5_"+str(i)] = {"P"+str(i*7+5), "L"+str(i*7+5)}
+            self.__C["piecemin6_"+str(i)] = {"P"+str(i*7+6), "L"+str(i*7+6)}
+            self.__C["piecemin7_"+str(i)] = {"P"+str(i*7+7), "L"+str(i*7+7)}
+            self.__C["nodemax1_"+str(i)] = {"P"+str(i*7+1), "L"+str(i*7+1)}
+            self.__C["nodemax2_"+str(i)] = {"P"+str(i*7+2), "L"+str(i*7+2)}
+            self.__C["nodemax3_"+str(i)] = {"P"+str(i*7+3), "L"+str(i*7+3)}
+            self.__C["nodemax4_"+str(i)] = {"P"+str(i*7+4), "L"+str(i*7+4)}
+            self.__C["nodemax5_"+str(i)] = {"P"+str(i*7+5), "L"+str(i*7+5)}
+            self.__C["nodemax6_"+str(i)] = {"P"+str(i*7+6), "L"+str(i*7+6)}
+            self.__C["nodemax7_"+str(i)] = {"P"+str(i*7+7), "L"+str(i*7+7)}
 
     def update_domain(self, var, new_domain):
         self.__D[var] = new_domain
@@ -83,7 +94,7 @@ class CSP():
             domain = self.get_domain(var)
             lower = int(domain["min"])
             upper = int(domain["max"])
-            if var == "L2":
+            if int(var[1:]) % 7 == 2: # i.e. L2, L9, L16, & so on
                 vals = [v for v in range(lower, upper+2, 2)]
             else:
                 vals = [v for v in range(lower, upper+1)]

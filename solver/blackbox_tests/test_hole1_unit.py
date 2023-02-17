@@ -17,9 +17,21 @@ class Test_HOLE1(unittest.TestCase):
             
     def setUp(self):
         self.__csp = CSP()
-        hmarg = 10
-        h1 = 312
-        self.__sut = HOLE1(h1, hmarg, 0)
+        specs = {
+            "C": {
+                "mp":   0,
+                "holed":    10,
+                "hmarg":    10,
+                "len": round(524.4),
+                "h6": round(467.2),
+                "h5": round(428.4),
+                "h4": round(392.9),
+                "h3": round(370.8),
+                "h2": round(350.0),
+                "h1": round(311.8)
+            }
+        }
+        self.__sut = HOLE1(self.__csp, specs)
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
     def test_contradiction_is_detected(self):
@@ -33,6 +45,8 @@ class Test_HOLE1(unittest.TestCase):
                 "L2": {"min": 48, "max": 48},
                 "L3": {"min": 122, "max": 122}
             },
+            "participants": {"L1", "L2", "L3"},
+            "kook": "C",
             "reduced_vars": {"L1"},
         }
         expect = {
@@ -45,7 +59,9 @@ class Test_HOLE1(unittest.TestCase):
             "D": {
                 "L3": {"min": 122, "max": 122}
             },
+            "participants": {"L1", "L2", "L3"},
             "curvar": "L2",
+            "kook": "C",
             "value": 48
         }
         expect = {
@@ -63,6 +79,8 @@ class Test_HOLE1(unittest.TestCase):
                 "L2": {"min": 48, "max": 48},
                 "L3": {"min": 122, "max": 122}
             },
+            "participants": {"L1", "L2", "L3"},
+            "kook": "C",
             "reduced_vars": {"L1", "L2"},
         }
         expect = {
@@ -80,6 +98,8 @@ class Test_HOLE1(unittest.TestCase):
                 "L2": {"min": 48, "max": 49},
                 "L3": {"min": 122, "max": 123}
             },
+            "participants": {"L1", "L2", "L3"},
+            "kook": "C",
             "reduced_vars": {"L1", "L2"},
         }
         expect = {

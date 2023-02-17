@@ -30,7 +30,12 @@ class test_DIAMDEC(unittest.TestCase):
     
     def setUp(self):
         self.__csp = CSP()
-        self.__sut = DIAMDEC({"min": 0.5, "max": 1.0})
+        specs = {
+            "C": {
+                "ddiff":    {"min": 0.5, "max": 1.0},                
+            }
+        }
+        self.__sut = DIAMDEC(specs)
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
     def test_establish_finds_all_consistent(self):
@@ -42,6 +47,7 @@ class test_DIAMDEC(unittest.TestCase):
             "D": {
                 "P2": {(0, 0, 0, 0, 13)},
             },
+            "kook": "C",
             "curvar": "P1",
             "value": (1, 1, 1, 1, 14),
             "participants": {"P1", "P2"}
@@ -60,6 +66,7 @@ class test_DIAMDEC(unittest.TestCase):
                 "P1": {(1, 1, 1, 1, 14), (1, 1, 1, 1, 15)},
                 "P2": {(1, 1, 1, 1, 13), (1, 1, 1, 1, 14)},
             },
+            "kook": "C",
             "reduced_vars": {"P1"},
             "participants": {"P1", "P2"}
         }
@@ -88,6 +95,7 @@ class test_DIAMDEC(unittest.TestCase):
                     (1, 1, 1, 1, 13)
                 }
             },
+            "kook": "C",
             "curvar": "P6",
             "value": (1, 1, 1, 1, 10),
             "participants": {"P6", "P7"}
@@ -115,6 +123,7 @@ class test_DIAMDEC(unittest.TestCase):
                     (1, 1, 1, 1, 8.9)                    
                 },
             },
+            "kook": "C",
             "curvar": "P6",
             "value": (1, 1, 1, 1, 10),
             "participants": {"P6", "P7"}
@@ -139,6 +148,7 @@ class test_DIAMDEC(unittest.TestCase):
                     (1, 1, 1, 1, 8.9)                    
                 },
             },
+            "kook": "C",
             "reduced_vars": {"P6"},
             "participants": {"P6", "P7"}
         }

@@ -1,5 +1,4 @@
 from constants import *
-import copy
 
 class DIAMDEC():
     '''Implements diameter decrement consistency.
@@ -22,24 +21,24 @@ class DIAMDEC():
 
         This constraint restricts final solutions to conic-shape ones.'''
 
-    def __init__(self, ddiff):
-        self.__ddiff = ddiff
+    def __init__(self, specs):
+        self.__specs = specs
 
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, kook):
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
         Pi, Pj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
-        return self.__revise(csp, Pi, Pj, A, D, self.__ddiff)
+        return self.__revise(csp, Pi, Pj, A, D, self.__specs[kook]["ddiff"])
 
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, kook):
         '''Establishes consistency after reduction of some variables.'''
         Pi, Pj = sorted(participants)
         A = csp.get_assignment()
         D = csp.get_domains()
-        return self.__revise(csp, Pi, Pj, A, D, self.__ddiff)
+        return self.__revise(csp, Pi, Pj, A, D, self.__specs[kook]["ddiff"])
 
     def __revise(self, csp, Pi, Pj, A, D, ddiff):
         '''Removes illegal values from Dvari and Dvarj'''

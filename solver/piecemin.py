@@ -1,5 +1,4 @@
 from constants import *
-import copy
 
 class PIECEMIN():
     '''Establishes Pi.len <= Li.min when Li is not assigned,
@@ -8,11 +7,11 @@ class PIECEMIN():
     Ensures that pieces suitable for a node (Pi) are at least as tall as the
     length of the node (Li). Illegal pieces are removed from the domain of Pi.'''
 
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, kook):
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
-        i = curvar[1]
+        i = curvar[1:]
         Li, Pi = "L" + i, "P" + i
         A = csp.get_assignment()
         if Pi in A:
@@ -20,10 +19,10 @@ class PIECEMIN():
         D = csp.get_domains()
         return self.__revise(csp, Li, Pi, A, D)
 
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, kook):
         '''Establishes consistency after reduction of some variables.'''
         for p in participants:
-            i = p[1]
+            i = p[1:]
             break
         Li, Pi = "L" + i, "P" + i
         A = csp.get_assignment()

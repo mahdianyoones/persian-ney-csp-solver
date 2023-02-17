@@ -34,6 +34,7 @@ class test_PIECEMIN(unittest.TestCase):
             "A": {"L1": 40},
             "curvar": "L1",
             "value": 40,
+            "kook": "anything",
             "participants": {"L1", "P1"}
         }
         expect = {
@@ -50,6 +51,7 @@ class test_PIECEMIN(unittest.TestCase):
             "D": {
                 "L1": {"min": 41, "max": 100},
             },
+            "kook": "anything",
             "curvar": "P1",
             "value": (1,42,1,1,1),
             "participants": {"L1", "P1"}
@@ -72,6 +74,7 @@ class test_PIECEMIN(unittest.TestCase):
                 },
                 "L1": {"min": 40, "max": 100}
             },
+            "kook": "anything",
             "reduced_vars": {"L1"},
             "participants": {"L1", "P1"}
         }
@@ -95,6 +98,7 @@ class test_PIECEMIN(unittest.TestCase):
             "A": {"L1": 41},
             "curvar": "L1",
             "value": 41,
+            "kook": "anything",
             "participants": {"L1", "P1"}
         }
         expect = {
@@ -121,6 +125,7 @@ class test_PIECEMIN(unittest.TestCase):
                     (1,42,1,1,1),                    
                 }
             },
+            "kook": "anything",
             "reduced_vars": {"P1"},
             "participants": {"L1", "P1"}
         }
@@ -148,6 +153,7 @@ class test_PIECEMIN(unittest.TestCase):
                 },
                 "L1": {"min": 43, "max": 100}
             },
+            "kook": "anything",
             "reduced_vars": {"L1"},
             "participants": {"L1", "P1"}
         }
@@ -164,6 +170,7 @@ class test_PIECEMIN(unittest.TestCase):
             "D": {
                 "L1": {"min": 43, "max": 100}
             },
+            "kook": "anything",
             "A": {"P1": (1,40,1,1,1)},
             "reduced_vars": {"L1"},
             "participants": {"L1", "P1"}

@@ -14,7 +14,7 @@ class test_SAMEROUND(unittest.TestCase):
     '''Tests the behavior of sameround constraint.'''
 
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__sut = SAMEROUND()
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
@@ -22,6 +22,7 @@ class test_SAMEROUND(unittest.TestCase):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
+        # case 1
         given = {
             "A": {"P2": (1,1,1,2.5,1)},
             "D": {
@@ -51,6 +52,39 @@ class test_SAMEROUND(unittest.TestCase):
                 "P5": {(1,1,1,2.5,1)},
                 "P6": {(1,1,1,2.5,1)},
                 "P7": {(1,1,1,2.5,1)}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        # case 2
+        given = {
+            "A": {"P9": (1,1,1,2.5,1)},
+            "D": {
+                "P8": {(1,1,1,2,1), (1,1,1,2.5,1)},
+                "P9": {(1,1,1,5,1), (1,1,1,2.5,1), (1,1,1,4,1)},
+                "P10": {(1,1,1,0,1), (1,1,1,2.5,1)},
+                "P11": {(1,1,1,0,1), (1,1,1,2.5,1)},
+                "P12": {(1,1,1,0,1), (1,1,1,2.5,1)},
+                "P13": {(1,1,1,0,1), (1,1,1,2.5,1)},
+                "P14": {(1,1,1,0,1), (1,1,1,2.5,1)}
+            },
+            "curvar": "P9",
+            "value": (1,1,1,2.5,1),
+            "participants": {"P8", "P9", "P10", "P11", "P12", "P13", "P14"}
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"P8", "P10", "P11", "P12", "P13", "P14"}),
+            "D": {
+                "P8": {(1,1,1,2.5,1)},
+                "P9": {
+                    (1,1,1,2.5,1),
+                    (1,1,1,5,1),
+                    (1,1,1,4,1)
+                },
+                "P10": {(1,1,1,2.5,1)},
+                "P11": {(1,1,1,2.5,1)},
+                "P12": {(1,1,1,2.5,1)},
+                "P13": {(1,1,1,2.5,1)},
+                "P14": {(1,1,1,2.5,1)}
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)

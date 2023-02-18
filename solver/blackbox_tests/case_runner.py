@@ -17,14 +17,14 @@ class test_CASE_RUNNER(unittest.TestCase):
             participants = given["participants"]
         else:
             participants = set([])
-        if "kook" in given:
-            kook = given["kook"]
+        if "spec" in given:
+            spec = given["spec"]
         else:
-            kook = None
+            spec = None
         if mth == "propagate":
-            out = sut.propagate(csp, given["reduced_vars"], participants, kook)
+            out = sut.propagate(csp, given["reduced_vars"], participants, spec)
         else:
-            out = sut.establish(csp, given["curvar"], given["value"], participants, kook)
+            out = sut.establish(csp, given["curvar"], given["value"], participants, spec)
         # assess
         self.assertEqual(out, expect["out"])
         if "D" in expect:

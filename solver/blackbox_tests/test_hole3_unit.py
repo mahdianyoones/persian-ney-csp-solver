@@ -16,10 +16,13 @@ class Test_HOLE3(unittest.TestCase):
     '''Tests the behavior of hole3 constraint.'''
             
     def setUp(self):
-        self.__csp = CSP()
-        hmarg = 10
-        h3 = 371
-        self.__sut = HOLE3(h3, hmarg, 0)
+        self.__csp = CSP(S=2)
+        self.__spec = {
+            "h3": 371,
+            "hmarg": 10,
+            "mp": 0
+        }
+        self.__sut = HOLE3(self.__csp)
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
     def test_contradiction_is_detected(self):
@@ -32,11 +35,27 @@ class Test_HOLE3(unittest.TestCase):
             "D": {
                 "L1": {"min": 191, "max": 191},
             },
+            "participants": {"L1", "L2", "L3", "L4"},
+            "spec": self.__spec,
             "curvar": "L4",
             "value": 24
         }
         expect = {
             "out": (CONTRADICTION, {"L1"})
+        }
+        # case 2
+        given = {
+            "A": {"L9": 24, "L10": 122, "L11": 24},
+            "D": {
+                "L8": {"min": 191, "max": 191},
+            },
+            "participants": {"L8", "L9", "L10", "L11"},
+            "spec": self.__spec,
+            "curvar": "L11",
+            "value": 24
+        }
+        expect = {
+            "out": (CONTRADICTION, {"L8"})
         }
         assert_constraint(csp, sut, "establish", given, expect)
 
@@ -51,6 +70,8 @@ class Test_HOLE3(unittest.TestCase):
                 "L3": {"min": 122, "max": 122},
                 "L4": {"min": 24, "max": 24},
             },
+            "participants": {"L1", "L2", "L3", "L4"},
+            "spec": self.__spec,
             "reduced_vars": {"L1", "L2", "L3"},
         }
         expect = {
@@ -69,6 +90,8 @@ class Test_HOLE3(unittest.TestCase):
                 "L3": {"min": 122, "max": 123},
                 "L4": {"min": 24, "max": 25},
             },
+            "participants": {"L1", "L2", "L3", "L4"},
+            "spec": self.__spec,
             "reduced_vars": {"L1", "L2", "L3"},
         }
         expect = {

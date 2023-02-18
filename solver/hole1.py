@@ -22,8 +22,7 @@ class HOLE1():
     In this case, consistency is impossible, since the lower bounds cannot
     be reduced.'''
 
-    def __init__(self, csp, specs):
-        self.__specs = specs
+    def __init__(self, csp):
         X = csp.get_variables()
         self.__impact_map = {}
         for i in range(0, 10000000): # arbitrary large number
@@ -36,7 +35,7 @@ class HOLE1():
             self.__impact_map[L2] = {L1, L3}
             self.__impact_map[L3] = {L1, L2}
     
-    def establish(self, csp, curvar, value, participants, kook):
+    def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
         ims = self.__impactables(A, curvar, self.__impact_map)
@@ -44,15 +43,15 @@ class HOLE1():
             return REVISED_NONE
         D = csp.get_domains()
         lowers = self.__lowers(A, D, participants, curvar, value)
-        h = self.__specs[kook]["h1"]
-        s = self.__specs[kook]["hmarg"]
-        mp = self.__specs[kook]["mp"]
+        h = spec["h1"]
+        s = spec["hmarg"]
+        mp = spec["mp"]
         new_domains = self.__new_domains(D, lowers, ims, h, s, mp, participants)
         if new_domains == CONTRADICTION:
             return (CONTRADICTION, self.__failed_set(csp, participants))		
         return self.__update(csp, new_domains, ims)
     
-    def propagate(self, csp, reduced_vars, participants, kook):
+    def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after propagation.'''
         A = csp.get_assignment()
         ims = set([])
@@ -63,9 +62,9 @@ class HOLE1():
             return REVISED_NONE
         D = csp.get_domains()
         lowers = self.__lowers(A, D, participants)
-        h = self.__specs[kook]["h1"]
-        s = self.__specs[kook]["hmarg"]
-        mp = self.__specs[kook]["mp"]
+        h = spec["h1"]
+        s = spec["hmarg"]
+        mp = spec["mp"]
         if self.__contradiction(lowers, h, s, mp, participants):
             return (CONTRADICTION, self.__failed_set(csp, participants))
         new_domains = self.__new_domains(D, lowers, ims, h, s, mp, participants)

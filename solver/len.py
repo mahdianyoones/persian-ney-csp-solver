@@ -7,11 +7,8 @@ class LEN():
     enforces the overall length of the Ney.
     
     Formally, it enforces L1 + L2 + L3 + L4 + L5 + L6 + L7 = len.'''
-
-    def __init__(self, len, mouthpiece_len):
-        self.__len = len - mouthpiece_len
     
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after curvar: value.
         
         Consistency is possible only when at exactly 6 variables are assigned.
@@ -22,8 +19,8 @@ class LEN():
         unassigned = None
         assigned_members = set([])
         assigned_sum = 0
-        _len = self.__len
-        for v in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
+        _len = spec["len"] - spec["mp"]
+        for v in participants:
             if v in A:
                 assigned_members.add(v)
                 assigned_sum += A[v]
@@ -32,7 +29,7 @@ class LEN():
         if len(assigned_members) == 7:
             return REVISED_NONE
         if len(assigned_members) < 6:
-            return self.__examine_bounds(csp, D, A, _len)                
+            return self.__examine_bounds(csp, D, A, _len, participants)                
         new_val = _len - assigned_sum
         if new_val > D[unassigned]["max"] or new_val < D[unassigned]["min"]:
             return (CONTRADICTION, {unassigned})
@@ -41,16 +38,16 @@ class LEN():
             return (MADE_CONSISTENT, {unassigned})
         return ALREADY_CONSISTENT
         
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after reduction of reduced_vars.
         
         In practice, it only checks if contradiction has occured or not.'''
         A = csp.get_assignment()
         D = csp.get_domains()
-        _len = self.__len
-        return self.__examine_bounds(csp, D, A, _len)
+        _len = spec["len"] - spec["mp"]
+        return self.__examine_bounds(csp, D, A, _len, participants)
 
-    def __examine_bounds(self, csp, D, A, _len):
+    def __examine_bounds(self, csp, D, A, _len, participants):
         '''Checks if contradiction due to bounds has occured.
 
             Contradiction cases:
@@ -70,7 +67,7 @@ class LEN():
         lows_sum = 0
         ups_sum = 0
         confset = set([])
-        for v in {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}:
+        for v in participants:
             if v in A:
                 ups_sum += A[v]
                 lows_sum += A[v]
@@ -80,11 +77,10 @@ class LEN():
                 lows_sum += D[v]["min"]
                 examined.add(v)
         if ups_sum < _len or lows_sum > _len:
-            return (CONTRADICTION, self.__failed_set(csp))
+            return (CONTRADICTION, self.__failed_set(csp, participants))
         return ALREADY_CONSISTENT
 
-    def __failed_set(self, csp):
+    def __failed_set(self, csp, participants):
         '''Returns the failed set.'''
-        members = {"L1", "L2", "L3", "L4", "L5", "L6", "L7"}
         unassigned = csp.get_unassigned_vars()
-        return members.intersection(unassigned)
+        return participants.intersection(unassigned)

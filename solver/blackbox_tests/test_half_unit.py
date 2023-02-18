@@ -17,7 +17,7 @@ class test_HALF(unittest.TestCase):
     '''The goal is to test the behavior of half constraint.'''
     
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__sut = HALF()
         self.__case_runner = case_runner.test_CASE_RUNNER()
 
@@ -183,6 +183,24 @@ class test_HALF(unittest.TestCase):
             "out": (MADE_CONSISTENT, {"L1"}),
             "D": {
                 "L1": {"min": 30, "max": 30}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        given = {
+            "D": {
+                "L8": {"min": 29, "max": 31}
+            },
+            "participants": {"L8", "L9"},
+            "A": {
+                "L9": 60
+            },
+            "curvar": "L9",
+            "value": 60
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"L8"}),
+            "D": {
+                "L8": {"min": 30, "max": 30}
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)

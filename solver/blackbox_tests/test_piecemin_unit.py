@@ -34,7 +34,6 @@ class test_PIECEMIN(unittest.TestCase):
             "A": {"L1": 40},
             "curvar": "L1",
             "value": 40,
-            "kook": "anything",
             "participants": {"L1", "P1"}
         }
         expect = {
@@ -51,7 +50,6 @@ class test_PIECEMIN(unittest.TestCase):
             "D": {
                 "L1": {"min": 41, "max": 100},
             },
-            "kook": "anything",
             "curvar": "P1",
             "value": (1,42,1,1,1),
             "participants": {"L1", "P1"}
@@ -74,7 +72,6 @@ class test_PIECEMIN(unittest.TestCase):
                 },
                 "L1": {"min": 40, "max": 100}
             },
-            "kook": "anything",
             "reduced_vars": {"L1"},
             "participants": {"L1", "P1"}
         }
@@ -98,7 +95,6 @@ class test_PIECEMIN(unittest.TestCase):
             "A": {"L1": 41},
             "curvar": "L1",
             "value": 41,
-            "kook": "anything",
             "participants": {"L1", "P1"}
         }
         expect = {
@@ -116,6 +112,7 @@ class test_PIECEMIN(unittest.TestCase):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
+        # case 1
         given = {
             "D": {
                 "L1": {"min": 41, "max": 100},
@@ -125,7 +122,6 @@ class test_PIECEMIN(unittest.TestCase):
                     (1,42,1,1,1),                    
                 }
             },
-            "kook": "anything",
             "reduced_vars": {"P1"},
             "participants": {"L1", "P1"}
         }
@@ -133,6 +129,29 @@ class test_PIECEMIN(unittest.TestCase):
             "out": (MADE_CONSISTENT, {"P1"}),
             "D": {
                 "P1": {
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                },
+            }
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        # case 2
+        given = {
+            "D": {
+                "L10": {"min": 41, "max": 100},
+                "P10": {
+                    (1,40,1,1,1),
+                    (1,41,1,1,1),
+                    (1,42,1,1,1),                    
+                }
+            },
+            "reduced_vars": {"P10"},
+            "participants": {"L10", "P10"}
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"P10"}),
+            "D": {
+                "P10": {
                     (1,41,1,1,1),
                     (1,42,1,1,1),                    
                 },

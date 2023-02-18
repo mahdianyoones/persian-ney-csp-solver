@@ -1,5 +1,4 @@
 from constants import *
-import copy
 
 class HOLE6():
     '''Implements hole6 constraint.
@@ -23,34 +22,40 @@ class HOLE6():
     
     mouthpiece_len + L1_min + L2_min + L3_min + L4_min + L5_min + hole_margin >= h6.'''
 
-    def __init__(self, h6, hmarg, mouthpiece_len):
-        self.__h = h6
-        self.__space = hmarg
-        self.__impact_map = {
-            "L1": {"L2", "L3", "L4", "L5"},
-            "L2": {"L1", "L3", "L4", "L5"},
-            "L3": {"L1", "L2", "L4", "L5"},
-            "L4": {"L1", "L2", "L3", "L5"},
-            "L5": {"L1", "L2", "L3", "L4"},
-        }
-        self.__mp = mouthpiece_len        
+    def __init__(self, csp):
+        X = csp.get_variables()
+        self.__impact_map = {}
+        for i in range(0, 10000000): # arbitrary large number
+            L1 = "L"+str(i*7+1)
+            if not L1 in X:
+                break
+            L2 = "L"+str(i*7+2)
+            L3 = "L"+str(i*7+3)
+            L4 = "L"+str(i*7+4)
+            L5 = "L"+str(i*7+5)
+            self.__impact_map[L1] = {L2, L3, L4, L5}
+            self.__impact_map[L2] = {L1, L3, L4, L5}
+            self.__impact_map[L3] = {L1, L2, L4, L5}
+            self.__impact_map[L4] = {L1, L2, L3, L5}
+            self.__impact_map[L5] = {L1, L2, L3, L4}
 
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after the assignment curvar: value.'''
         A = csp.get_assignment()
         ims = self.__impactables(A, curvar, self.__impact_map)
         if len(ims) == 0:
             return REVISED_NONE
         D = csp.get_domains()
-        lowers = self.__lowers(A, D, curvar, value)
-        h = self.__h
-        s = self.__space
-        new_domains = self.__new_domains(D, lowers, ims, h, s, self.__mp)		
+        lowers = self.__lowers(A, D, participants, curvar, value)
+        h = spec["h6"]
+        s = spec["hmarg"]
+        mp = spec["mp"]
+        new_domains = self.__new_domains(D, lowers, ims, h, s, mp, participants)
         if new_domains == CONTRADICTION:
-            return (CONTRADICTION, self.__failed_set(csp))
+            return (CONTRADICTION, self.__failed_set(csp, participants))
         return self.__update(csp, new_domains, ims)
 
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after reduction of some variables.'''
         A = csp.get_assignment()
         ims = set([])
@@ -60,28 +65,29 @@ class HOLE6():
         if len(ims) == 0:
             return REVISED_NONE
         D = csp.get_domains()
-        lowers = self.__lowers(A, D)
-        h = self.__h
-        s = self.__space
-        if self.__contradiction(lowers, h, s, self.__mp):
-            return (CONTRADICTION, self.__failed_set(csp))
-        new_domains = self.__new_domains(D, lowers, ims, h, s, self.__mp)
+        lowers = self.__lowers(A, D, participants)
+        h = spec["h6"]
+        s = spec["hmarg"]
+        mp = spec["mp"]
+        if self.__contradiction(lowers, h, s, mp, participants):
+            return (CONTRADICTION, self.__failed_set(csp, participants))
+        new_domains = self.__new_domains(D, lowers, ims, h, s, mp, participants)
         if new_domains == CONTRADICTION:
-            return (CONTRADICTION, self.__failed_set(csp))
+            return (CONTRADICTION, self.__failed_set(csp, participants))
         return self.__update(csp, new_domains, ims)
     
-    def __contradiction(self, lows, h, s, mp):
+    def __contradiction(self, lows, h, s, mp, participants):
         '''Detects contradiction'''
-        if mp + lows["L1"]+lows["L2"]+lows["L3"]+lows["L4"]+lows["L5"] + s >= h:
+        if mp + sum([lows[p] for p in participants]) + s >= h:
             return True
         return False
             
-    def __lowers(self, A, D, curvar=None, value=None):
+    def __lowers(self, A, D, participants, curvar=None, value=None):
         '''Returns lower bounds of domains.
         
         If a variable is asssigned, its assigned values is returned instead.'''
         lowers = {}
-        for var in {"L1", "L2", "L3", "L4", "L5"}:
+        for var in participants:
             if var in A:
                 lowers[var] = A[var]
             else:
@@ -90,11 +96,10 @@ class HOLE6():
             lowers[curvar] = value
         return lowers
         
-    def __failed_set(self, csp):
+    def __failed_set(self, csp, participants):
         '''Returns the failed set.'''
-        members = {"L1", "L2", "L3", "L4", "L5"}
         unassigned = csp.get_unassigned_vars()
-        return members.intersection(unassigned)
+        return participants.intersection(unassigned)
 
     def __impactables(self, A, curvar, imap):
         '''Defines what variables could reduce due to assignment to curvar.'''
@@ -104,19 +109,28 @@ class HOLE6():
                 ims.add(var)
         return ims
          
-    def __new_domains(self, D, lows, ims, h, s, mp):
+    def __new_domains(self, D, lows, ims, h, s, mp, participants):
         '''Calculates new consistent bounds.'''
         ups = {}
-        if "L1" in ims:
-            ups["L1"] = h-mp-lows["L2"]-lows["L3"]-lows["L4"]-lows["L5"]-s-1
-        if "L2" in ims:
-            ups["L2"] = h-mp-lows["L1"]-lows["L3"]-lows["L4"]-lows["L5"]-s-1
-        if "L3" in ims:
-            ups["L3"] = h-mp-lows["L1"]-lows["L2"]-lows["L4"]-lows["L5"]-s-1
-        if "L4" in ims:
-            ups["L4"] = h-mp-lows["L1"]-lows["L2"]-lows["L3"]-lows["L5"]-s-1
-        if "L5" in ims:
-            ups["L5"] = h-mp-lows["L1"]-lows["L2"]-lows["L3"]-lows["L4"]-s-1
+        for p in participants:
+            anyofthem = p
+            break
+        i = (int(anyofthem[1:]) // 7) * 7 + 1
+        L1 = "L"+str(i)
+        L2 = "L"+str(i+1)
+        L3 = "L"+str(i+2)
+        L4 = "L"+str(i+3)
+        L5 = "L"+str(i+4)
+        if L1 in ims:
+            ups[L1] = h-mp-lows[L2]-lows[L3]-lows[L4]-lows[L5]-s-1
+        if L2 in ims:
+            ups[L2] = h-mp-lows[L1]-lows[L3]-lows[L4]-lows[L5]-s-1
+        if L3 in ims:
+            ups[L3] = h-mp-lows[L1]-lows[L2]-lows[L4]-lows[L5]-s-1
+        if L4 in ims:
+            ups[L4] = h-mp-lows[L1]-lows[L2]-lows[L3]-lows[L5]-s-1
+        if L5 in ims:
+            ups[L5] = h-mp-lows[L1]-lows[L2]-lows[L3]-lows[L4]-s-1
         new_domains = {}			
         for var, new_upper in ups.items():
             if new_upper < D[var]["min"]:

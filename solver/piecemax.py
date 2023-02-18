@@ -4,7 +4,7 @@ class PIECEMAX():
     '''Establishes Li.max <= tallest(Pi) when Li is not assigned,
     and Li.value <= tallest(Pi) when it is assigned.'''
 
-    def establish(self, csp, curvar, value, participants, kook):
+    def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
@@ -16,7 +16,7 @@ class PIECEMAX():
         D = csp.get_domains()
         return self.__revise(csp, Li, Pi, A, D)
 
-    def propagate(self, csp, reduced_vars, participants, kook):
+    def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after reduction of some variables.'''
         for p in participants:
             i = p[1:]

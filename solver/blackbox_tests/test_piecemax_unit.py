@@ -15,7 +15,7 @@ import case_runner
 class test_PIECEMAX(unittest.TestCase):
 
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__sut = PIECEMAX()
         self.__case_runner = case_runner.test_CASE_RUNNER()
 
@@ -78,6 +78,7 @@ class test_PIECEMAX(unittest.TestCase):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
+        # case 1
         given = {
             "D": {
                 "L1": {"min": 1, "max": 43}
@@ -91,6 +92,23 @@ class test_PIECEMAX(unittest.TestCase):
             "out": (MADE_CONSISTENT, {"L1"}),
             "D": {
                 "L1": {"min": 1, "max": 42}
+            }
+        }
+        assert_constraint(csp, sut, "establish", given, expect)
+        # case 2
+        given = {
+            "D": {
+                "L9": {"min": 1, "max": 43}
+            },
+            "A": {"P9": (1,42,1,1,1)},
+            "curvar": "P9",
+            "value": (1,42,1,1,1),
+            "participants": {"L9", "P9"}
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"L9"}),
+            "D": {
+                "L9": {"min": 1, "max": 42}
             }
         }
         assert_constraint(csp, sut, "establish", given, expect)

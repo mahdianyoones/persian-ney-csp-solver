@@ -3,7 +3,7 @@ from constants import *
 class SAMETHICK():
     '''Applies same thickness constraint.'''
     
-    def propagate(self, csp, reduced_vars, participants):
+    def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes indirect consistency W.R.T. samethick.'''
         return REVISED_NONE
     
@@ -23,7 +23,7 @@ class SAMETHICK():
                 continue
         return newdomains
              
-    def establish(self, csp, curvar, value, participants):
+    def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
         revising_vars = set([])
@@ -36,7 +36,7 @@ class SAMETHICK():
         newdomains = self.__new_domains(value, D, revising_vars)
         reduced = set([])
         if newdomains == CONTRADICTION:
-            return (CONTRADICTION, self.__failed_set(csp))
+            return (CONTRADICTION, self.__failed_set(csp, participants))
         if len(newdomains.keys()) == 0:
             return ALREADY_CONSISTENT
         for vi, new_domain in newdomains.items():
@@ -44,8 +44,7 @@ class SAMETHICK():
             reduced.add(vi)
         return (MADE_CONSISTENT, reduced)
 
-    def __failed_set(self, csp):
+    def __failed_set(self, csp, participants):
         '''Returns the failed set.'''
-        participants = {"P1", "P2", "P3", "P4", "P5", "P6", "P7"}
         unassigned = csp.get_unassigned_vars()
         return participants.intersection(unassigned)

@@ -14,7 +14,7 @@ class test_SAMETHICK(unittest.TestCase):
     '''Tests the behavior of samethick constraint.'''
 
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__sut = SAMETHICK()
         self.__case_runner = case_runner.test_CASE_RUNNER()
     

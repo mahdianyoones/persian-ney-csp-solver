@@ -103,10 +103,10 @@ class HOLE1():
     def __new_domains(self, D, lowers, ims, h, s, mp, participants):
         '''Calculates new consistent bounds.'''
         ups = {}
-        for p in sorted(participants):
-            first = p
+        for p in participants:
+            anyofthem = p
             break
-        i = int(first[1:])
+        i = (int(anyofthem[1:]) // 7) * 7 + 1
         L1 = "L"+str(i)
         L2 = "L"+str(i+1)
         L3 = "L"+str(i+2)

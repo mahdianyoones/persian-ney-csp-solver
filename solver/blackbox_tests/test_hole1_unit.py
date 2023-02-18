@@ -16,7 +16,7 @@ class Test_HOLE1(unittest.TestCase):
     '''Tests the behavior of hole1 constraint.'''
             
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__spec = {
             "mp":   0,
             "hmarg":    10,
@@ -83,6 +83,7 @@ class Test_HOLE1(unittest.TestCase):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
+        # case 1
         given = {
             "D": {
                 "L1": {"min": 131, "max": 132},
@@ -99,6 +100,26 @@ class Test_HOLE1(unittest.TestCase):
                 "L1": {"min": 131, "max": 131},
                 "L2": {"min": 48, "max": 48},
                 "L3": {"min": 122, "max": 122}
+            }
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        # case 2
+        given = {
+            "D": {
+                "L8": {"min": 131, "max": 132},
+                "L9": {"min": 48, "max": 49},
+                "L10": {"min": 122, "max": 123}
+            },
+            "participants": {"L8", "L9", "L10"},
+            "spec": self.__spec,
+            "reduced_vars": {"L8", "L9"},
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"L8", "L9", "L10"}),
+            "D": {
+                "L8": {"min": 131, "max": 131},
+                "L9": {"min": 48, "max": 48},
+                "L10": {"min": 122, "max": 122}
             }
         }
         assert_constraint(csp, sut, "propagate", given, expect)

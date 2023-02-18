@@ -15,7 +15,7 @@ class HALF():
 		consistent. If this reduction makes consistency impossible,
 		contradiction is reported.'''
 	
-	def establish(self, csp, curvar, value, participants, kook):
+	def establish(self, csp, curvar, value, participants, spec):
 		'''Establishes consistency after assignment curvar: value.
 		
 		The domain of L2 reduces to L1 * 2. Or, the domain of L1 reduces to
@@ -47,7 +47,7 @@ class HALF():
 				csp.update_domain(L1, {"min": new_value, "max": new_value})
 				return (MADE_CONSISTENT, {L1})
 
-	def propagate(self, csp, reduced_vars, participants, kook):
+	def propagate(self, csp, reduced_vars, participants, spec):
 		'''Establishes consistency when L1 andor L2 are reduced elsewhere.
 		
 		If contradiction occurs, both L1 and L2 are deemed failed.

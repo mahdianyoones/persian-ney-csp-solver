@@ -15,7 +15,7 @@ class test_LENDEC_LOWER(unittest.TestCase):
     '''Tests the behavior of len decrement constraint.'''
     
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__sut = LENDEC_LOWER()
         self.__case_runner = case_runner.test_CASE_RUNNER()
 
@@ -44,6 +44,7 @@ class test_LENDEC_LOWER(unittest.TestCase):
         sut = self.__sut
         csp = self.__csp
         assert_constraint = self.__case_runner.assert_constraint
+        # case 1
         given = {
             "D": {
                 "L3": {"min": 90, "max": 95},
@@ -56,6 +57,22 @@ class test_LENDEC_LOWER(unittest.TestCase):
             "out": (MADE_CONSISTENT, {"L4"}),
             "D": {
                 "L4": {"min": 60, "max": 96},
+            }
+        }
+        assert_constraint(csp, sut, "propagate", given, expect)
+        # case 2
+        given = {
+            "D": {
+                "L10": {"min": 90, "max": 95},
+                "L11": {"min": 59, "max": 96},
+            },
+            "reduced_vars": {"L10"},
+            "participants": {"L10", "L11"}
+        }
+        expect = {
+            "out": (MADE_CONSISTENT, {"L11"}),
+            "D": {
+                "L11": {"min": 60, "max": 96},
             }
         }
         assert_constraint(csp, sut, "propagate", given, expect)

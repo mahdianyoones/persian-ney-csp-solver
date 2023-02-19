@@ -63,7 +63,7 @@ class MAC():
             "nodemax7":         self.__piecemaxref
         }
 
-    def establish(self, csp, curvar, value):
+    def establish(self, csp, specs_sorted, curvar, value):
         '''Establishes consistency after var: value assignment.
 
         Calls all the consistency algorithms of the constraints on curvar.
@@ -85,13 +85,16 @@ class MAC():
             unassigned_parts = parts.intersection(unassigned_vars)
             if unassigned_parts == set([]):
                 continue
-            result = self.__refs[const].establish(csp, curvar, value, parts)
+            const_name = const.split("_")[0]
+            const_index = int(const.split("_")[1])
+            spec = specs_sorted[const_index]
+            result = self.__refs[const_name].establish(csp, curvar, value, parts, spec)
             if result[0] == CONTRADICTION:
                 return result
             elif isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
                 reduced_vars.update(result[1])
         if len(reduced_vars) > 0:
-            result = self.propagate(copy.copy(reduced_vars))
+            result = self.propagate(csp, specs_sorted, copy.copy(reduced_vars))
             if result[0] == CONTRADICTION:
                 return result
             elif isinstance(result, tuple) and result[0] == MADE_CONSISTENT:
@@ -100,9 +103,10 @@ class MAC():
             return (MADE_CONSISTENT, reduced_vars)
         return ALREADY_CONSISTENT
 
-    def propagate(self, reduced_vars):
+    def propagate(self, csp, specs_sorted, reduced_vars):
         '''Recursively propagates domain reductions.'''
-        csp = self.__csp
+        self.__init_constraints_order(csp)
+        self.__init_X2C(csp)
         new_reduced_vars = set([])
         unassigned_vars = csp.get_unassigned_vars()
         while len(reduced_vars) > 0:
@@ -114,7 +118,10 @@ class MAC():
                     continue
                 reduced_prtcns = reduced_vars.intersection(parts)
                 reduced_prtcns.add(_var)
-                res = self.__refs[constraint].propagate(csp, reduced_prtcns, parts)
+                const_name = constraint.split("_")[0]
+                const_index = int(constraint.split("_")[1])
+                spec = specs_sorted[const_index]
+                res = self.__refs[const_name].propagate(csp, reduced_prtcns, parts, spec)
                 if res[0] == CONTRADICTION:
                     return res
                 elif isinstance(res, tuple) and res[0] == MADE_CONSISTENT:

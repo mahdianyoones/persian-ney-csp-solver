@@ -8,8 +8,8 @@ current = os.path.dirname(os.path.realpath(__file__))
 
 class SOLVER():
 
-    def __init__(self, csp, select, mac):
-        self.__csp = csp
+    def __init__(self, select, mac):
+        self.__csp = None
         self.__select = select
         self.__mac = mac
         self.__jump = JUMP()
@@ -19,7 +19,7 @@ class SOLVER():
         csp = self.__csp
         csp.assign(curvar, value)
         csp.backup_domains()
-        result = self.__mac.establish(csp, curvar, value)
+        result = self.__mac.establish(csp, self.__specs_sorted, curvar, value)
         reduced_vars = set([])
         if result[0] == CONTRADICTION:
             self.__unassign(csp, curvar)
@@ -81,19 +81,21 @@ class SOLVER():
                     self.__jump.absorb(jump_target, jump_origin)
                     continue
     
-    def find_independent(self, spec, data_set_path):
+    def find(self, csp, specs_sorted, data_set_path):
         '''Runs MAC for all variables first and then calls DFS.
         
         If MAC figures out any contradiction before search begins, no
         solution could ever be found.'''
+        self.__csp = csp
+        self.__specs_sorted = specs_sorted
         res = UNARY.init_domains(self.__csp, data_set_path)
         if res == CONTRADICTION:
             return CONTRADICTION
-        res = UNARY.unarify(self.__csp, spec)
+        res = UNARY.unarify(self.__csp, specs_sorted)
         if res == CONTRADICTION:
             return CONTRADICTION
         X = copy.copy(self.__csp.get_variables())
-        res = self.__mac.propagate(X)
+        res = self.__mac.propagate(csp, specs_sorted, X)
         if res == CONTRADICTION:
             return CONTRADICTION
         return self.__dfs()

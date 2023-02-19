@@ -27,21 +27,21 @@ class UNARY():
 	The algorithms in this class are fairly simple and testing them
 	is deemed unnecessary.'''
 
-	def unarify(csp, spec):
+	def unarify(csp, specs):
 		'''Executes all unary consistency methods.'''
-		res = UNARY.__nodes_min_len(csp, spec)
+		res = UNARY.__nodes_min_len(csp, specs)
 		if res == CONTRADICTION:
 			return CONTRADICTION
-		res = UNARY.__sixth_node_min_len(csp, spec)
+		res = UNARY.__sixth_node_min_len(csp, specs)
 		if res == CONTRADICTION:
 			return CONTRADICTION
-		res = UNARY.__first_node_diameter(csp, spec)
+		res = UNARY.__first_node_diameter(csp, specs)
 		if res == CONTRADICTION:
 			return CONTRADICTION
-		res = UNARY.__fourth_node_two_holes(csp, spec)
+		res = UNARY.__fourth_node_two_holes(csp, specs)
 		if res == CONTRADICTION:
 			return CONTRADICTION
-		res = UNARY.__fifth_node_three_holes(csp, spec)
+		res = UNARY.__fifth_node_three_holes(csp, specs)
 		if res == CONTRADICTION:
 			return CONTRADICTION
 
@@ -61,16 +61,16 @@ class UNARY():
 				arbitrary = 100000
 				csp.update_domain(var, {"min": 1, "max": arbitrary})
 
-	def __nodes_min_len(csp, spec):
+	def __nodes_min_len(csp, specs):
 		'''Defines a minimum length for nodes.'''
 		X = csp.get_variables()
 		D = csp.get_domains()
-		_min = spec["minl"]
+		_min = specs[0]["minl"]
 		for var in X:
 			if var[0] == "L":
 				csp.update_domain(var, {"min": _min, "max": D[var]["max"]})
 
-	def __sixth_node_min_len(csp, spec):
+	def __sixth_node_min_len(csp, specs):
 		'''Node 6 must be long enough to contain at least one hole.'''		
 		X = csp.get_variables()
 		for i in range(0, 10000000): # arbitary large number
@@ -79,12 +79,12 @@ class UNARY():
 				return
 			L6_domain = csp.get_domain(L6)
 			new_d = copy.copy(L6_domain)
-			new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
+			new_d["min"] = specs[i]["hmarg"] * 2 + specs[i]["holed"] * 1
 			if new_d["min"] > L6_domain["max"]:
 				return CONTRADICTION
 			csp.update_domain(L6, new_d)
 			
-	def __first_node_diameter(csp, spec):
+	def __first_node_diameter(csp, specs):
 		'''Node 1 cannot have a diameter below a certain value (e.g. 18mm).'''
 		X = csp.get_variables()
 		for i in range(0, 10000000): # arbitrary large number
@@ -92,8 +92,8 @@ class UNARY():
 			if not P1 in X:
 				return
 			P1_domain = csp.get_domain(P1)
-			max_diam = spec["topd"]["max"]
-			min_diam = spec["topd"]["min"]
+			max_diam = specs[i]["topd"]["max"]
+			min_diam = specs[i]["topd"]["min"]
 			legal_pieces = set([])
 			for piece in P1_domain:
 				if piece[4] >= min_diam and piece[4] <= max_diam:
@@ -102,7 +102,7 @@ class UNARY():
 				return CONTRADICTION
 			csp.update_domain(P1, legal_pieces)
 
-	def __fourth_node_two_holes(csp, spec):
+	def __fourth_node_two_holes(csp, specs):
 		'''Implements a length constraint on L4.
 			
 			The goal is to ensure holes 1 and 2 fall on node 4.
@@ -117,14 +117,14 @@ class UNARY():
 			L4 = "L"+str(i*7+4)
 			if not L4 in X:
 				return
-			h2_h1_dist = spec["h2"] - spec["h1"]
-			new_min = 2 * spec["hmarg"] + spec["holed"] + h2_h1_dist
+			h2_h1_dist = specs[i]["h2"] - specs[i]["h1"]
+			new_min = 2 * specs[i]["hmarg"] + specs[i]["holed"] + h2_h1_dist
 			L4_domain = csp.get_domain(L4)
 			if new_min > L4_domain["max"]:
 				return CONTRADICTION
 			csp.update_domain(L4, {"min": new_min, "max": L4_domain["max"]})
 
-	def __fifth_node_three_holes(csp, spec):
+	def __fifth_node_three_holes(csp, specs):
 		'''Implements a length constraint on L5.
 			
 			The goal is to ensure holes 3, 4, and 5 falls on node 5.
@@ -140,8 +140,8 @@ class UNARY():
 			L5 = "L"+str(i*7+5)
 			if not L5 in X:
 				return
-			h3_h5_dist = spec["h5"] - spec["h3"]
-			new_min = 2 * spec["hmarg"] + spec["holed"] + h3_h5_dist
+			h3_h5_dist = specs[i]["h5"] - specs[i]["h3"]
+			new_min = 2 * specs[i]["hmarg"] + specs[i]["holed"] + h3_h5_dist
 			L5_domain = csp.get_domain(L5)
 			if new_min > L5_domain["max"]:
 				return CONTRADICTION

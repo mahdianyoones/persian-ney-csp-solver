@@ -1,4 +1,3 @@
-import copy
 from constants import *
 
 class JUMP():

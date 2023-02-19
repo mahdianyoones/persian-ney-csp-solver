@@ -4,6 +4,10 @@ import copy
 class SELECT():
 	'''Helps select next variable and next value for assignment.'''
 			
+	def __init__(self):
+		self.__degree = {}
+		self.__impact = {}
+
 	def nextvar(self, csp):
 		'''Selects next variable to assign using degree and impact heuristics.
 	

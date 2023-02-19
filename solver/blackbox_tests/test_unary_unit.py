@@ -42,7 +42,7 @@ class test_UNARY(unittest.TestCase):
         # arrange
         self.__sut.init_domains(self.__csp, current+"/unary.csv")
         # act
-        self.__sut.unarify(self.__csp, specs["C"])
+        self.__sut.unarify(self.__csp, [specs["C"]])
         D = self.__csp.get_domains()
         expected_pieces = {
             ("1", 100, 2, 0, 19), 

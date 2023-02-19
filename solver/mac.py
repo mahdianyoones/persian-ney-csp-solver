@@ -16,25 +16,22 @@ from constants import *
 class MAC():
     '''Implements MAC for binary and higher constraints.'''
 
-    def __init__(self, csp, spec):
-        self.__csp = csp
+    def __init__(self):
         self.__X2C = {}
         self.__constraints_order = {}
-        self.__init_constraints_order(csp)
-        self.__init_X2C(csp)
         self.__pieceminref = PIECEMIN()
         self.__piecemaxref = PIECEMAX()
-        self.__diamdecref = DIAMDEC(spec["ddiff"])
+        self.__diamdecref = DIAMDEC()
         self.__lendecref = LENDEC()
         self.__llref = LENDEC_LOWER()
         self.__refs = {
-            "hole1":		HOLE1(spec["h1"], spec["hmarg"], spec["mp"]),
-            "hole3":		HOLE3(spec["h3"], spec["hmarg"], spec["mp"]),
-            "hole6":		HOLE6(spec["h6"], spec["hmarg"], spec["mp"]),
-            "half":			HALF(),
-            "samethick":	SAMETHICK(),
-            "sameround":	SAMEROUND(),
-            "len":			LEN(spec["len"], spec["mp"]),
+            "hole1":		    HOLE1(),
+            "hole3":		    HOLE3(),
+            "hole6":		    HOLE6(),
+            "half":			    HALF(),
+            "samethick":	    SAMETHICK(),
+            "sameround":	    SAMEROUND(),
+            "len":			    LEN(),
             "diamdec1-2":       self.__diamdecref,
             "diamdec2-3":       self.__diamdecref,
             "diamdec3-4":       self.__diamdecref,
@@ -66,16 +63,20 @@ class MAC():
             "nodemax7":         self.__piecemaxref
         }
 
-    def establish(self, curvar, value):
+    def establish(self, csp, curvar, value):
         '''Establishes consistency after var: value assignment.
-        
+
         Calls all the consistency algorithms of the constraints on curvar.
 
         The effect of domain reductions is then kept in check by the
         upper subroutine calling the propagate method.
-        
-        Constraints that may have bigger impacts are called first.'''
-        csp = self.__csp
+
+        Constraints that may have bigger impacts are called first.
+
+        Constraints that have higher number of participants are likely to
+        have bigger impact. i.e. they may detect failure sooner.'''
+        self.__init_constraints_order(csp)
+        self.__init_X2C(csp)
         unassigned_vars = csp.get_unassigned_vars()
         constraints = self.__X2C[curvar]
         reduced_vars = set([])
@@ -122,21 +123,36 @@ class MAC():
         if len(new_reduced_vars) > 0:
             return (MADE_CONSISTENT, new_reduced_vars)
         return ALREADY_CONSISTENT
-    
+
     def __init_constraints_order(self, csp):
         '''Determines the order of constraints.
-        
-        A constraint order denotes the number of participants it has.'''
+
+        A constraint order denotes the number of participants it has.
+
+        1 => Highest participants
+        2 => Second highest participants
+        3 => Third highest participants
+        ...and so on
+        '''
         constraints = csp.get_constraints()
+        X = csp.get_variables()
+        if self.__constraints_order != {} and \
+            len(self.__constraints_order.keys()) >= len(constraints.keys()):
+            return
         for constraint, participants in constraints.items():
             self.__constraints_order[constraint] = 8 - len(participants)
-        
+
     def __init_X2C(self, csp):
         '''Builds a map from each variable to the constraints they participate in.
-        
-        Constraints of each variable are sorted based on their order.'''
-        C = csp.get_constraints()
+
+        Constraints of each variable are sorted based on their order.
+
+        Only if the given csp has higher number of variables than the previous
+        one will the function does the job again.'''
         X = csp.get_variables()
+        if self.__X2C != {} and len(self.__X2C.keys()) >= len(X):
+            return
+        C = csp.get_constraints()
         X2C = {}
         corders = self.__constraints_order
         for constraint, _vars in C.items():

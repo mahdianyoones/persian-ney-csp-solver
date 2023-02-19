@@ -21,10 +21,15 @@ class HOLE1():
     
     In this case, consistency is impossible, since the lower bounds cannot
     be reduced.'''
-
-    def __init__(self, csp):
-        X = csp.get_variables()
+    
+    def __init__(self):
         self.__impact_map = {}
+
+    def __configure_impact_maps(self, csp):
+        X = csp.get_variables()
+        if self.__impact_map != {} and \
+            len(self.__impact_map) >= (len(X) // 7 * 3):
+            return
         for i in range(0, 10000000): # arbitrary large number
             L1 = "L"+str(i*7+1)
             if not L1 in X:
@@ -34,10 +39,11 @@ class HOLE1():
             self.__impact_map[L1] = {L2, L3}
             self.__impact_map[L2] = {L1, L3}
             self.__impact_map[L3] = {L1, L2}
-    
+
     def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after assignment curvar: value.'''
         A = csp.get_assignment()
+        self.__configure_impact_maps(csp)
         ims = self.__impactables(A, curvar, self.__impact_map)
         if len(ims) == 0:
             return REVISED_NONE
@@ -55,6 +61,7 @@ class HOLE1():
         '''Establishes consistency after propagation.'''
         A = csp.get_assignment()
         ims = set([])
+        self.__configure_impact_maps(csp)
         for reduced_var in reduced_vars:
             _ims = self.__impactables(A, reduced_var, self.__impact_map)
             ims.update(_ims)

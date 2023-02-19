@@ -1,32 +1,15 @@
-from asyncio import constants
 from constants import *
 import copy
 
 class SELECT():
 	'''Helps select next variable and next value for assignment.'''
-		
-	def __init__(self, csp):
-		'''Initiates impact heuristic.
-		
-		This heuristic prioritizes the selection of TH and R variables over
-		others, since samethick and sameround algorithms reduce all
-		participating variables to 1 value all at once.
-		
-		Fourthermore, due to the constraint diamdec, D variables with higher
-		indices have higher impacts, in that selecting D1 first makes 6 other
-		variables shed values, and selecting D2 then makes 5 other variables
-		shed values, adn so on.
-		
-		The numbers are chosen by trial and error. More analysis is required.'''
-		self.__degree = {}
-		self.__impact = {}
-		self.__init_degree(csp)
-		self.__init_impact(csp)
-	
+			
 	def nextvar(self, csp):
 		'''Selects next variable to assign using degree and impact heuristics.
 	
 		MRV is used as a tie breaker.'''
+		self.__init_degree(csp)
+		self.__init_impact(csp)
 		D = csp.get_domains()
 		ua = csp.get_unassigned_vars()
 		if len(ua) == 1:
@@ -61,7 +44,17 @@ class SELECT():
 		return best["var"]		
 
 	def __init_degree(self, csp):
-		'''Determines the degree of variables'''
+		'''Determines the degree of variables.
+		
+		Selecting more constraind variables first for assignment is a natural
+		heuristic that helps detect failure or prune large unpromising amounts 
+		of search tree upfront.
+
+		Upon arrival of a new CSP, only if the number of variables differ
+		will the degrees be reinitiated.'''
+		X = csp.get_variables()
+		if self.__degree != {} and len(self.__degree.keys()) >= len(X):
+			return
 		constraints = csp.get_constraints()
 		for v in csp.get_variables():
 			d = 0
@@ -71,9 +64,17 @@ class SELECT():
 			self.__degree[v] = d
 
 	def __init_impact(self, csp):
-		'''Determines the impact of selecting variables.
+		'''Determines the impact of selecting variables: impact heuristic.
 		
-		P variables are made consistent very strongly.'''
+		P variables are made consistent very strongly. Therefore, making them
+		consistent first helps detect failure or prune a significant amount of
+		the search tree upfront.
+		
+		Upon arrival of a new CSP, only if the number of variables differ
+		will the impacts be reinitiated.'''
+		X = csp.get_variables()
+		if self.__impact != {} and len(self.__impact.keys()) >= len(X):
+			return
 		for v in csp.get_variables():
 			if v[0] == "P":
 				self.__impact[v] = 1

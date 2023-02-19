@@ -2,7 +2,12 @@ import copy
 from constants import *
 import csv
 
+pieces_cache = set([])
+
 def get_pieces(data_set_path):
+	global pieces_cache
+	if pieces_cache != set([]):
+		return pieces_cache 
 	pieces = set([])
 	with open(data_set_path) as f:
 		reader = csv.reader(f)
@@ -13,6 +18,7 @@ def get_pieces(data_set_path):
 			D = float(p[4])
 			no = p[0]
 			pieces.add((no, L, T, R, D))
+	pieces_cache = pieces
 	return pieces
 
 class UNARY():
@@ -67,27 +73,34 @@ class UNARY():
 	def __sixth_node_min_len(csp, spec):
 		'''Node 6 must be long enough to contain at least one hole.'''		
 		X = csp.get_variables()
-		if not "L6" in X:
-			return
-		L6 = csp.get_domain("L6")
-		new_d = copy.copy(L6)
-		new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
-		if new_d["min"] > L6["max"]:
-			return CONTRADICTION
-		csp.update_domain("L6", new_d)
-				
+		for i in range(0, 10000000): # arbitary large number
+			L6 = "L"+str(i*7+6)
+			if not L6 in X:
+				return
+			L6_domain = csp.get_domain(L6)
+			new_d = copy.copy(L6_domain)
+			new_d["min"] = spec["hmarg"] * 2 + spec["holed"] * 1
+			if new_d["min"] > L6_domain["max"]:
+				return CONTRADICTION
+			csp.update_domain(L6, new_d)
+			
 	def __first_node_diameter(csp, spec):
 		'''Node 1 cannot have a diameter below a certain value (e.g. 18mm).'''
-		P1 = csp.get_domain("P1")
-		max_diam = spec["topd"]["max"]
-		min_diam = spec["topd"]["min"]
-		legal_pieces = set([])
-		for piece in P1:
-			if piece[4] >= min_diam and piece[4] <= max_diam:
-				legal_pieces.add(piece)
-		if len(legal_pieces) == 0:
-			return CONTRADICTION
-		csp.update_domain("P1", legal_pieces)
+		X = csp.get_variables()
+		for i in range(0, 10000000): # arbitrary large number
+			P1 = "P"+str(i*7+1)
+			if not P1 in X:
+				return
+			P1_domain = csp.get_domain(P1)
+			max_diam = spec["topd"]["max"]
+			min_diam = spec["topd"]["min"]
+			legal_pieces = set([])
+			for piece in P1_domain:
+				if piece[4] >= min_diam and piece[4] <= max_diam:
+					legal_pieces.add(piece)
+			if len(legal_pieces) == 0:
+				return CONTRADICTION
+			csp.update_domain(P1, legal_pieces)
 
 	def __fourth_node_two_holes(csp, spec):
 		'''Implements a length constraint on L4.
@@ -100,14 +113,16 @@ class UNARY():
 			
 			which defines a minimum length for L4.'''
 		X = csp.get_variables()
-		if not "L4" in X:
-			return
-		h2_h1_dist = spec["h2"] - spec["h1"]
-		new_min = 2*spec["hmarg"] + spec["holed"] + h2_h1_dist
-		L4 = csp.get_domain("L4")
-		if new_min > L4["max"]:
-			return CONTRADICTION
-		csp.update_domain("L4", {"min": new_min, "max": L4["max"]})
+		for i in range(0, 10000000): # arbitrary large number
+			L4 = "L"+str(i*7+4)
+			if not L4 in X:
+				return
+			h2_h1_dist = spec["h2"] - spec["h1"]
+			new_min = 2 * spec["hmarg"] + spec["holed"] + h2_h1_dist
+			L4_domain = csp.get_domain(L4)
+			if new_min > L4_domain["max"]:
+				return CONTRADICTION
+			csp.update_domain(L4, {"min": new_min, "max": L4_domain["max"]})
 
 	def __fifth_node_three_holes(csp, spec):
 		'''Implements a length constraint on L5.
@@ -121,11 +136,13 @@ class UNARY():
 			
 			which defines a minimum length for L5.'''
 		X = csp.get_variables()
-		if not "L5" in X:
-			return
-		h3_h5_dist = spec["h5"] - spec["h3"]
-		new_min = 2*spec["hmarg"] + spec["holed"] + h3_h5_dist
-		L5 = csp.get_domain("L5")
-		if new_min > L5["max"]:
-			return CONTRADICTION
-		csp.update_domain("L5", {"min": new_min, "max": L5["max"]})
+		for i in range(0, 10000000): # arbitrary large number
+			L5 = "L"+str(i*7+5)
+			if not L5 in X:
+				return
+			h3_h5_dist = spec["h5"] - spec["h3"]
+			new_min = 2 * spec["hmarg"] + spec["holed"] + h3_h5_dist
+			L5_domain = csp.get_domain(L5)
+			if new_min > L5_domain["max"]:
+				return CONTRADICTION
+			csp.update_domain(L5, {"min": new_min, "max": L5_domain["max"]})

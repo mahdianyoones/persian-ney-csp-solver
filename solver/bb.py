@@ -1,4 +1,4 @@
-from spec import specs
+from spec import specs as reg_specs
 from unary import get_pieces
 from unary import UNARY
 from copy import deepcopy
@@ -15,217 +15,296 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sp.append(parent)
 
-'''
-Implements Branch and Bound to find the optimal solution.
-'''
+class SAT:
+    
+    def __init__(self, capacity, costs, specs, ds_path):
+        self.__select = SELECT()
+        self.__mac = MAC()
+        self.__solver = SOLVER(self.__select, self.__mac)
+        self.__capacity = capacity
+        self.__costs = costs
+        self.__specs = specs
+        self.__ds_path = ds_path
 
-DS_PATH = "pieces.csv"
-
-ALL_TYPES = {"Bb", "C", "A", "D", "G", "E", "F_tall", "F_short"}
-
-values = {
-    "Bb": 8,
-    "C": 7,
-    "A": 6,
-    "D": 5,
-    "G": 4,
-    "E": 3,
-    "F_tall": 2,
-    "F_short": 1
-}
-
-costs = {
-    "Bb": specs["Bb"]["len"],
-    "C": specs["C"]["len"],
-    "A": specs["A"]["len"],
-    "D": specs["D"]["len"],
-    "G": specs["G"]["len"],
-    "E": specs["E"]["len"],
-    "F_tall": specs["F_tall"]["len"],
-    "F_short": specs["F_short"]["len"]
-}
-
-def cal_capacity():
-    '''Sums up the length of all pieces found in the dataset.'''
-    pieces = get_pieces(DS_PATH)
-    capacity = 0
-    for piece in pieces:
-        capacity += piece[1] # len
-    return capacity
-
-CAPACITY = cal_capacity()
-KOOKS_RSORTED = ["F_short", "E", "D", "C", "Bb", "A", "G", "F_tall"]
-weight_variation = 3
-weight_value = 2
-weight_count = 1
-
-def gen_items():
-    '''Generates all possible instruments and sorts them greedily!'''
-    all = {}
-    for kook, spec in specs.items():
-        count = int(CAPACITY // spec['len'])
-        all[kook] = [kook for i in range(count, 0, -1)]
-    items = []
-    all_appended = False
-    kooks = sorted(specs.keys(), key=lambda kook: values[kook], reverse=True)
-    while not all_appended:
-        all_appended = True
-        for kook in kooks:
-            if len(all[kook]) > 0:
-                items.append(all[kook].pop())
-                if len(all[kook]):
-                    all_appended = False
-    return items
-
-def satisfiable(node_combination):
-    costs_sum = 0
-    for kook in node_combination:
-        costs_sum += costs[kook]
-    if costs_sum > CAPACITY:
-        return False
-    csp = CSP(len(node_combination))
-    select = SELECT(csp)
-    mac = MAC(csp, specs[kook])
-    UNARY.init_domains(csp, DS_PATH)
-    res = UNARY.unarify(csp, specs[kook])
-    if res == CONTRADICTION:
-        return False # No solution could exist. Unary constaints violated!
-    solver = SOLVER(csp, select, mac)
-    indicator, solution = solver.find_independent(specs[kook], DS_PATH)
-    if indicator == SOLUTION:
-        if is_valid(solution, kook):
+    def __too_long(self, node_items):
+        if sum([self.__costs[reg] for reg in node_items]) > self.__capacity:
             return True
-        else:
-            raise Exception("Found an invalid solution ", solution)
-    return False
+        return False
 
-def normalize_values_sum(values_sum):
-    best_kook = list(values.keys())[0]
-    best_value = values[best_kook]
-    best_len = specs[best_kook]["len"]
-    max_best = CAPACITY // best_len
-    return values_sum / (best_value * int(max_best))
+    def __psp(self, node_items, solution):
+        '''Prints solution prettily!'''
+        j = 0
+        for kook in node_items:
+            print(kook, " : ")
+            msg = "Ls ("
+            for i in range(1, 8):
+                msg += str(solution["L"+str(j*7+i)])
+                msg += ","
+            msg += ")"
+            print(msg)
+            for i in range(1, 8):
+                print(str(solution["P"+str(j*7+i)]))
+            print("----")
+            j += 1
+        print("================")
 
-def normalize_count(count):
-    best_kook = list(values.keys())[0]
-    best_len = specs[best_kook]["len"]
-    max_best = CAPACITY // best_len
-    return count / max_best
+    def satisfiable(self, node_items):
+        '''Creates a new CSP problem for them given candidate solution
+        
+        and checks if it is satisfiable.'''
+        if self.__too_long(node_items):
+            return False
+        csp = CSP(S=len(node_items))
+        specs_sorted = [self.__specs[reg] for reg in node_items]
+        indicator, solution = self.__solver.find(csp, specs_sorted, self.__ds_path)
+        if indicator == SOLUTION:
+            self.__psp(node_items, solution)
+            return True
+            # do something with solution
+            # e.g. check the validity of the solution, store it etc
+        return False
 
-def values_sum(candidate):
-    values_sum = 0
-    for kook in candidate:
-        values_sum += values[kook]
-    return values_sum
+class UTILITY:
 
-def calc_utility(candidate):
-    values_sum_normalized = normalize_values_sum(values_sum(candidate))
-    count_normalized = normalize_count(len(candidate))
-    variation_normalized = len(set(candidate)) / len(values.keys())
-    return variation_normalized * weight_variation + \
-        values_sum_normalized * weight_value + \
-            count_normalized * weight_count
+    def __init__(self, regs, costs, values, capacity, specs):
+        self.__values = values
+        self.__capacity = capacity
+        self.__costs = costs
+        self.__specs = specs
+        self.__regs_rsorted = sorted(regs, \
+            key=lambda reg: specs[reg]["len"], reverse=True)
+        self.__w_variation = 3
+        self.__w_value = 2
+        self.__w_count = 1
 
-def variation_estimate(node_combination, left_capacity):
-    '''Estimates the maximum possible variation.
-    
-    i.e. determine the maximmum number of instrument types that
-     can be possibly built given the left capacity minus 
-     the number of types in the current_items.
-    
-    For instance, if current_items = {F_tall, F_tall, F_tall}, and
-    left_capacity = 100:
+    def __normalize_value(self, value):
+        best_reg = list(self.__values.keys())[0]
+        best_value = self.__values[best_reg]
+        best_len = self.__specs[best_reg]["len"]
+        max_best = self.__capacity // best_len
+        return value / (best_value * int(max_best))
 
-    100 - len of F_short = 61
-    61 - lef of E = 20
+    def __normalize_count(self, count):
+        best_reg = list(self.__values.keys())[0]
+        best_len = self.__specs[best_reg]["len"]
+        max_best = self.__capacity // best_len
+        return count / max_best
 
-    Therefore, 1 + 2 = 3 varied instruments is possible, where 1 is the
-    types in the current_items and 2 is the maximum possible types.
+    def items_utility(self, items):
+        values_sum = sum([self.__values[reg] for reg in items])
+        values_sum_normalized = self.__normalize_value(values_sum)
+        count_normalized = self.__normalize_count(len(items))
+        variation = len(set(items))
+        variation_normalized = variation / len(self.__values.keys())
+        return variation_normalized * self.__w_variation + \
+            values_sum_normalized * self.__w_value + \
+                count_normalized * self.__w_count
 
-    Variation is a value between 1 and 8.
-    8 is the total number of instrument types.'''
-    occupied_types = set(node_combination)
-    variation = len(occupied_types)
-    for possible_kook in KOOKS_RSORTED:
-        if possible_kook in occupied_types:
-            continue
-        if costs[possible_kook] > left_capacity:
-            break
-        variation += 1
-        left_capacity -= costs[possible_kook]
-    return variation
+    def __variation_estimate(self, node_items, left_capacity):
+        '''Estimates the maximum possible variation.
+        
+        i.e. determine the maximmum number of instrument types that
+        can be possibly built given the left capacity minus 
+        the number of types in the current_items.
+        
+        For instance, if current_items = {F_tall, F_tall, F_tall}, and
+        left_capacity = 100:
 
-def count_estimate(left_capacity):
-    '''Determines the maximum number of possible instruments
-    
-    that could be constructed with the left pieces.'''
-    return left_capacity // costs[KOOKS_RSORTED[0]]
+        100 - len of F_short = 61
+        61 - lef of E = 20
 
-def value_estimate(left_capacity):
-    '''Determines the maximum value of possible instruments
-    
-    that could be constructed with the left pieces.'''
-    values_sum = 0
-    for kook, value in values.items():
-        while left_capacity > costs[kook]:
-            values_sum += value
-            left_capacity -= costs[kook]        
-    return values_sum
+        Therefore, 1 + 2 = 3 varied instruments is possible, where 1 is the
+        types in the current_items and 2 is the maximum possible types.
 
-def normalize_variation(variation):
-    return variation / 8
+        Variation is a value between 1 and 8.
+        8 is the total number of instrument types.'''
+        occupied_types = set(node_items)
+        variation = len(occupied_types)
+        for possible_reg in self.__regs_rsorted:
+            if possible_reg in occupied_types:
+                continue
+            if self.__costs[possible_reg] > left_capacity:
+                break
+            variation += 1
+            left_capacity -= self.__costs[possible_reg]
+        return variation
 
-def utility_bound(node_combination, node_utility, node_cost):
-    left_capacity = CAPACITY - node_cost
-    max_variation = variation_estimate(node_combination, left_capacity)
-    max_value = value_estimate(left_capacity)
-    max_count = count_estimate(left_capacity)
-    max_variation_normalized = normalize_variation(max_variation)
-    max_value_normalized = normalize_values_sum(max_value)
-    max_count_normalized = normalize_count(max_count)
-    bound = weight_variation * max_variation_normalized 
-    bound += weight_value * max_value_normalized
-    bound += weight_count * max_count_normalized
-    bound += node_utility
-    return bound
+    def __count_estimate(self, left_capacity):
+        '''Determines the maximum number of possible instruments
+        
+        that could be constructed with the left pieces.'''
+        return left_capacity // self.__costs[self.__regs_rsorted[0]]
 
-items = gen_items()
+    def __value_estimate(self, left_capacity):
+        '''Determines the maximum value of possible instruments
+        
+        that could be constructed with the left pieces.'''
+        values_sum = 0
+        for kook, value in self.__values.items():
+            while left_capacity > self.__costs[kook]:
+                values_sum += value
+                left_capacity -= self.__costs[kook]      
+        return values_sum
 
-solutions = [(0, 0, [], 0)]
-best_utility = 0
-best_combination = []
-optimal_solution = []
+    def bound(self, node_items, node_utility, node_cost):
+        left_capacity = self.__capacity - node_cost
+        max_variation = self.__variation_estimate(node_items, left_capacity)
+        max_value = self.__value_estimate(left_capacity)
+        max_count = self.__count_estimate(left_capacity)
+        max_variation_normalized = max_variation / len(self.__values.keys())
+        max_value_normalized = self.__normalize_value(max_value)
+        max_count_normalized = self.__normalize_count(max_count)
+        bound = self.__w_variation * max_variation_normalized 
+        bound += self.__w_value * max_value_normalized
+        bound += self.__w_count * max_count_normalized
+        bound += node_utility
+        return bound
+        
+class BB:
+    '''Implements Branch and Bound to find the optimal solution.'''
 
-nodes_counter = 0
+    def __init__(self, ds_path, regs, specs):
+        capacity = sum([piece[1] for piece in get_pieces(ds_path)])
+        values =  {
+            "Bb": 8, "C": 7, "A": 6, "D": 5, "G": 4, 
+            "E": 3, "F_tall": 2, "F_short": 1
+        }
+        costs = {reg: reg_specs[reg]["len"] for reg in regs}
+        self.__capacity = capacity
+        self.__specs = specs
+        self.__regs = regs
+        self.__values = values
+        self.__costs = costs
+        self.__sat = SAT(capacity, costs, specs, ds_path)
+        self.__ut = UTILITY(regs, costs, values, capacity, specs)
 
-while len(solutions) > 0:
-    node_utility, node_cost, node_combination, child_index = solutions.pop()
-    # Leaf? Backtrack.
-    if child_index == len(items):
-        if best_utility > node_utility:
-            optimal_solution = deepcopy(best_combination)
-        else:
-            optimal_solution = deepcopy(node_combination)
-        continue
-    # Branching based on exclusion of the child
-    without_combination = deepcopy(node_combination)
-    node_without = (node_utility, node_cost, without_combination, child_index + 1)
-    solutions.append(node_without)
-    nodes_counter += 1
-    # Branching based on inclusion of the child
-    with_combination = deepcopy(node_combination)
-    with_combination.append(items[child_index])
-    if satisfiable(with_combination):
-        with_utility = calc_utility(with_combination)
-        with_cost = node_cost + costs[items[child_index]]
-        if with_utility > best_utility:
-            best_utility = with_utility
-            best_combination = deepcopy(with_combination) # copy
-        if utility_bound(with_combination, with_utility, with_cost) > best_utility:
-            node_with = (with_utility, with_cost, with_combination, child_index + 1)
-            solutions.append(node_with)
+    def __gen_items(self, specs, capacity, values):
+        '''Generates all possible instruments and sorts them greedily!
+        
+        Each item is a hypothetical instrument that may or may not be built.
+        To produce combinations like {Bb, Bb, C, C, G}, check their utility,
+        and satisfiability, we resort to combinaorial counting principles!
+
+        What is the maximum number of instruments constructable via the given
+        pieces? 
+
+        We don't know.
+
+        If we could answer this questions precisely and accurately, then the 
+        problem would be much easier to solver. 
+        
+        That is, the nature of pieces and constraints dictates this unknown
+        number.
+
+        However, since we are not trying to answer this question, we relax
+        all the constraints except the length, which is predictable
+        and precise.
+
+        relaxed maximum number of viable instruments = 
+            Sum(length of all pieces) / length of the instrument type
+
+        With the data set at hand, there are 1200 / 39 = 30 maximum instruments,
+        where 39 is the length of F_short and 1200 is the length sum of all pieces.
+
+        That is, if we relaxed all constraints, we could at most build 30
+        instruments of type F_short.
+
+        For Bb, there would be at most 1200 / 59 = 20 instruments.
+        For A, there would be at most 1200 / 59 = 19 instruments.
+        and so on
+
+        Now, the right question is 'how many of which instrument type would
+        yield the highest utility?
+
+        Again, since we don't know if, say, 20 instruments of type Bb is
+        possible or not, we need to consider this combination as well as many
+        similar combinations.
+
+        Therefore, we generate 20 Bb items, 10 A items, and so on. The resulting
+        items would be:
+
+        Bb  consider / not cinsider
+        Bb  consider / not cinsider
+        Bb  consider / not cinsider
+
+        ... 16 similar items in between
+
+        Bb  consider / not cinsider
+
+        A  consider / not cinsider
+        A  consider / not cinsider
+        A  consider / not cinsider
+
+        ... 16 similar items in between
+
+        A  consider / not cinsider
+
+        and so on for other kooks.
+
+        This way BB algorithm can sequentially iterate over items and do its
+        job while not exluding any possibility.
+        
+        This item generation approach gauarantees that THE BEST VIABLE COMBINATION
+        is not missed.'''
+        all = {}        
+        for reg, spec in specs.items():
+            count = int(capacity // spec['len'])
+            all[reg] = [reg for i in range(count, 0, -1)]
+        items = []
+        all_appended = False
+        # regs reverse sorted based on values
+        rvalregs = sorted(specs.keys(), 
+            key=lambda reg: values[reg], reverse=True) 
+        while not all_appended:
+            all_appended = True
+            for reg in rvalregs:
+                if len(all[reg]) > 0:
+                    items.append(all[reg].pop())
+                    if len(all[reg]):
+                        all_appended = False
+        return items
+
+    def find(self):
+        all_items = self.__gen_items(self.__specs, self.__capacity, self.__values)
+        solutions = [(0, 0, [], 0)]
+        best_utility = 0
+        best_solution = []
+        optimal_solution = []
+        nodes_counter = 0
+        while len(solutions) > 0:
+            # current node
+            utility, cost, items, child_index = solutions.pop()
+            # Leaf? Backtrack.
+            if child_index == len(all_items):
+                if best_utility > utility:
+                    optimal_solution = deepcopy(best_solution)
+                else:
+                    optimal_solution = deepcopy(items)
+                continue
+            # Branching based on exclusion of the child
+            without = (utility, cost, deepcopy(items), child_index + 1)
+            solutions.append(without)
             nodes_counter += 1
-    if nodes_counter % 20000 == 0:
-        print(nodes_counter)
+            # Branching based on inclusion of the child
+            with_items = deepcopy(items)
+            with_items.append(all_items[child_index])
+            if self.__sat.satisfiable(with_items):
+                with_utility = self.__ut.items_utility(with_items)
+                with_cost = cost + self.__costs[all_items[child_index]]
+                if with_utility > best_utility:
+                    best_utility = with_utility
+                    best_solution = deepcopy(with_items) # copy
+                if self.__ut.bound(with_items, with_utility, with_cost) > best_utility:
+                    _with = (with_utility, with_cost, with_items, child_index + 1)
+                    solutions.append(_with)
+                    nodes_counter += 1
+        return optimal_solution
+    
+def main():
+    regs = {"F_tall", "G", "A", "Bb", "C", "D", "E", "F_short"}
+    bb = BB("pieces.csv", regs, reg_specs)
+    optimal_solution = bb.find()
+    print(optimal_solution)
 
-print(optimal_solution)
+if __name__ == "__main__":
+    main()

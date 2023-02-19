@@ -3,7 +3,6 @@ from constants import *
 from unary import UNARY
 import copy
 import os
-import time
 
 current = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,7 +19,7 @@ class SOLVER():
         csp = self.__csp
         csp.assign(curvar, value)
         csp.backup_domains()
-        result = self.__mac.establish(curvar, value)
+        result = self.__mac.establish(csp, curvar, value)
         reduced_vars = set([])
         if result[0] == CONTRADICTION:
             self.__unassign(csp, curvar)

@@ -22,7 +22,7 @@ class Test_HOLE3(unittest.TestCase):
             "hmarg": 10,
             "mp": 0
         }
-        self.__sut = HOLE3(self.__csp)
+        self.__sut = HOLE3()
         self.__case_runner = case_runner.test_CASE_RUNNER()
     
     def test_contradiction_is_detected(self):

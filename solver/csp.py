@@ -30,9 +30,9 @@ class CSP():
         for i in range(0, S):
             self.__X.update({"L"+str(i*7+j) for j in range(1, 8)})
             self.__X.update({"P"+str(i*7+j) for j in range(1, 8)})
-            self.__C["samethick"+str(i)] = {"P"+str(i*7+j) for j in range(1, 8)}
-            self.__C["sameround"+str(i)] = {"P"+str(i*7+j) for j in range(1, 8)}
-            self.__C["len"+str(i)] = {"L"+str(i*7+j) for j in range(1, 8)}
+            self.__C["samethick_"+str(i)] = {"P"+str(i*7+j) for j in range(1, 8)}
+            self.__C["sameround_"+str(i)] = {"P"+str(i*7+j) for j in range(1, 8)}
+            self.__C["len_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 8)}
             self.__C["hole6_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 6)}
             self.__C["hole3_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 5)}
             self.__C["hole1_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 4)}

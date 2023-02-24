@@ -2,12 +2,12 @@ import copy
 from constants import *
 import csv
 
-pieces_cache = set([])
+pieces_cache = {}
 
 def get_pieces(data_set_path):
 	global pieces_cache
-	if pieces_cache != set([]):
-		return pieces_cache 
+	if data_set_path in pieces_cache:
+		return pieces_cache[data_set_path]
 	pieces = set([])
 	with open(data_set_path) as f:
 		reader = csv.reader(f)
@@ -18,7 +18,7 @@ def get_pieces(data_set_path):
 			D = float(p[4])
 			no = p[0]
 			pieces.add((no, L, T, R, D))
-	pieces_cache = pieces
+	pieces_cache[data_set_path] = pieces
 	return pieces
 
 class UNARY():

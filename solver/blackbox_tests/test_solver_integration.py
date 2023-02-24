@@ -23,12 +23,10 @@ class test_SOLVER_INTEGRATION(unittest.TestCase):
         '''Generalises arrange and act of all test cases in this suite.'''
         if csp == None:
             csp = CSP()
-        select = SELECT(csp)
-        mac = MAC(csp, specs[kook])
-        UNARY.init_domains(csp, data_set_path)
-        UNARY.unarify(csp, specs[kook])
-        sut = SOLVER(csp, select, mac)
-        res = sut.find_independent(specs[kook], data_set_path)
+        select = SELECT()
+        mac = MAC()
+        sut = SOLVER(select, mac)
+        res = sut.find(csp, [specs[kook]], data_set_path)
         return res
 
     def __assert_finds_solution(self, kook, dataset, csp = None):

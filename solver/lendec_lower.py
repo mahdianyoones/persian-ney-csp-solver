@@ -26,7 +26,7 @@ class LENDEC_LOWER():
 
     def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after reduction of some variables.'''
-        Li, Lj = sorted(participants)
+        Li, Lj = sorted(participants, key=lambda p: int(p[1:]))      
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(csp, Li, Lj, A, D)

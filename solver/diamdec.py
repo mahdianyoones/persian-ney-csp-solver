@@ -25,14 +25,14 @@ class DIAMDEC():
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
-        Pi, Pj = sorted(participants)
+        Pi, Pj = sorted(participants, key=lambda p: int(p[1:]))
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(csp, Pi, Pj, A, D, spec["ddiff"])
 
     def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after reduction of some variables.'''
-        Pi, Pj = sorted(participants)
+        Pi, Pj = sorted(participants, key=lambda p: int(p[1:]))
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(csp, Pi, Pj, A, D, spec["ddiff"])

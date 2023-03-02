@@ -96,7 +96,7 @@ class CSP():
             lower = int(domain["min"])
             upper = int(domain["max"])
             if int(var[1:]) % 7 == 2: # i.e. L2, L9, L16, & so on
-                vals = [v for v in range(lower, upper+2, 2)]
+                vals = [v for v in range(lower, upper+1, 2)]
             else:
                 vals = [v for v in range(lower, upper+1)]
             random.shuffle(vals)

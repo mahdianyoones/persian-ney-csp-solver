@@ -34,9 +34,9 @@ class SELECT():
 			if impact > best["impact"]:
 				is_better = True
 			elif impact == best["impact"]:
-				if degree > best["degree"]:
+				if size < best["size"]:
 					is_better = True
-				elif degree == best["degree"] and best["size"] > size:
+				elif size == best["size"] and degree > best["degree"]:
 					is_better = True
 			if is_better:
 				best = {
@@ -66,6 +66,7 @@ class SELECT():
 				if v in _vars:
 					d += 1
 			self.__degree[v] = d
+		pass
 
 	def __init_impact(self, csp):
 		'''Determines the impact of selecting variables: impact heuristic.

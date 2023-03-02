@@ -11,6 +11,7 @@ from sameround import SAMEROUND
 from half import HALF
 from piecemin import PIECEMIN
 from piecemax import PIECEMAX
+from exclusive import EXCLUSIVE
 from constants import *
 
 class MAC():
@@ -60,7 +61,8 @@ class MAC():
             "nodemax4":         self.__piecemaxref,
             "nodemax5":         self.__piecemaxref,
             "nodemax6":         self.__piecemaxref,
-            "nodemax7":         self.__piecemaxref
+            "nodemax7":         self.__piecemaxref,
+            "exclusive":        EXCLUSIVE()
         }
 
     def establish(self, csp, specs_sorted, curvar, value):
@@ -85,9 +87,13 @@ class MAC():
             unassigned_parts = parts.intersection(unassigned_vars)
             if unassigned_parts == set([]):
                 continue
-            const_name = const.split("_")[0]
-            const_index = int(const.split("_")[1])
-            spec = specs_sorted[const_index]
+            if const != "exclusive":
+                const_name = const.split("_")[0]
+                const_index = int(const.split("_")[1])
+                spec = specs_sorted[const_index]
+            else:
+                const_name = "exclusive"
+                spec = None
             result = self.__refs[const_name].establish(csp, curvar, value, parts, spec)
             if result[0] == CONTRADICTION:
                 return result
@@ -113,6 +119,8 @@ class MAC():
             _var = reduced_vars.pop()
             constraints = self.__X2C[_var]
             for constraint in constraints:
+                if constraint == "exclusive":
+                    continue
                 parts = csp.get_neighbors(constraint)
                 if parts.intersection(unassigned_vars) == set([]):
                     continue

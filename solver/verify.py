@@ -5,14 +5,12 @@ current = op.dirname(op.realpath(__file__))
 parent = op.dirname(current)
 sp.append(parent)
 
-from spec import specs
 from constants import *
 
-def get_violations(a, kook = None):
+def get_violations(a, spec):
     violated_vars = set([])
     violated_consts = set([])
     solution_info = {}
-    spec = specs[kook]
     # half
     if not math.ceil(a["L2"] / 2) == a["L1"]:
         violated_vars.update(set(["L1", "L2"]))
@@ -69,7 +67,21 @@ def get_violations(a, kook = None):
 
     return violated_vars, violated_consts
 
-def is_valid(solution, kook):
+def is_valid(solution, regs, specs):
     '''Determines whether the given solution satisfies all constraints.'''
-    violated_vars, violated_consts = get_violations(solution, kook=kook)
-    return len(violated_consts) == 0 and len(violated_vars) == 0
+    for s in range(0, 10000000):
+        single_solution = {}
+        if not "L"+str(s*7+1) in solution:
+            break
+        for i in range(1, 8):
+            Pi = "P"+str(s*7+i)
+            Li = "L"+str(s*7+i)
+            single_solution["P"+str(i)] = solution[Pi]
+            single_solution["L"+str(i)] = solution[Li]
+        violated_vars, violated_consts = get_violations(single_solution, specs[regs[s]])
+        if len(violated_consts) > 0 or len(violated_vars) > 0:
+            #print(solution)
+            #print(violated_vars)
+            print(violated_consts)
+            return False
+    return True

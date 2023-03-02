@@ -7,7 +7,7 @@ class PIECEMIN():
     Ensures that pieces suitable for a node (Pi) are at least as tall as the
     length of the node (Li). Illegal pieces are removed from the domain of Pi.'''
 
-    def establish(self, csp, curvar, value, participants, kook):
+    def establish(self, csp, curvar, value, participants, spec):
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
@@ -19,7 +19,7 @@ class PIECEMIN():
         D = csp.get_domains()
         return self.__revise(csp, Li, Pi, A, D)
 
-    def propagate(self, csp, reduced_vars, participants, kook):
+    def propagate(self, csp, reduced_vars, participants, spec):
         '''Establishes consistency after reduction of some variables.'''
         for p in participants:
             i = p[1:]

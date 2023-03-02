@@ -23,7 +23,7 @@ class LENDEC():
         '''Establishes consistency after curvar: value assignment.
         
         The assumption is that curvar is in the assigned variables.'''
-        Li, Lj = sorted(participants)
+        Li, Lj = sorted(participants, key=lambda p: int(p[1:]))
         A = csp.get_assignment()
         D = csp.get_domains()
         return self.__revise(csp, Li, Lj, A, D)
@@ -37,21 +37,46 @@ class LENDEC():
 
     def __revise(self, csp, Li, Lj, A, D):
         '''Canculates new consistent bounds for Li and Lj where Lj < Li.'''
-        Dj = D[Lj]
-        Di = D[Li]
-        if Li in A:
-            Di = {"min": A[Li], "max": A[Li]}
-        elif Lj in A:
-            Dj = {"min": A[Lj], "max": A[Lj]}
         reduced_vars = set([])
-        if Dj["min"] >= Di["max"]:
-            return (CONTRADICTION, self.__failed_set(csp, {Li, Lj}))
-        if Dj["min"] >= Di["min"]:
-            Di["min"] = Dj["min"] + 1
-            reduced_vars.add(Li)
-        if Dj["max"] >= Di["max"]:
-            Dj["max"] = Di["max"] - 1
-            reduced_vars.add(Lj)
+        if Li in A: # make Lj[max] consistent
+            newDj = {
+                "min": D[Lj]["min"],
+                "max": min(A[Li]-1, D[Lj]["max"])
+            }
+            if newDj["min"] > newDj["max"]:
+                return (CONTRADICTION, {Lj})
+            if newDj != D[Lj]:
+                csp.update_domain(Lj, newDj)
+                reduced_vars.add(Lj)
+        elif Lj in A: # make Li[min] consistent
+            newDi = {
+                "min": max(A[Lj]+1, D[Li]["min"]),
+                "max": D[Li]["max"]
+            }
+            if newDi["min"] > newDi["max"]:
+                return (CONTRADICTION, {Li})
+            if newDi != D[Li]:
+                csp.update_domain(Li, newDi)
+                reduced_vars.add(Li)
+        else: # try making Li[min] and Lj[max] consistent
+            newDi = {
+                "min": max(D[Lj]["min"]+1, D[Li]["min"]),
+                "max": D[Li]["max"],
+            }
+            if newDi["min"] > newDi["max"]:
+                return (CONTRADICTION, {Li, Lj})
+            newDj = {
+                "min": D[Lj]["min"],
+                "max": min(D[Li]["max"]-1, D[Lj]["max"]),
+            }
+            if newDj["min"] > newDj["max"]:
+                return (CONTRADICTION, {Li, Lj})
+            if newDj != D[Lj]:
+                csp.update_domain(Lj, newDj)
+                reduced_vars.add(Lj)
+            if newDi != D[Li]:
+                csp.update_domain(Li, newDi)
+                reduced_vars.add(Li)
         if len(reduced_vars) == 0:
             return ALREADY_CONSISTENT
         return MADE_CONSISTENT, reduced_vars

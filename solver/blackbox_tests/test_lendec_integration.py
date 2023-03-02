@@ -39,34 +39,45 @@ class test_LENDEC_INTEGRATION(unittest.TestCase):
         self.__X = {
             "L1","L2", "L3", "L4", "L5", "L6", "L7",
             "P1","P2", "P3", "P4", "P5", "P6", "P7",
+            "L8","L9", "L10", "L11", "L12", "L13", "L14",
+            "P8","P9", "P10", "P11", "P12", "P13", "P14",
             }
         self.__C = {
-            "lendec2-3":        {"L2", "L3"},
-            "lendec3-4":        {"L3", "L4"},
-            "lendec4-5":        {"L4", "L5"},
-            "lendec5-6":        {"L5", "L6"},
-            "lendec6-7":        {"L6", "L7"},
-            "lendeclower2-3":   {"L2", "L3"},
-            "lendeclower3-4":   {"L3", "L4"},
-            "lendeclower4-5":   {"L4", "L5"},
-            "lendeclower5-6":   {"L5", "L6"}
+            "lendec2-3_0":        {"L2", "L3"},
+            "lendec3-4_0":        {"L3", "L4"},
+            "lendec4-5_0":        {"L4", "L5"},
+            "lendec5-6_0":        {"L5", "L6"},
+            "lendec6-7_0":        {"L6", "L7"},
+            "lendeclower2-3_0":   {"L2", "L3"},
+            "lendeclower3-4_0":   {"L3", "L4"},
+            "lendeclower4-5_0":   {"L4", "L5"},
+            "lendeclower5-6_0":   {"L5", "L6"},
+            "lendec2-3_1":        {"L9", "L10"},
+            "lendec3-4_1":        {"L10", "L11"},
+            "lendec4-5_1":        {"L11", "L12"},
+            "lendec5-6_1":        {"L12", "L13"},
+            "lendec6-7_1":        {"L13", "L14"},
+            "lendeclower2-3_1":   {"L9", "L10"},
+            "lendeclower3-4_1":   {"L10", "L11"},
+            "lendeclower4-5_1":   {"L11", "L12"},
+            "lendeclower5-6_1":   {"L12", "L13"}
         }
-        self.__csp = CSP(self.__X, self.__C)
+        self.__csp = CSP(S = 2, X = self.__X, C = self.__C)
         current = op.dirname(__file__)
         data_set_path = current+"/real_pieces.csv"
         UNARY.init_domains(self.__csp, data_set_path)
-        UNARY.unarify(self.__csp, specs["C"])
-        self.__mac = MAC(self.__csp, specs["C"])
+        UNARY.unarify(self.__csp, [specs["C"], specs["C"]])
+        self.__mac = MAC()
         
     def test_L2_propagates_to_all(self):
         # act
-        res = self.__mac.propagate({"L2"})
+        res = self.__mac.propagate(self.__csp, [None, None], {"L2"})
         self.assertEqual(res[0], MADE_CONSISTENT)
         self.__assert_domains_are_consistent()
 
     def test_L4_propagates_to_all(self):
         # act
-        res = self.__mac.propagate({"L4"})
+        res = self.__mac.propagate(self.__csp, [None, None], {"L4"})
         self.assertEqual(res[0], MADE_CONSISTENT)
         self.__assert_domains_are_consistent()
     
@@ -74,7 +85,7 @@ class test_LENDEC_INTEGRATION(unittest.TestCase):
         # arrange
         self.__csp.assign("L2", 80)
         # act
-        res = self.__mac.establish("L2", 80)
+        res = self.__mac.establish(self.__csp, [None, None], "L2", 80)
         # assess
         self.assertEqual(res[0], MADE_CONSISTENT)
         self.assertEqual(res[1], {"L3", "L4", "L5", "L6", "L7"})
@@ -91,7 +102,7 @@ class test_LENDEC_INTEGRATION(unittest.TestCase):
         D = self.__csp.get_domains()
         self.__csp.assign("L7", 100)
         # act
-        res = self.__mac.establish("L7", 100)
+        res = self.__mac.establish(self.__csp, [None, None], "L7", 100)
         # assess
         self.assertEqual(res[0], MADE_CONSISTENT)
         self.assertEqual(res[1], {"L2", "L3", "L4", "L5", "L6"})

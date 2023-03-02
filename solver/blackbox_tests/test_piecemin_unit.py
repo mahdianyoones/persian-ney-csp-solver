@@ -15,7 +15,7 @@ import case_runner
 class test_PIECEMIN(unittest.TestCase):
 
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__sut = PIECEMIN()
         self.__case_runner = case_runner.test_CASE_RUNNER()
 
@@ -189,7 +189,7 @@ class test_PIECEMIN(unittest.TestCase):
             "D": {
                 "L1": {"min": 43, "max": 100}
             },
-            "kook": "anything",
+            "spec": "anything",
             "A": {"P1": (1,40,1,1,1)},
             "reduced_vars": {"L1"},
             "participants": {"L1", "P1"}

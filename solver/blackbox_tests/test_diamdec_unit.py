@@ -29,7 +29,7 @@ class test_DIAMDEC(unittest.TestCase):
     of these 6 constraints.'''
     
     def setUp(self):
-        self.__csp = CSP()
+        self.__csp = CSP(S=2)
         self.__spec = {
             "ddiff":    {"min": 0.5, "max": 1.0},                
         }

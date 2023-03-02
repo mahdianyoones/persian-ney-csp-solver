@@ -119,16 +119,18 @@ class MAC():
             _var = reduced_vars.pop()
             constraints = self.__X2C[_var]
             for constraint in constraints:
-                if constraint == "exclusive":
-                    continue
+                if constraint != "exclusive":
+                    const_name = constraint.split("_")[0]
+                    const_index = int(constraint.split("_")[1])
+                    spec = specs_sorted[const_index]
+                else:
+                    const_name = "exclusive"
+                    spec = None                
                 parts = csp.get_neighbors(constraint)
                 if parts.intersection(unassigned_vars) == set([]):
                     continue
                 reduced_prtcns = reduced_vars.intersection(parts)
                 reduced_prtcns.add(_var)
-                const_name = constraint.split("_")[0]
-                const_index = int(constraint.split("_")[1])
-                spec = specs_sorted[const_index]
                 res = self.__refs[const_name].propagate(csp, reduced_prtcns, parts, spec)
                 if res[0] == CONTRADICTION:
                     return res

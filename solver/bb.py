@@ -1,6 +1,5 @@
 from spec import specs as reg_specs
 from unary import get_pieces
-from unary import UNARY
 from copy import deepcopy
 import os
 from sys import path as sp
@@ -58,7 +57,9 @@ class SAT:
         specs_sorted = [self.__specs[reg] for reg in node_items]
         indicator, solution = self.__solver.find(csp, specs_sorted, self.__ds_path)
         if indicator == SOLUTION:
-            self.__psp(node_items, solution)
+            if not is_valid(solution, node_items):
+                self.__psp(node_items, solution)
+                raise Exception("Invalid solution")
             return True
             # do something with solution
             # e.g. check the validity of the solution, store it etc
@@ -66,7 +67,7 @@ class SAT:
 
 class UTILITY:
 
-    def __init__(self, regs, costs, values, capacity, specs):
+    def __init__(self, capacity, costs, specs, regs, values):
         self.__values = values
         self.__capacity = capacity
         self.__costs = costs
@@ -169,14 +170,14 @@ class BB:
             "Bb": 8, "C": 7, "A": 6, "D": 5, "G": 4, 
             "E": 3, "F_tall": 2, "F_short": 1
         }
-        costs = {reg: reg_specs[reg]["len"] for reg in regs}
+        costs = {reg: specs[reg]["len"] for reg in regs}
         self.__capacity = capacity
         self.__specs = specs
         self.__regs = regs
         self.__values = values
         self.__costs = costs
         self.__sat = SAT(capacity, costs, specs, ds_path)
-        self.__ut = UTILITY(regs, costs, values, capacity, specs)
+        self.__ut = UTILITY(capacity, costs, specs, regs, values)
 
     def __gen_items(self, specs, capacity, values):
         '''Generates all possible instruments and sorts them greedily!

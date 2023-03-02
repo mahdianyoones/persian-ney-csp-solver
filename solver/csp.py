@@ -66,6 +66,7 @@ class CSP():
             self.__C["nodemax5_"+str(i)] = {"P"+str(i*7+5), "L"+str(i*7+5)}
             self.__C["nodemax6_"+str(i)] = {"P"+str(i*7+6), "L"+str(i*7+6)}
             self.__C["nodemax7_"+str(i)] = {"P"+str(i*7+7), "L"+str(i*7+7)}
+        self.__C["exclusive"] = copy.copy(self.__X)
 
     def update_domain(self, var, new_domain):
         self.__D[var] = new_domain

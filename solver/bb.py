@@ -9,7 +9,7 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 from verify import is_valid
-
+from pretty_print import print_solution
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sp.append(parent)
@@ -24,6 +24,7 @@ class SAT:
         self.__costs = costs
         self.__specs = specs
         self.__ds_path = ds_path
+        self.__last_solution = {}
 
     def __too_long(self, node_items):
         if sum([self.__costs[reg] for reg in node_items]) > self.__capacity:
@@ -57,13 +58,17 @@ class SAT:
         specs_sorted = [self.__specs[reg] for reg in node_items]
         indicator, solution = self.__solver.find(csp, specs_sorted, self.__ds_path)
         if indicator == SOLUTION:
-            if not is_valid(solution, node_items):
-                self.__psp(node_items, solution)
-                raise Exception("Invalid solution")
+            # if not is_valid(solution, node_items, specs_sorted):
+            #     self.__psp(node_items, solution)
+            #     raise Exception("Invalid solution")
+            self.__last_solution = solution
             return True
             # do something with solution
             # e.g. check the validity of the solution, store it etc
         return False
+    
+    def get_last_solution(self):
+        return self.__last_solution
 
 class UTILITY:
 
@@ -295,6 +300,10 @@ class BB:
                 if with_utility > best_utility:
                     best_utility = with_utility
                     best_solution = deepcopy(with_items) # copy
+                    print("-------------------------------------------")
+                    print("Best solution so far: ")
+                    print(best_solution)
+                    #print_solution(self.__sat.get_last_solution())
                 if self.__ut.bound(with_items, with_utility, with_cost) > best_utility:
                     _with = (with_utility, with_cost, with_items, child_index + 1)
                     solutions.append(_with)

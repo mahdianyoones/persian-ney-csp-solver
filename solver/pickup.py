@@ -84,7 +84,7 @@ class SELECT():
 			if v[0] == "P":
 				self.__impact[v] = 1
 			else:
-				self.__impact[v] = 0
+				self.__impact[v] = 1
 
 	def __domain_size(self, var, D):
 		if var[0] == "L":

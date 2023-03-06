@@ -22,7 +22,9 @@ The desirable relationships between nodes mentioned above have been incorporated
 several unary, binary, and higher level constraints in the CSP model.
 
 Based on the nature of constraints, efficient algorithms were found to establish binary and n-ary consistency. Hence, the solver does not use algorithms like
-arc3, and instead conducts the search by maintaining the domains consistent, reducing the search space significantly. Some domains are defined as ranges of integer values and some are defined as a set of values. Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping).
+arc3, and instead conducts the search by maintaining the domains consistent, reducing the search space significantly. Constraints are propagated after assignment of a value to a new variable and before developing the search tree.
+
+Some domains are defined as ranges of integer values and some are defined as a set of values. Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping).
 
 Another problem this project tackles is not only finding the nodes that can go together to build a single instrument, but given a stock of pieces at hand, making any possible number of instruments that are feasible.
 

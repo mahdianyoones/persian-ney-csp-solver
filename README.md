@@ -32,6 +32,6 @@ That is, imagine a Ney constructor has cut several cane branches from a canebrak
 
 The number of instruments, however, is not the only quantity, a construcor would wish to maximize. Instruments with certain length are more common, given the frequency range they can produce. For example, middle-length instruments are much more common. Therefore, the optimization part needs to take this into account as well as the fact that if a player has a varied collection of instruments, they can virtually play any melody.
 
-Therefore, the objective of this research is not only making a single instrument with some cut pieces, but also making the most out of them in favor of the player.
+Therefore, the objective of this research is not only making a single instrument with some cut pieces, but also making the most out of the pieces to construct *more of more-common instruments*.
 
 **The project has achieved all the aims mentioned above; however, when the pieces are large and varied--input of the algorith, the algorithm does not terminate. It sounds like this is an NP problem. That is, the time complexity grows exponentially.**

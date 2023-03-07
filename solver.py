@@ -71,7 +71,7 @@ class SOLVER():
                 return dfs_res
             self.__unassign(csp, curvar)
             if dfs_res[0] == BACKTRACK:
-                continue # May not happen at all!
+                continue
             if dfs_res[0] == BACKJUMP:
                 if dfs_res[2] != curvar:
                     return dfs_res

@@ -9,30 +9,35 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 from verify import is_valid
+from pretty_print import print_solution
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sp.append(parent)
 
+def print_stats(stats):
+    pass
+
 def main():
-    kook = "G"
+    regs = ["A", "Bb", "C", "D", "E"]
     data_set_path = current+"/pieces.csv"
-    csp = CSP()
-    select = SELECT(csp)
-    mac = MAC(csp, specs[kook])
+    csp = CSP(S=len(regs))
+    select = SELECT()
+    mac = MAC()
     UNARY.init_domains(csp, data_set_path)
-    res = UNARY.unarify(csp, specs[kook])
+    specs_sorted = [specs[reg] for reg in regs]
+    res = UNARY.unarify(csp, specs_sorted)
     if res == CONTRADICTION:
         print("No solution could exist. Unary constaints violated!")
-    solver = SOLVER(csp, select, mac)
-    indicator, solution = solver.find_independent(specs[kook], data_set_path)
+    solver = SOLVER(select, mac)
+    indicator, solution = solver.find(csp, specs_sorted, data_set_path)
     if indicator == SOLUTION:
-        if is_valid(solution, kook):
+        if is_valid(solution, specs_sorted):
             print("Found a solution: ")
-            print(json.dumps(solution, indent=4))
+            print_solution(solution, regs)
         else:
             print("Found a solution, but invalid!:")    
-            print(json.dumps(solution, indent=4))
+            print_solution(solution, regs)
     else:
         print("Could not find a solution.")
         

@@ -67,7 +67,7 @@ def get_violations(a, spec):
 
     return violated_vars, violated_consts
 
-def is_valid(solution, regs, specs):
+def is_valid(solution, specs):
     '''Determines whether the given solution satisfies all constraints.'''
     for s in range(0, 10000000):
         single_solution = {}
@@ -78,10 +78,7 @@ def is_valid(solution, regs, specs):
             Li = "L"+str(s*7+i)
             single_solution["P"+str(i)] = solution[Pi]
             single_solution["L"+str(i)] = solution[Li]
-        violated_vars, violated_consts = get_violations(single_solution, specs[regs[s]])
+        violated_vars, violated_consts = get_violations(single_solution, specs[s])
         if len(violated_consts) > 0 or len(violated_vars) > 0:
-            #print(solution)
-            #print(violated_vars)
-            print(violated_consts)
             return False
     return True

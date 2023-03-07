@@ -17,7 +17,7 @@ import random
 
 class test_SOLVER_INTEGRATION_MULTIPLE_INSTRUMENTS(unittest.TestCase):
 
-    MULTI_SOLUTIONS_DS = "contains_multiple_solutions"
+    MULTI_SOLUTIONS_DS = "contains_multiple_solutions_easy_input"
 
     def __find(self, data_set_path, specs, csp = None):
         '''Generalises arrange and act of all test cases in this suite.'''
@@ -56,6 +56,11 @@ class test_SOLVER_INTEGRATION_MULTIPLE_INSTRUMENTS(unittest.TestCase):
         print(specs_needed)
         self.__assert_finds_multiple_solution(specs_needed, self.MULTI_SOLUTIONS_DS)
 
+    def test_finds_5_instruments_artificial_ds(self):
+        specs_needed = self.__get_random_instrument_regs(5)
+        print(specs_needed)
+        self.__assert_finds_multiple_solution(specs_needed, self.MULTI_SOLUTIONS_DS)
+
     def test_finds_10_instruments_artificial_ds(self):
         specs_needed = self.__get_random_instrument_regs(10)
         print(specs_needed)
@@ -65,6 +70,22 @@ class test_SOLVER_INTEGRATION_MULTIPLE_INSTRUMENTS(unittest.TestCase):
         specs_needed = self.__get_random_instrument_regs(11)
         print(specs_needed)
         self.__assert_finds_multiple_solution(specs_needed, self.MULTI_SOLUTIONS_DS)
+
+    # def test_A(self):
+    #     specs_needed = [
+    #         'C', 'A'
+    #     ]
+    #     print(specs_needed)
+    #     solution = self.__assert_finds_multiple_solution(specs_needed, self.MULTI_SOLUTIONS_DS)
+    #     print_solution(solution)
+
+    # def test_B(self):
+    #     specs_needed = [
+    #         'E', 'C'
+    #     ]
+    #     print(specs_needed)
+    #     solution = self.__assert_finds_multiple_solution(specs_needed, self.MULTI_SOLUTIONS_DS)
+    #     print_solution(solution)
 
 if __name__ == "__main__":
     unittest.main()

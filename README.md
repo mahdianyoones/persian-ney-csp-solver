@@ -34,6 +34,6 @@ The number of instruments, however, is not the only quantity, a construcor would
 
 Therefore, the objective of this research is not only making a single instrument with some cut pieces, but also making the most out of the pieces to construct *more of more-common instruments*.
 
-Note: the entry point is bb.py.
+Note: the entry point is main.py.
 
 **The project has achieved all the aims mentioned above; however, when there are many varied pieces--input of the algorith, the algorithm does not terminate. It sounds like this is an NP problem. That is, the time complexity grows exponentially.**

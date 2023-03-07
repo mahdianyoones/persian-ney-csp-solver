@@ -14,12 +14,10 @@ from constants import *
 from verify import is_valid
 from pretty_print import print_solution
 
-class test_SOLVER_INTEGRATION_SINGLE_INSTRUMENT(unittest.TestCase):
+class test_SOLVER_INTEGRATION_SINGLE(unittest.TestCase):
+    '''Test solver when looking for single instrument solutions.'''
 
-    NO_SOLUTION_DS = "contains_no_solution"
     SOLUTION_DS = "contains_solutions"
-    REAL_DS = "real_pieces"
-    MULTI_SOLUTIONS_DS = "contains_multiple_solutions"
 
     def __find(self, data_set_path, specs, csp = None):
         '''Generalises arrange and act of all test cases in this suite.'''
@@ -38,42 +36,42 @@ class test_SOLVER_INTEGRATION_SINGLE_INSTRUMENT(unittest.TestCase):
         self.assertTrue(is_valid(res[1], [reg], specs))
         return res[1]
 
-    def test_finds_F_short_artificial_ds(self):
+    def test_finds_F_short(self):
         solution = self.__assert_finds_solution("F_short", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_E_artificial_ds(self):
+    def test_finds_E(self):
         solution = self.__assert_finds_solution("E", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_D_artificial_ds(self):
+    def test_finds_D(self):
         solution = self.__assert_finds_solution("D", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_C_artificial_ds(self):
+    def test_finds_C(self):
         solution = self.__assert_finds_solution("C", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_Bb_artificial_ds(self):
+    def test_finds_Bb(self):
         solution = self.__assert_finds_solution("Bb", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_A_artificial_ds(self):
+    def test_finds_A(self):
         solution = self.__assert_finds_solution("A", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_G_artificial_ds(self):
+    def test_finds_G(self):
         solution = self.__assert_finds_solution("G", self.SOLUTION_DS)
         print("")
         print_solution(solution)
 
-    def test_finds_F_tall_artificial_ds(self):
+    def test_finds_F_tall(self):
         solution = self.__assert_finds_solution("F_tall", self.SOLUTION_DS)
         print("")
         print_solution(solution)

@@ -33,21 +33,6 @@ class SOLVER():
         csp.revert_domains() # undo establish and propagation effects
         self.__jump.unaccumulate(curvar)
 
-    def __sort_lcv(self, csp, curvar, values):
-        reductions = {}
-        for value in values:
-            csp.assign(curvar, value)
-            csp.backup_domains()
-            result = self.__mac.establish(csp, self.__specs_sorted, curvar, value)
-            if result[0] == CONTRADICTION:
-                reductions[value] = float("+inf")
-            else:
-                reductions[value] = csp.get_search_space_size()
-            csp.unassign(curvar)
-            csp.revert_domains()
-        values = sorted(values, key = lambda val: reductions[val], reverse=True)
-        return values
-
     def __dfs(self):
         '''Recursively assigns values to variables to find a solution.
         
@@ -63,8 +48,6 @@ class SOLVER():
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
         values = csp.get_shuffled_values(curvar)
-        values = self.__sort_lcv(csp, curvar, values)
-        self.__print_ss_size(csp)
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
@@ -98,9 +81,6 @@ class SOLVER():
                     self.__jump.absorb(jump_target, jump_origin)
                     continue
 
-    def __print_ss_size(self, csp):
-        print("Search space size: ", csp.get_search_space_size())
-
     def find(self, csp, specs_sorted, data_set_path):
         '''Runs MAC for all variables first and then calls DFS.
         
@@ -118,5 +98,4 @@ class SOLVER():
         res = self.__mac.propagate(csp, specs_sorted, X)
         if res == CONTRADICTION:
             return CONTRADICTION
-        self.__print_ss_size(csp)
         return self.__dfs()

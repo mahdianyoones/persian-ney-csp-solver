@@ -9,14 +9,11 @@ from mac import MAC
 from pickup import SELECT
 from constants import *
 from verify import is_valid
-from pretty_print import print_solution
+from pretty_print import print_solution, print_stats
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sp.append(parent)
-
-def print_stats(stats):
-    pass
 
 def main():
     regs = ["A", "Bb", "C", "D", "E"]
@@ -29,7 +26,8 @@ def main():
     res = UNARY.unarify(csp, specs_sorted)
     if res == CONTRADICTION:
         print("No solution could exist. Unary constaints violated!")
-    solver = SOLVER(select, mac)
+    stats = {"nodes": 0, "backjumps": 0, "backtracks": 0}
+    solver = SOLVER(select, mac, stats)
     indicator, solution = solver.find(csp, specs_sorted, data_set_path)
     if indicator == SOLUTION:
         if is_valid(solution, specs_sorted):
@@ -40,6 +38,7 @@ def main():
             print_solution(solution, regs)
     else:
         print("Could not find a solution.")
+    print_stats(stats)
         
 if __name__ == "__main__":
     main()

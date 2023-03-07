@@ -8,11 +8,12 @@ current = os.path.dirname(os.path.realpath(__file__))
 
 class SOLVER():
 
-    def __init__(self, select, mac):
+    def __init__(self, select, mac, stats):
         self.__csp = None
         self.__select = select
         self.__mac = mac
         self.__jump = JUMP()
+        self.__stats = stats
 
     def __assign(self, curvar, value):
         '''Tries assigning curvar: value.'''
@@ -48,6 +49,7 @@ class SOLVER():
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
         values = csp.get_shuffled_values(curvar)
+        self.__stats["nodes"] += 1
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
@@ -71,11 +73,13 @@ class SOLVER():
                 return dfs_res
             self.__unassign(csp, curvar)
             if dfs_res[0] == BACKTRACK:
+                self.__stats["backtracks"] += 1
                 continue
             if dfs_res[0] == BACKJUMP:
                 if dfs_res[2] != curvar:
                     return dfs_res
                 else:
+                    self.__stats["backjumps"] += 1
                     jump_origin = dfs_res[1]
                     jump_target = dfs_res[2]
                     self.__jump.absorb(jump_target, jump_origin)

@@ -8,3 +8,9 @@ def print_solution(solution, regs):
             lvar = "L"+str(s*7+i)
             pvar = "P"+str(s*7+i)
             print("Node #"+str(i)+" => ",str(solution[lvar])+"mm of piece #"+solution[pvar][0], "  piece info:", solution[pvar])
+
+def print_stats(stats):
+    print("--------- performance -----------")
+    print("Generated nodes: ", stats["nodes"])
+    print("Backjumps: ", stats["backjumps"])
+    print("Backtracks: ", stats["backtracks"])

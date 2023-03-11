@@ -21,19 +21,9 @@ This project develops a CSP-solver that acts as a design-aid tool hepling with t
 The desirable relationships between nodes mentioned above have been incorporated into
 several unary, binary, and higher level constraints in the CSP model.
 
-Based on the nature of constraints, efficient algorithms were found to establish binary and n-ary consistency. Hence, the solver does not use algorithms like
-arc3, and instead conducts the search by maintaining the domains consistent, reducing the search space significantly. Constraints are propagated after assignment of a value to a new variable and before developing the search tree.
+Based on the nature of constraints, efficient procedures have been developed to establish binary and n-ary consistency. Hence, the solver conducts the search by maintaining the domains consistent, reducing the search space significantly. In fact, if solutions exists, the may search never backtrack, generating at most as many nodes as variables. 
 
 Some domains are defined as ranges of integer values and some are defined as a set of values. Furthermore, the solver adops conflict-directed [backjumping](https://en.wikipedia.org/wiki/Backjumping).
 
-Another problem this project tackles is not only finding the nodes that can go together to build a single instrument, but given a stock of pieces at hand, making any possible number of instruments that are feasible.
-
-That is, imagine a Ney constructor has cut several cane branches from a canebrake and wants to build some instruments out of them. They cut all the branches into pieces at their junctions. Then, they try to figure out the maximum number of instruments that the stock of pieces can yield.
-
-The number of instruments, however, is not the only quantity, a construcor would wish to maximize. Instruments with certain length are more common, given the frequency range they can produce. For example, middle-length instruments are much more common. Therefore, the optimization part needs to take this into account as well as the fact that if a player has a varied collection of instruments, they can virtually play any melody.
-
-Therefore, the objective of this research is not only making a single instrument with some cut pieces, but also making the most out of the pieces to construct *more of more-common instruments*.
 
 Note: the entry point is main.py.
-
-**The project has achieved all the aims mentioned above; however, when there are many varied pieces--input of the algorith, the algorithm does not terminate. It sounds like this is an NP problem. That is, the time complexity grows exponentially.**

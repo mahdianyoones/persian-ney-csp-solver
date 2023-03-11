@@ -54,11 +54,15 @@ class SOLVER():
         values = csp.get_shuffled_values(curvar)
         self.__stats["nodes"] += 1
         if self.__stats["nodes"] % 500 == 0:
-            print_stats(self.__stats)
-            seconds_elapsed = int(time.time() - self.__start_ts)
-            seconds_elapsed -= (self.__stats["nodes"] // 500) * 8
-            print(datetime.timedelta(seconds=seconds_elapsed))
-            time.sleep(8)
+            time.sleep(1)
+            if self.__stats["nodes"] % 1000 == 0:
+                msg = print_stats(self.__stats)
+                seconds_elapsed = int(time.time() - self.__start_ts)
+                seconds_elapsed -= (self.__stats["nodes"] // 1000)
+                msg += "\n"
+                msg += str(datetime.timedelta(seconds=seconds_elapsed)) + "\n"
+                self.__statfile.write(msg)
+                self.__statfile.flush()
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
@@ -94,7 +98,7 @@ class SOLVER():
                     self.__jump.absorb(jump_target, jump_origin)
                     continue
 
-    def find(self, csp, specs_sorted, data_set_path):
+    def find(self, csp, specs_sorted, data_set_path, statf):
         '''Runs MAC for all variables first and then calls DFS.
         
         If MAC figures out any contradiction before search begins, no
@@ -112,4 +116,5 @@ class SOLVER():
         if res == CONTRADICTION:
             return CONTRADICTION
         self.__start_ts = time.time()
+        self.__statfile = statf
         return self.__dfs()

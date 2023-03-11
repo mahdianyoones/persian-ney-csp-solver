@@ -1,16 +1,21 @@
 def print_solution(solution, regs):
-    all_vars = sorted(solution.keys(), key=lambda n: int(n[1:]))
+    msg = ""
     for s in range(0, 1000):
         if not "L"+str(s*7+1) in solution:
             break
-        print("--------- "+regs[s]+" -----------")
+        msg += "--------- "+regs[s]+" -----------"  + "\n"
         for i in range(1, 8):
             lvar = "L"+str(s*7+i)
             pvar = "P"+str(s*7+i)
-            print("Node #"+str(i)+" => ",str(solution[lvar])+"mm of piece #"+solution[pvar][0], "  piece info:", solution[pvar])
+            msg += "Node #"+str(i)+" => "
+            msg + str(solution[lvar])+"mm of piece #"+solution[pvar][0]
+            msg += "  piece info:", solution[pvar] + "\n"
+    return msg
+        
 
 def print_stats(stats):
-    print("--------- performance -----------")
-    print("Generated nodes: ", stats["nodes"])
-    print("Backjumps: ", stats["backjumps"])
-    print("Backtracks: ", stats["backtracks"])
+    msg = "----------------------------------" + "\n\n"
+    msg += "Generated nodes: " + str(stats["nodes"]) + "\n"
+    msg += "Backjumps: " + str(stats["backjumps"]) + "\n"
+    msg += "Backtracks: " + str(stats["backtracks"]) + "\n"
+    return msg

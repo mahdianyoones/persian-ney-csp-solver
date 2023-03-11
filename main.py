@@ -27,17 +27,23 @@ def main():
         print("No solution could exist. Unary constaints violated!")
     stats = {"nodes": 0, "backjumps": 0, "backtracks": 0}
     solver = SOLVER(select, mac, stats)
-    indicator, solution = solver.find(csp, specs_sorted, data_set_path)
+    statf = open("stats.txt", "w")
+    indicator, solution = solver.find(csp, specs_sorted, data_set_path, statf)
     if indicator == SOLUTION:
         if is_valid(solution, specs_sorted):
             print("Found a solution: ")
-            print_solution(solution, regs)
+            msg = print_solution(solution, regs)
+            statf.write(msg)
         else:
-            print("Found a solution, but invalid!:")    
-            print_solution(solution, regs)
+            msg = "Found a solution, but invalid!:"
+            msg += print_solution(solution, regs)
+            statf.write(msg)
     else:
-        print("Could not find a solution.")
-    print_stats(stats)
-        
+        msg += "Could not find a solution."
+        statf.write(msg)
+    msg = print_stats(stats)
+    statf.write(msg)
+    statf.close()
+
 if __name__ == "__main__":
     main()

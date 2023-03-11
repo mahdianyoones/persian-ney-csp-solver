@@ -3,6 +3,8 @@ from constants import *
 from unary import UNARY
 import copy
 import os
+import time, datetime
+from pretty_print import print_stats
 
 current = os.path.dirname(os.path.realpath(__file__))
 
@@ -14,6 +16,7 @@ class SOLVER():
         self.__mac = mac
         self.__jump = JUMP()
         self.__stats = stats
+        self.__start_ts = 0
 
     def __assign(self, curvar, value):
         '''Tries assigning curvar: value.'''
@@ -50,6 +53,12 @@ class SOLVER():
         curvar = self.__select.nextvar(csp)
         values = csp.get_shuffled_values(curvar)
         self.__stats["nodes"] += 1
+        if self.__stats["nodes"] % 500 == 0:
+            print_stats(self.__stats)
+            seconds_elapsed = int(time.time() - self.__start_ts)
+            seconds_elapsed -= (self.__stats["nodes"] // 500) * 8
+            print(datetime.timedelta(seconds=seconds_elapsed))
+            time.sleep(8)
         while True:
             if len(values) == 0:
                 if csp.assigned_count() == 0:
@@ -102,4 +111,5 @@ class SOLVER():
         res = self.__mac.propagate(csp, specs_sorted, X)
         if res == CONTRADICTION:
             return CONTRADICTION
+        self.__start_ts = time.time()
         return self.__dfs()

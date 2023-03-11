@@ -1,6 +1,5 @@
 import os
 from sys import path as sp
-import json
 from spec import specs
 from solver import SOLVER
 from csp import CSP
@@ -16,7 +15,7 @@ parent = os.path.dirname(current)
 sp.append(parent)
 
 def main():
-    regs = ["A", "Bb", "C", "D", "E"]
+    regs = ["A", "Bb", "C", "D", "Bb", "C"]
     data_set_path = current+"/pieces.csv"
     csp = CSP(S=len(regs))
     select = SELECT()

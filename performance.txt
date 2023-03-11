@@ -1,0 +1,6 @@
+Maintaining consistency and backjumping:
+
+Generated nodes:  4802000
+Backjumps:  2487384
+Backtracks:  0
+Run time: 19 hours and 42 minutes

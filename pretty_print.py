@@ -8,8 +8,8 @@ def print_solution(solution, regs):
             lvar = "L"+str(s*7+i)
             pvar = "P"+str(s*7+i)
             msg += "Node #"+str(i)+" => "
-            msg + str(solution[lvar])+"mm of piece #"+solution[pvar][0]
-            msg += "  piece info:", solution[pvar] + "\n"
+            msg += str(solution[lvar])+"mm of piece #"+solution[pvar][0]
+            msg += "  piece info:" + str(solution[pvar]) + "\n"
     return msg
         
 

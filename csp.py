@@ -37,12 +37,13 @@ class CSP():
             self.__C["hole3_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 5)}
             self.__C["hole1_"+str(i)] = {"L"+str(i*7+j) for j in range(1, 4)}
             self.__C["half_"+str(i)] = {"L"+str(i*7+1), "L"+str(i*7+2)}
-            self.__C["diamdec1-2_"+str(i)] = {"P"+str(i*7+1), "P"+str(i*7+2)}
+            #self.__C["diamdec1-2_"+str(i)] = {"P"+str(i*7+1), "P"+str(i*7+2)}
             self.__C["diamdec2-3_"+str(i)] = {"P"+str(i*7+2), "P"+str(i*7+3)}
             self.__C["diamdec3-4_"+str(i)] = {"P"+str(i*7+3), "P"+str(i*7+4)}
             self.__C["diamdec4-5_"+str(i)] = {"P"+str(i*7+4), "P"+str(i*7+5)}
             self.__C["diamdec5-6_"+str(i)] = {"P"+str(i*7+5), "P"+str(i*7+6)}
             self.__C["diamdec6-7_"+str(i)] = {"P"+str(i*7+6), "P"+str(i*7+7)}
+            self.__C["topdiamdec_"+str(i)] = {"P"+str(i*7+1), "P"+str(i*7+2)}
             self.__C["lendec2-3_"+str(i)] = {"L"+str(i*7+2), "L"+str(i*7+3)}
             self.__C["lendec3-4_"+str(i)] = {"L"+str(i*7+3), "L"+str(i*7+4)}
             self.__C["lendec4-5_"+str(i)] = {"L"+str(i*7+4), "L"+str(i*7+5)}

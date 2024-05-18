@@ -6,6 +6,7 @@ from len import LEN
 from lendec import LENDEC
 from lendec_lower import LENDEC_LOWER
 from diamdec import DIAMDEC
+from top_diamdec import TOP_DIAMDEC
 from samethick import SAMETHICK
 from sameround import SAMEROUND
 from half import HALF
@@ -33,6 +34,7 @@ class MAC():
             "samethick":	    SAMETHICK(),
             "sameround":	    SAMEROUND(),
             "len":			    LEN(),
+            "topdiamdec":       TOP_DIAMDEC(),
             "diamdec1-2":       self.__diamdecref,
             "diamdec2-3":       self.__diamdecref,
             "diamdec3-4":       self.__diamdecref,

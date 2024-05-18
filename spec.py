@@ -2,10 +2,11 @@
 common_specs = {
 	"mp":			9,							# mouthpiece length
 	"holed":		9,							# holes diameter
-	"topd":			{"min": 23, "max": 26},		# diamter at top
+	"topd":			{"min": 21, "max": 24},		# diamter at top
 	"minl":			20,							# minimum chunk length
 	"hmarg":		4,							# minimum hole/hole and hole/junction space
-	"ddiff":		{"min": 0.0, "max": 1},	# diameter difference between adjacent nodes
+	"ddiff":		{"min": 0.0, "max": 1.0},		# diameter difference between adjacent nodes
+ 	"top_ddiff":	{"min": 2.5, "max": 4}		# diameter difference between top and second node
 }
 
 holes = {}

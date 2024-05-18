@@ -1,0 +1,155 @@
+Desired instruments: A, D, D, Bb, Bb, Bb, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 4
+Backjumps: 1
+Backtracks: 1
+Desired instruments: A, D, D, Bb, Bb, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 4
+Backjumps: 1
+Backtracks: 1
+Desired instruments: A, D, D, Bb, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 28
+Backjumps: 1
+Backtracks: 24
+Desired instruments: A, D, D, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 28
+Backjumps: 1
+Backtracks: 24
+Desired instruments: A, D, D, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C
+
+--------- A -----------
+Node #1 => 57mm of piece #503  piece info:('503', 125.0, 2.0, 0.5, 23.0)
+Node #2 => 114mm of piece #545  piece info:('545', 120.0, 2.0, 0.5, 22.0)
+Node #3 => 113mm of piece #419  piece info:('419', 115.0, 2.0, 0.5, 21.0)
+Node #4 => 110mm of piece #567  piece info:('567', 110.0, 2.0, 0.5, 20.0)
+Node #5 => 109mm of piece #421  piece info:('421', 120.0, 2.0, 0.5, 19.0)
+Node #6 => 80mm of piece #324  piece info:('324', 80.0, 2.0, 0.5, 18.5)
+Node #7 => 32mm of piece #604  piece info:('604', 35.0, 2.0, 0.5, 18.0)
+--------- D -----------
+Node #1 => 37mm of piece #488  piece info:('488', 140.0, 2.5, 0.0, 24.0)
+Node #2 => 74mm of piece #695  piece info:('695', 100.0, 2.5, 0.0, 23.0)
+Node #3 => 72mm of piece #554  piece info:('554', 135.0, 2.5, 0.0, 22.0)
+Node #4 => 71mm of piece #492  piece info:('492', 170.0, 2.5, 0.0, 21.0)
+Node #5 => 69mm of piece #492  piece info:('492', 170.0, 2.5, 0.0, 21.0)
+Node #6 => 68mm of piece #407  piece info:('407', 95.0, 2.5, 0.0, 20.0)
+Node #7 => 67mm of piece #41  piece info:('41', 75.0, 2.5, 0.0, 19.0)
+--------- D -----------
+Node #1 => 37mm of piece #240  piece info:('240', 50.0, 2.0, 1.0, 24.0)
+Node #2 => 74mm of piece #633  piece info:('633', 165.0, 2.0, 1.0, 23.0)
+Node #3 => 72mm of piece #633  piece info:('633', 165.0, 2.0, 1.0, 23.0)
+Node #4 => 71mm of piece #428  piece info:('428', 130.0, 2.0, 1.0, 22.0)
+Node #5 => 69mm of piece #417  piece info:('417', 70.0, 2.0, 1.0, 21.0)
+Node #6 => 68mm of piece #390  piece info:('390', 70.0, 2.0, 1.0, 21.0)
+Node #7 => 67mm of piece #685  piece info:('685', 125.0, 2.0, 1.0, 21.0)
+--------- Bb -----------
+Node #1 => 57mm of piece #312  piece info:('312', 140.0, 3.0, 0.0, 25.5)
+Node #2 => 114mm of piece #288  piece info:('288', 180.0, 3.0, 0.0, 24.5)
+Node #3 => 84mm of piece #415  piece info:('415', 95.0, 3.0, 0.0, 23.5)
+Node #4 => 83mm of piece #304  piece info:('304', 210.0, 3.0, 0.0, 23.0)
+Node #5 => 82mm of piece #304  piece info:('304', 210.0, 3.0, 0.0, 23.0)
+Node #6 => 81mm of piece #66  piece info:('66', 170.0, 3.0, 0.0, 22.5)
+Node #7 => 79mm of piece #66  piece info:('66', 170.0, 3.0, 0.0, 22.5)
+--------- Bb -----------
+Node #1 => 46mm of piece #454  piece info:('454', 145.0, 2.0, 0.0, 23.5)
+Node #2 => 92mm of piece #333  piece info:('333', 125.0, 2.0, 0.0, 22.5)
+Node #3 => 91mm of piece #542  piece info:('542', 160.0, 2.0, 0.0, 21.5)
+Node #4 => 90mm of piece #483  piece info:('483', 160.0, 2.0, 0.0, 21.0)
+Node #5 => 88mm of piece #451  piece info:('451', 105.0, 2.0, 0.0, 20.0)
+Node #6 => 87mm of piece #260  piece info:('260', 140.0, 2.0, 0.0, 20.0)
+Node #7 => 86mm of piece #6  piece info:('6', 120.0, 2.0, 0.0, 19.0)
+--------- Bb -----------
+Node #1 => 52mm of piece #67  piece info:('67', 155.0, 2.0, 0.0, 23.5)
+Node #2 => 104mm of piece #647  piece info:('647', 140.0, 2.0, 0.0, 23.5)
+Node #3 => 101mm of piece #692  piece info:('692', 150.0, 2.0, 0.0, 23.0)
+Node #4 => 100mm of piece #58  piece info:('58', 130.0, 2.0, 0.0, 22.0)
+Node #5 => 96mm of piece #546  piece info:('546', 140.0, 2.0, 0.0, 22.0)
+Node #6 => 64mm of piece #483  piece info:('483', 160.0, 2.0, 0.0, 21.0)
+Node #7 => 63mm of piece #85  piece info:('85', 75.0, 2.0, 0.0, 20.5)
+--------- Bb -----------
+Node #1 => 59mm of piece #697  piece info:('697', 190.0, 2.5, 0.0, 25.0)
+Node #2 => 118mm of piece #563  piece info:('563', 150.0, 2.5, 0.0, 25.0)
+Node #3 => 84mm of piece #607  piece info:('607', 170.0, 2.5, 0.0, 24.0)
+Node #4 => 83mm of piece #607  piece info:('607', 170.0, 2.5, 0.0, 24.0)
+Node #5 => 82mm of piece #512  piece info:('512', 160.0, 2.5, 0.0, 24.0)
+Node #6 => 78mm of piece #512  piece info:('512', 160.0, 2.5, 0.0, 24.0)
+Node #7 => 76mm of piece #488  piece info:('488', 140.0, 2.5, 0.0, 24.0)
+--------- Bb -----------
+Node #1 => 49mm of piece #454  piece info:('454', 145.0, 2.0, 0.0, 23.5)
+Node #2 => 98mm of piece #547  piece info:('547', 140.0, 2.0, 0.0, 22.5)
+Node #3 => 97mm of piece #455  piece info:('455', 110.0, 2.0, 0.0, 22.5)
+Node #4 => 96mm of piece #629  piece info:('629', 100.0, 2.0, 0.0, 21.5)
+Node #5 => 82mm of piece #242  piece info:('242', 85.0, 2.0, 0.0, 20.5)
+Node #6 => 80mm of piece #652  piece info:('652', 95.0, 2.0, 0.0, 20.0)
+Node #7 => 78mm of piece #77  piece info:('77', 120.0, 2.0, 0.0, 19.0)
+--------- C -----------
+Node #1 => 41mm of piece #503  piece info:('503', 125.0, 2.0, 0.5, 23.0)
+Node #2 => 82mm of piece #347  piece info:('347', 90.0, 2.0, 0.5, 22.0)
+Node #3 => 81mm of piece #219  piece info:('219', 95.0, 2.0, 0.5, 21.0)
+Node #4 => 80mm of piece #655  piece info:('655', 130.0, 2.0, 0.5, 21.0)
+Node #5 => 78mm of piece #308  piece info:('308', 150.0, 2.0, 0.5, 20.5)
+Node #6 => 77mm of piece #194  piece info:('194', 80.0, 2.0, 0.5, 19.5)
+Node #7 => 76mm of piece #438  piece info:('438', 80.0, 2.0, 0.5, 19.0)
+--------- C -----------
+Node #1 => 41mm of piece #454  piece info:('454', 145.0, 2.0, 0.0, 23.5)
+Node #2 => 82mm of piece #568  piece info:('568', 140.0, 2.0, 0.0, 23.5)
+Node #3 => 81mm of piece #477  piece info:('477', 105.0, 2.0, 0.0, 23.0)
+Node #4 => 80mm of piece #624  piece info:('624', 150.0, 2.0, 0.0, 22.0)
+Node #5 => 78mm of piece #464  piece info:('464', 110.0, 2.0, 0.0, 21.0)
+Node #6 => 77mm of piece #631  piece info:('631', 130.0, 2.0, 0.0, 21.0)
+Node #7 => 76mm of piece #486  piece info:('486', 120.0, 2.0, 0.0, 20.0)
+--------- C -----------
+Node #1 => 41mm of piece #459  piece info:('459', 170.0, 2.0, 0.0, 24.5)
+Node #2 => 82mm of piece #418  piece info:('418', 150.0, 2.0, 0.0, 24.5)
+Node #3 => 81mm of piece #696  piece info:('696', 165.0, 2.0, 0.0, 24.0)
+Node #4 => 80mm of piece #211  piece info:('211', 170.0, 2.0, 0.0, 24.0)
+Node #5 => 78mm of piece #696  piece info:('696', 165.0, 2.0, 0.0, 24.0)
+Node #6 => 77mm of piece #211  piece info:('211', 170.0, 2.0, 0.0, 24.0)
+Node #7 => 76mm of piece #212  piece info:('212', 130.0, 2.0, 0.0, 24.0)
+--------- C -----------
+Node #1 => 41mm of piece #311  piece info:('311', 135.0, 2.0, 1.0, 23.0)
+Node #2 => 82mm of piece #311  piece info:('311', 135.0, 2.0, 1.0, 23.0)
+Node #3 => 81mm of piece #675  piece info:('675', 125.0, 2.0, 1.0, 22.0)
+Node #4 => 80mm of piece #625  piece info:('625', 140.0, 2.0, 1.0, 22.0)
+Node #5 => 78mm of piece #368  piece info:('368', 95.0, 2.0, 1.0, 21.0)
+Node #6 => 77mm of piece #414  piece info:('414', 120.0, 2.0, 1.0, 21.0)
+Node #7 => 76mm of piece #771  piece info:('771', 95.0, 2.0, 1.0, 20.5)
+--------- C -----------
+Node #1 => 41mm of piece #67  piece info:('67', 155.0, 2.0, 0.0, 23.5)
+Node #2 => 82mm of piece #473  piece info:('473', 155.0, 2.0, 0.0, 22.5)
+Node #3 => 81mm of piece #403  piece info:('403', 115.0, 2.0, 0.0, 22.5)
+Node #4 => 80mm of piece #401  piece info:('401', 110.0, 2.0, 0.0, 22.0)
+Node #5 => 78mm of piece #305  piece info:('305', 115.0, 2.0, 0.0, 21.0)
+Node #6 => 77mm of piece #672  piece info:('672', 130.0, 2.0, 0.0, 21.0)
+Node #7 => 76mm of piece #678  piece info:('678', 80.0, 2.0, 0.0, 20.0)
+----------------------------------
+
+Generated nodes: 287
+Backjumps: 84
+Backtracks: 0

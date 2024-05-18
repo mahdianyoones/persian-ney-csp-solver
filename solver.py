@@ -10,6 +10,8 @@ current = os.path.dirname(os.path.realpath(__file__))
 
 class SOLVER():
 
+    START_TIME = 0
+
     def __init__(self, select, mac, stats):
         self.__csp = None
         self.__select = select
@@ -49,6 +51,8 @@ class SOLVER():
         adding this contradiction to a new constraint may help optimization 
         in the next phase of the project.
         '''
+        if time.time() - self.START_TIME > 900:
+            return TIMEDOUT, TIMEDOUT
         csp = self.__csp
         curvar = self.__select.nextvar(csp)
         values = csp.get_shuffled_values(curvar)
@@ -84,6 +88,8 @@ class SOLVER():
             dfs_res = self.__dfs()
             if dfs_res[0] in {SOLUTION, SEARCH_SPACE_EXHAUSTED}:
                 return dfs_res
+            if dfs_res[0] == TIMEDOUT:
+                return dfs_res
             self.__unassign(csp, curvar)
             if dfs_res[0] == BACKTRACK:
                 self.__stats["backtracks"] += 1
@@ -103,6 +109,7 @@ class SOLVER():
         
         If MAC figures out any contradiction before search begins, no
         solution could ever be found.'''
+        self.START_TIME = time.time()
         self.__csp = csp
         self.__specs_sorted = specs_sorted
         res = UNARY.init_domains(self.__csp, data_set_path)

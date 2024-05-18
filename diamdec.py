@@ -3,7 +3,6 @@ from constants import *
 class DIAMDEC():
     '''Implements diameter decrement consistency.
         
-        0.5 <= P2.diameter - P1.diameter <= 1.5
         0.5 <= P3.diameter - P2.diameter <= 1.5
         0.5 <= P4.diameter - P3.diameter <= 1.5
         0.5 <= P5.diameter - P4.diameter <= 1.5

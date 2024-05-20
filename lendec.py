@@ -3,18 +3,18 @@ from constants import *
 class LENDEC():
     '''Implements length decrement boundary consistency.
     
-    Consecutive nodes must decrease in length. The following relations must
+    Consecutive nodes must decrease in length, at least 1 centimeters. The following relations must
     hold between L2 through L7:
     
-    L2 > L3
+    L2 => L3 + 10mm
 
-    L3 > L4
+    L3 => L4 + 10mm
 
-    L4 > L5
+    L4 => L5 + 10mm
 
-    L5 > L6
+    L5 => L6 + 10mm
 
-    L6 > L7
+    L6 => L7 + 10mm
     
     For each relation, a binary constraint is defined. This class establishes
     binary consistency for them all.'''
@@ -41,7 +41,7 @@ class LENDEC():
         if Li in A: # make Lj[max] consistent
             newDj = {
                 "min": D[Lj]["min"],
-                "max": min(A[Li]-1, D[Lj]["max"])
+                "max": min(A[Li]-10, D[Lj]["max"])
             }
             if newDj["min"] > newDj["max"]:
                 return (CONTRADICTION, {Lj})
@@ -50,7 +50,7 @@ class LENDEC():
                 reduced_vars.add(Lj)
         elif Lj in A: # make Li[min] consistent
             newDi = {
-                "min": max(A[Lj]+1, D[Li]["min"]),
+                "min": max(A[Lj]+10, D[Li]["min"]),
                 "max": D[Li]["max"]
             }
             if newDi["min"] > newDi["max"]:
@@ -60,14 +60,14 @@ class LENDEC():
                 reduced_vars.add(Li)
         else: # try making Li[min] and Lj[max] consistent
             newDi = {
-                "min": max(D[Lj]["min"]+1, D[Li]["min"]),
+                "min": max(D[Lj]["min"]+10, D[Li]["min"]),
                 "max": D[Li]["max"],
             }
             if newDi["min"] > newDi["max"]:
                 return (CONTRADICTION, {Li, Lj})
             newDj = {
                 "min": D[Lj]["min"],
-                "max": min(D[Li]["max"]-1, D[Lj]["max"]),
+                "max": min(D[Li]["max"]-10, D[Lj]["max"]),
             }
             if newDj["min"] > newDj["max"]:
                 return (CONTRADICTION, {Li, Lj})

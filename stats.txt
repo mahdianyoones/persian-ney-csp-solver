@@ -1139,3 +1139,92 @@ Node #7 => 76mm of piece #191  piece info:('191', 85.0, 2.0, 0.0, 17.0)
 Generated nodes: 16
 Backjumps: 1
 Backtracks: 0
+Desired instruments: G, A, D, Bb, Bb, Bb, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 1
+Backjumps: 0
+Backtracks: 0
+Desired instruments: G, A, D, Bb, Bb, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 1
+Backjumps: 0
+Backtracks: 0
+Desired instruments: G, A, D, Bb, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 1
+Backjumps: 0
+Backtracks: 0
+Desired instruments: G, A, D, Bb, Bb, Bb, Bb, Bb, Bb, C, C, C, C, C, C
+
+
+
+Could not find a solution.  -  cause: SEARCH_SPACE_EXHAUSTED
+
+----------------------------------
+
+Generated nodes: 1
+Backjumps: 0
+Backtracks: 0
+Desired instruments: C
+
+--------- C -----------
+Node #1 => 52mm of piece #547  piece info:('547', 140.0, 2.0, 0.0, 22.5)
+Node #2 => 104mm of piece #721  piece info:('721', 105.0, 2.0, 0.0, 20.0)
+Node #3 => 94mm of piece #115  piece info:('115', 110.0, 2.0, 0.0, 20.0)
+Node #4 => 84mm of piece #465  piece info:('465', 90.0, 2.0, 0.0, 19.5)
+Node #5 => 74mm of piece #437  piece info:('437', 90.0, 2.0, 0.0, 19.0)
+Node #6 => 64mm of piece #166  piece info:('166', 70.0, 2.0, 0.0, 19.0)
+Node #7 => 43mm of piece #703  piece info:('703', 60.0, 2.0, 0.0, 18.5)
+----------------------------------
+
+Generated nodes: 14
+Backjumps: 0
+Backtracks: 0
+Desired instruments: C
+
+--------- C -----------
+Node #1 => 52mm of piece #445  piece info:('445', 140.0, 2.0, 0.0, 22.0)
+Node #2 => 104mm of piece #215  piece info:('215', 130.0, 2.0, 0.0, 19.5)
+Node #3 => 94mm of piece #639  piece info:('639', 130.0, 2.0, 0.0, 19.0)
+Node #4 => 84mm of piece #184  piece info:('184', 85.0, 2.0, 0.0, 19.0)
+Node #5 => 74mm of piece #748  piece info:('748', 75.0, 2.0, 0.0, 18.5)
+Node #6 => 64mm of piece #210  piece info:('210', 85.0, 2.0, 0.0, 18.5)
+Node #7 => 43mm of piece #565  piece info:('565', 60.0, 2.0, 0.0, 18.0)
+----------------------------------
+
+Generated nodes: 14
+Backjumps: 0
+Backtracks: 0
+Desired instruments: C
+
+--------- C -----------
+Node #1 => 52mm of piece #445  piece info:('445', 140.0, 2.0, 0.0, 22.0)
+Node #2 => 104mm of piece #651  piece info:('651', 115.0, 2.0, 0.0, 20.0)
+Node #3 => 94mm of piece #652  piece info:('652', 95.0, 2.0, 0.0, 20.0)
+Node #4 => 84mm of piece #744  piece info:('744', 85.0, 2.0, 0.0, 20.0)
+Node #5 => 74mm of piece #763  piece info:('763', 90.0, 2.0, 0.0, 20.0)
+Node #6 => 64mm of piece #635  piece info:('635', 100.0, 2.0, 0.0, 19.5)
+Node #7 => 43mm of piece #36  piece info:('36', 55.0, 2.0, 0.0, 19.0)
+----------------------------------
+
+Generated nodes: 14
+Backjumps: 0
+Backtracks: 0

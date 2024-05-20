@@ -5,8 +5,8 @@ common_specs = {
 	"topd":			{"min": 21, "max": 24},		# diamter at top
 	"minl":			20,							# minimum chunk length
 	"hmarg":		4,							# minimum hole/hole and hole/junction space
-	"ddiff":		{"min": 0.0, "max": 1.0},		# diameter difference between adjacent nodes
- 	"top_ddiff":	{"min": 2.5, "max": 4}		# diameter difference between top and second node
+	"ddiff":		{"min": 0.0, "max": 0.5},		# diameter difference between adjacent nodes
+ 	"top_ddiff":	{"min": 2.0, "max": 3.0}		# diameter difference between top and second node
 }
 
 holes = {}
